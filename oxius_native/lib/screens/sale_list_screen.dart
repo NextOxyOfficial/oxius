@@ -415,7 +415,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 _t('sale_applied_filters', 'যেসব ফিল্টার দেওয়া আছে'),
                 style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade700,
+                    color: Colors.grey.shade800,
                     fontWeight: FontWeight.w600),
               ),
               const Spacer(),
@@ -850,7 +850,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 ' ${_t('sale_ads_count_suffix', 'টি বিজ্ঞাপন')}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                               fontWeight: FontWeight.w600,
                               letterSpacing: -0.1,
                             ),
@@ -1002,7 +1002,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     : _t('sale_sort_price_high', 'বেশি দাম'),
                         style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade700,
+                            color: Colors.grey.shade800,
                             fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(width: 2),
@@ -1099,7 +1099,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280)),
+                            color: Color(0xFF5A6273)),
                       ),
                     ),
                   ],
@@ -1223,7 +1223,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         Text(
                           '${_t('sale_total', 'মোট')} $_totalCount ${_t('sale_all_shown_suffix', 'টি বিজ্ঞাপনের সবগুলোই দেখানো হয়েছে')}',
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600),
+                              fontSize: 12, color: Colors.grey.shade700),
                         ),
                       ],
                     ),
@@ -1382,7 +1382,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             _formatDate(post.createdAt),
                             style: const TextStyle(
                               fontSize: 10,
-                              color: Color(0xFF9CA3AF),
+                              color: Color(0xFF858E9C),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1406,7 +1406,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFF5A6273),
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: -0.1,
                               ),
@@ -1493,7 +1493,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   Text(
                                     _t('sale_no_image', 'ছবি নেই'),
                                     style: TextStyle(
-                                        color: Colors.grey.shade500,
+                                        color: Colors.grey.shade600,
                                         fontSize: 10),
                                   ),
                                 ],
@@ -1511,7 +1511,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 Text(
                                   _t('sale_no_image', 'ছবি নেই'),
                                   style: TextStyle(
-                                      color: Colors.grey.shade500,
+                                      color: Colors.grey.shade600,
                                       fontSize: 10),
                                 ),
                               ],
@@ -1587,7 +1587,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                                 height: 1.3,
                               ),
                             ),
@@ -1617,7 +1617,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           _formatDate(post.createdAt),
                           style: TextStyle(
                             fontSize: 9,
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade600,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1678,7 +1678,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             'এই মুহূর্তে কোনো বিজ্ঞাপন নেই। একটু পরে আবার দেখুন।'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 14, color: Colors.grey.shade600, height: 1.5),
+                    fontSize: 14, color: Colors.grey.shade700, height: 1.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -1924,7 +1924,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                           fontSize: 10.5,
-                                          color: Colors.grey.shade600),
+                                          color: Colors.grey.shade700),
                                     ),
                                   ),
                                 ],
@@ -1952,7 +1952,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       _formatDate(listing.createdAt),
                                       style: TextStyle(
                                           fontSize: 9.5,
-                                          color: Colors.grey.shade500,
+                                          color: Colors.grey.shade600,
                                           fontWeight: FontWeight.w500),
                                     ),
                                 ],
@@ -2262,7 +2262,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           _t('sale_safe_guide_sub',
                               'কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন'),
                           style: const TextStyle(
-                              fontSize: 11, color: Color(0xFF64748B))),
+                              fontSize: 11, color: Color(0xFF556278))),
                     ],
                   ),
                 ),
@@ -2339,7 +2339,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           Text(
             sub,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 9.5, color: Color(0xFF94A3B8)),
+            style: const TextStyle(fontSize: 9.5, color: Color(0xFF7B8798)),
           ),
         ],
       ),
@@ -2368,7 +2368,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF334155),
+                    color: const Color(0xFF2C3949),
                     letterSpacing: 0.3),
               ),
             ],
@@ -2407,7 +2407,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           items[i][1],
                           style: const TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF556278),
                               height: 1.35),
                         ),
                       ],

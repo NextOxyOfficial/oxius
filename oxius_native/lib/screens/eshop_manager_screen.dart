@@ -83,7 +83,7 @@ class EshopManagerScreen extends StatelessWidget {
                   'Manage your eShop store with our comprehensive web portal.',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade700,
+                    color: Colors.grey.shade800,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -94,7 +94,7 @@ class EshopManagerScreen extends StatelessWidget {
                   'Access advanced features and tools for efficient management.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -210,7 +210,7 @@ class EshopManagerScreen extends StatelessWidget {
                             'Opens in your default browser',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                             ),
                           ),
                         ),
@@ -233,7 +233,7 @@ class EshopManagerScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Web portal access is not available in this version of the app.',
-                            style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+                            style: TextStyle(fontSize: 13, color: Colors.grey.shade700, height: 1.4),
                           ),
                         ),
                       ],
@@ -281,7 +281,7 @@ class EshopManagerScreen extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ],

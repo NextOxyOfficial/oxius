@@ -58,7 +58,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
   InputDecoration _fieldDecoration(String hint) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+      hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF7B8798)),
       isDense: true,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),

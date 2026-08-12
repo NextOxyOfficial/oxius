@@ -1117,7 +1117,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               _errorMessage ?? 'Something went wrong',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1173,7 +1173,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             'Be the first to share something!',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 24),
@@ -1313,7 +1313,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             'You\'ve seen all posts',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
           ),
         ],

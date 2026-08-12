@@ -328,7 +328,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                   const SizedBox(height: 1),
                   Text(subtitle,
                       style: const TextStyle(
-                          fontSize: 11.5, color: Color(0xFF64748B))),
+                          fontSize: 11.5, color: Color(0xFF556278))),
                 ],
               ),
             ),
@@ -873,7 +873,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
           Text(
             _t('sale_no_posts_hint',
                 'পুরোনো জিনিস বেচতে প্রথম বিজ্ঞাপনটা দিয়ে ফেলুন'),
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
             textAlign: TextAlign.center,
           ),
         ],
@@ -993,16 +993,16 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                         Text(
                           '${post.viewsCount}',
                           style: TextStyle(
-                              fontSize: 10.5, color: Colors.grey.shade600),
+                              fontSize: 10.5, color: Colors.grey.shade700),
                         ),
                         const SizedBox(width: 8),
                         Icon(Icons.access_time,
-                            size: 11, color: Colors.grey.shade500),
+                            size: 11, color: Colors.grey.shade600),
                         const SizedBox(width: 3),
                         Text(
                           _formatDate(post.createdAt),
                           style: TextStyle(
-                              fontSize: 10.5, color: Colors.grey.shade600),
+                              fontSize: 10.5, color: Colors.grey.shade700),
                         ),
                       ],
                     ),

@@ -389,7 +389,7 @@ class _ClassifiedPostDetailsScreenState
                                 .join(', '),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -406,7 +406,7 @@ class _ClassifiedPostDetailsScreenState
                             '${_post!.viewsCount}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -423,7 +423,7 @@ class _ClassifiedPostDetailsScreenState
                             _post!.getRelativeTime(),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -946,7 +946,7 @@ class _ClassifiedPostDetailsScreenState
                       'Posted ${_post!.getRelativeTime()}',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                   ],
@@ -1092,7 +1092,7 @@ class _ClassifiedPostDetailsScreenState
               'You need to be logged in to chat with the seller.',
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
             ),
@@ -1101,7 +1101,7 @@ class _ClassifiedPostDetailsScreenState
               'Please login or create an account to continue.',
               style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
             ),
@@ -1113,7 +1113,7 @@ class _ClassifiedPostDetailsScreenState
             child: const Text(
               'Cancel',
               style: TextStyle(
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -116,7 +116,7 @@ class _MessageReactorsSheetState extends State<MessageReactorsSheet> {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Text(
                 'এখনো কেউ রিঅ্যাক্ট করেননি',
-                style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                style: TextStyle(fontSize: 13, color: Color(0xFF7B8798)),
               ),
             )
           else ...[
@@ -220,7 +220,7 @@ class _MessageReactorsSheetState extends State<MessageReactorsSheet> {
                   ? Text(
                       name.isNotEmpty ? name[0].toUpperCase() : '?',
                       style: const TextStyle(
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                         fontWeight: FontWeight.w700,
                       ),
                     )

@@ -100,7 +100,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -158,7 +158,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                 'No trending hashtags available.',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                 ),
               ),
             )
@@ -220,7 +220,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                               '${tag['count'] ?? 0}',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                           ],
@@ -391,9 +391,9 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
               onChanged: _filterHashtags,
               decoration: InputDecoration(
                 hintText: 'Search hashtags...',
-                hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 prefixIcon: Icon(Icons.search_rounded,
-                    color: Colors.grey.shade600, size: 20),
+                    color: Colors.grey.shade700, size: 20),
                 filled: true,
                 fillColor: Colors.grey.shade50,
                 border: OutlineInputBorder(
@@ -436,7 +436,7 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                   ? 'No hashtags available'
                                   : 'No hashtags found matching "$_searchQuery"',
                               style: TextStyle(
-                                  fontSize: 14, color: Colors.grey.shade600),
+                                  fontSize: 14, color: Colors.grey.shade700),
                             ),
                           ],
                         ),
@@ -516,7 +516,7 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                               '$count ${count == 1 ? "post" : "posts"}',
                                               style: TextStyle(
                                                 fontSize: 11,
-                                                color: Colors.grey.shade600,
+                                                color: Colors.grey.shade700,
                                               ),
                                             ),
                                           ],

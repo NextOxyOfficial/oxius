@@ -235,7 +235,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
                           Text(
                             subtitle,
                             style: TextStyle(
-                              color: const Color(0xFF64748B),
+                              color: const Color(0xFF556278),
                               fontSize: 11.5,
                               fontWeight: FontWeight.w500,
                             ),
@@ -288,7 +288,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
       child: Text(
         initials,
         style: const TextStyle(
-          color: Color(0xFF334155),
+          color: Color(0xFF2C3949),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),

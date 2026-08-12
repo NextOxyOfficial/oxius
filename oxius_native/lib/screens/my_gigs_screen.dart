@@ -192,7 +192,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                         ),
                       ),
@@ -222,7 +222,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
               ),
             ),
             const SizedBox(height: 14),
@@ -283,7 +283,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         height: 1.45,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF5A6273),
                       ),
                     ),
                   ),
@@ -418,7 +418,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF5A6273),
             ),
           ),
           const SizedBox(height: 4),
@@ -694,7 +694,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   'Edit the content above to address the rejection reason, then resubmit for approval.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ],
@@ -1142,7 +1142,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           height: 1.4,
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFF5A6273),
                         ),
                       ),
                     ],
@@ -1450,7 +1450,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                 ),

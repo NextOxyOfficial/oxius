@@ -359,7 +359,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 const SizedBox(height: 2),
                 Text('${members.length} জন মেম্বার',
                     style:
-                        TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                        TextStyle(fontSize: 12, color: Colors.grey.shade600)),
               ],
             ),
           ),
@@ -402,7 +402,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
-                          color: Colors.grey.shade500)),
+                          color: Colors.grey.shade600)),
                 ),
                 // Member search — filters the list as you type.
                 Padding(
@@ -414,9 +414,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     decoration: InputDecoration(
                       hintText: 'মেম্বার খুঁজুন',
                       hintStyle:
-                          TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                          TextStyle(color: Colors.grey.shade600, fontSize: 13),
                       prefixIcon: Icon(Icons.search_rounded,
-                          size: 18, color: Colors.grey.shade500),
+                          size: 18, color: Colors.grey.shade600),
                       prefixIconConstraints:
                           const BoxConstraints(minWidth: 36, minHeight: 0),
                       isDense: true,
@@ -550,12 +550,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       errorWidget: Text(
                           display.isNotEmpty ? display[0].toUpperCase() : '?',
                           style: const TextStyle(
-                              color: Color(0xFF334155),
+                              color: Color(0xFF2C3949),
                               fontWeight: FontWeight.w700)),
                     )
                   : Text(display.isNotEmpty ? display[0].toUpperCase() : '?',
                       style: const TextStyle(
-                          color: Color(0xFF334155),
+                          color: Color(0xFF2C3949),
                           fontWeight: FontWeight.w700)),
             ),
             const SizedBox(width: 12),
@@ -588,7 +588,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                         if (joined.isNotEmpty)
                           const Text(' · ',
                               style: TextStyle(
-                                  fontSize: 11, color: Color(0xFF94A3B8))),
+                                  fontSize: 11, color: Color(0xFF7B8798))),
                       ],
                       if (joined.isNotEmpty)
                         Flexible(
@@ -596,7 +596,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  fontSize: 11, color: Color(0xFF94A3B8))),
+                                  fontSize: 11, color: Color(0xFF7B8798))),
                         ),
                     ],
                   ),

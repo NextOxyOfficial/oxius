@@ -502,7 +502,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade700,
+                              color: Colors.grey.shade800,
                             ),
                             items: [
                               DropdownMenuItem(
@@ -605,7 +605,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   hintText: 'What\'s on your mind? Use @ to mention someone',
                   hintStyle: TextStyle(
                     fontSize: 15.5,
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade500,
                   ),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
@@ -705,7 +705,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.grey.shade700,
+                          color: Colors.grey.shade800,
                           letterSpacing: 0.1,
                         ),
                       ),
@@ -730,9 +730,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             decoration: InputDecoration(
                               hintText: 'Type a hashtag',
                               hintStyle: TextStyle(
-                                  color: Colors.grey.shade400, fontSize: 14),
+                                  color: Colors.grey.shade500, fontSize: 14),
                               prefixIcon: Icon(Icons.tag,
-                                  size: 18, color: Colors.grey.shade400),
+                                  size: 18, color: Colors.grey.shade500),
                               prefixIconConstraints: const BoxConstraints(
                                   minWidth: 36, minHeight: 0),
                               border: InputBorder.none,
@@ -846,7 +846,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Colors.grey.shade700,
+                          color: Colors.grey.shade800,
                           letterSpacing: 0.1,
                         ),
                       ),
@@ -1141,7 +1141,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে',
                     style: TextStyle(
                       fontSize: 11.5,
-                      color: Colors.grey.shade500,
+                      color: Colors.grey.shade600,
                       height: 1.4,
                     ),
                   ),

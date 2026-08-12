@@ -919,7 +919,7 @@ class _HeroBannerState extends State<HeroBanner> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFF5A6273),
                   height: 1.5,
                 ),
               ),

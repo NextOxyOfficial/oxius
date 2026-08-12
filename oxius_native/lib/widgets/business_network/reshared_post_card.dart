@@ -107,7 +107,7 @@ class ResharedPostCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontSize: 13.5,
-                            color: Color(0xFF334155),
+                            color: Color(0xFF2C3949),
                             height: 1.45),
                       ),
                       if (isLongText)

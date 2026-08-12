@@ -208,7 +208,10 @@ class HouseAd {
   IconData get ctaIcon {
     switch (adType) {
       case 'message_on_adsyconnect':
-        return Icons.chat_bubble_rounded;
+        // Outlined throughout, one weight. The filled bubble and the filled
+        // launch arrow read as two different design languages sitting in the
+        // same button row.
+        return Icons.chat_bubble_outline_rounded;
       case 'call_on_whatsapp':
         // The brand mark, not a generic bubble — it says which app opens.
         return FontAwesomeIcons.whatsapp.data;
@@ -219,7 +222,7 @@ class HouseAd {
       case 'shop_now':
         return Icons.shopping_bag_outlined;
       default:
-        return Icons.open_in_new_rounded;
+        return Icons.arrow_outward_rounded;
     }
   }
 }

@@ -403,7 +403,7 @@ class _PostCardState extends State<PostCard> {
           style: const TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF64748B),
+            color: Color(0xFF556278),
           ),
         ),
       );
@@ -794,7 +794,7 @@ class _PostCardState extends State<PostCard> {
             style: TextStyle(
               fontSize: 13,
               height: 1.6,
-              color: Color(0xFF475569),
+              color: Color(0xFF3D4759),
             ),
           ),
         ),
@@ -998,13 +998,13 @@ class _PostCardState extends State<PostCard> {
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF334155),
+                    color: Color(0xFF2C3949),
                   ),
                 ),
                 SizedBox(height: 2),
                 Text(
                   'এই পোস্টটি আপনার ফিডে আর দেখা যাবে না',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                  style: TextStyle(fontSize: 12, color: Color(0xFF7B8798)),
                 ),
               ],
             ),
@@ -1060,27 +1060,10 @@ class _PostCardState extends State<PostCard> {
             onFollowToggle: null, // Don't show follow button in posts
             onMorePressed: _showPostOptions,
           ),
-          // Post Media Gallery (Vue-style: media on top)
-          if (_post.media.isNotEmpty)
-            PostMediaGallery(
-              media: _post.media,
-              onMediaTap: _handleMediaTap,
-            ),
-          // Boost's own action button, directly under the media. A boost is
-          // still the post — but an advertiser who paid for it can offer one
-          // way to act on it (message / visit / call / email). Nothing shows
-          // when they chose no button.
-          if (widget.isSponsored && widget.sponsoredAd != null)
-            _SponsoredCtaBar(ad: widget.sponsoredAd!, placement: 'bn_feed'),
-          // Preview-style compact sponsored strip under the media, above the
-          // caption — the feed decides which posts carry it (every Nth) so
-          // it never feels ad-heavy. The post's author earns the share.
-          if (_post.media.isNotEmpty && widget.showInlineAd)
-            CompactHouseAdStrip(
-              creatorId: _post.user.uuid ?? _post.user.id.toString(),
-              contentId: _post.id.toString(),
-            ),
-          // Post Content with long press copy (title removed from design)
+          // Post text FIRST, then the media. It used to sit under the
+          // gallery (and under the inline ad strip), so on a tall video the
+          // caption and its hashtags were pushed off-screen — you scrolled
+          // past the whole clip before learning what the post was about.
           if (plainPostContent.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1110,10 +1093,10 @@ class _PostCardState extends State<PostCard> {
                               context,
                               onMentionTap: _handleMentionTap,
                               style: const TextStyle(
-                                fontSize: 15,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w400,
                                 color: Color(0xFF111827),
-                                height: 1.55,
+                                height: 1.50,
                               ),
                             ),
                             if (plainPostContent.length > 320)
@@ -1134,10 +1117,10 @@ class _PostCardState extends State<PostCard> {
                                     // grey still marks it as the tappable
                                     // part without shouting.
                                     style: const TextStyle(
-                                      fontSize: 15,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF6B7280),
-                                      height: 1.55,
+                                      color: Color(0xFF5A6273),
+                                      height: 1.50,
                                     ),
                                   ),
                                 ),
@@ -1150,6 +1133,26 @@ class _PostCardState extends State<PostCard> {
                   FirstLinkPreview(text: plainPostContent),
                 ],
               ),
+            ),
+          // Post Media Gallery
+          if (_post.media.isNotEmpty)
+            PostMediaGallery(
+              media: _post.media,
+              onMediaTap: _handleMediaTap,
+            ),
+          // Boost's own action button, directly under the media. A boost is
+          // still the post — but an advertiser who paid for it can offer one
+          // way to act on it (message / visit / call / email). Nothing shows
+          // when they chose no button.
+          if (widget.isSponsored && widget.sponsoredAd != null)
+            _SponsoredCtaBar(ad: widget.sponsoredAd!, placement: 'bn_feed'),
+          // Preview-style compact sponsored strip under the media — the feed
+          // decides which posts carry it (every Nth) so it never feels
+          // ad-heavy. The post's author earns the share.
+          if (_post.media.isNotEmpty && widget.showInlineAd)
+            CompactHouseAdStrip(
+              creatorId: _post.user.uuid ?? _post.user.id.toString(),
+              contentId: _post.id.toString(),
             ),
           // Embedded original when this post is a reshare/repost.
           if (_post.sharedFrom != null)
@@ -1191,16 +1194,19 @@ class _PostCardState extends State<PostCard> {
                         horizontal: 10,
                         vertical: 4,
                       ),
+                      // No outline. A hashtag is a word you can tap, not a
+                      // control — the box around it made a caption full of
+                      // tags look like a row of buttons. The tinted ground
+                      // still marks the tap target.
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        color: const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         '#${tag.tag}',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF475569),
+                          color: Color(0xFF3D4759),
                           fontWeight: FontWeight.w600,
                         ),
                       ),

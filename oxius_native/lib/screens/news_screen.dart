@@ -233,7 +233,7 @@ class _NewsScreenState extends State<NewsScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
+                            color: Colors.grey.shade800,
                           ),
                         ),
                       ),
@@ -492,7 +492,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                                   tip.description,
                                                   style: TextStyle(
                                                     fontSize: 11,
-                                                    color: Colors.grey.shade600,
+                                                    color: Colors.grey.shade700,
                                                   ),
                                                   maxLines: 3,
                                                   overflow:

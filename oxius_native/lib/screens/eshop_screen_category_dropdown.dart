@@ -31,7 +31,7 @@ Widget buildCategoryDropdown({
             selectedCategoryId != null ? 'Filtered' : 'All',
             style: const TextStyle(
               fontSize: 13,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF5A6273),
               fontWeight: FontWeight.w500,
             ),
           ),

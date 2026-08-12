@@ -128,7 +128,7 @@ class _NotificationPermissionGateState
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
             ),
           ),
@@ -255,7 +255,7 @@ class _NotificationPermissionGateState
                             'Notifications are optional. Enable them to receive updates about messages, orders and important announcements — or skip and continue using the app.',
                             style: TextStyle(
                               fontSize: bodySize,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                               height: 1.5,
                             ),
                             textAlign: TextAlign.center,
@@ -358,7 +358,7 @@ class _NotificationPermissionGateState
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: isTablet ? 12.5 : 11.5,
-                              color: Colors.grey.shade500,
+                              color: Colors.grey.shade600,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -398,7 +398,7 @@ class _NotificationPermissionGateState
               text,
               style: TextStyle(
                 fontSize: isWide ? 15.0 : 14.0,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
               ),
             ),
           ),

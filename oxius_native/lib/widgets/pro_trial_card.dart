@@ -100,7 +100,7 @@ class _ProTrialCardState extends State<ProTrialCard> {
                   style: const TextStyle(
                     fontSize: 12.5,
                     height: 1.4,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF556278),
                   ),
                 ),
               ],
@@ -210,7 +210,7 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
           const SizedBox(height: 4),
           const Text(
             'প্রো-এর সব সুবিধা ব্যবহার করে দেখুন — কোনো পেমেন্ট ছাড়াই।',
-            style: TextStyle(fontSize: 12.5, height: 1.4, color: Color(0xFF64748B)),
+            style: TextStyle(fontSize: 12.5, height: 1.4, color: Color(0xFF556278)),
           ),
           const SizedBox(height: 18),
 
@@ -255,7 +255,7 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
                 Expanded(
                   child: Text(
                     'প্রতি অ্যাকাউন্টে ফ্রি ট্রায়াল একবারই নেওয়া যায়।',
-                    style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 11.5, color: Color(0xFF556278)),
                   ),
                 ),
               ],
@@ -383,7 +383,7 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
                     style: const TextStyle(
                       fontSize: 12,
                       height: 1.35,
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF556278),
                     ),
                   ),
                 ],

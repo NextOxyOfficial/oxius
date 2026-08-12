@@ -234,7 +234,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                 hintText: 'Write a comment...',
                 hintStyle: TextStyle(
                   fontSize: 14.5,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade600,
                 ),
                 filled: true,
                 fillColor: Colors.grey.shade50,

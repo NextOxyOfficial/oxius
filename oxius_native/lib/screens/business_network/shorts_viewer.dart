@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:video_player/video_player.dart';
 import '../../models/business_network_models.dart';
+import '../../services/feed_video_handoff.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/house_ads_service.dart';
@@ -1247,6 +1248,15 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
         // while still offscreen.
         await _controller!.setVolume(widget.isActive ? 1.0 : 0.0);
 
+        // Same resume as the cold path below — the tapped video may well be
+        // one the reel had already preloaded, and skipping it here would make
+        // the fix work only sometimes, which is worse than not at all.
+        final preResumeAt = FeedVideoHandoff.take(widget.media.bestUrl);
+        if (preResumeAt != null &&
+            preResumeAt < _controller!.value.duration) {
+          await _controller!.seekTo(preResumeAt);
+        }
+
         if (!mounted) return;
         setState(() {
           _isInitialized = true;
@@ -1274,6 +1284,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
       await controller.initialize();
       await controller.setLooping(true);
       await controller.setVolume(widget.isActive ? 1.0 : 0.0);
+
+      // Pick up where the feed's inline player left off, when this is the
+      // video the viewer just tapped. Consumed once — see FeedVideoHandoff.
+      final resumeAt = FeedVideoHandoff.take(widget.media.bestUrl);
+      if (resumeAt != null && resumeAt < controller.value.duration) {
+        await controller.seekTo(resumeAt);
+      }
 
       if (!mounted) return;
       setState(() {

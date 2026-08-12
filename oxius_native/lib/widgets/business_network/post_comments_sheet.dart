@@ -177,7 +177,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                           'এখনো কোনো মন্তব্য নেই — প্রথম মন্তব্যটি করুন',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF94A3B8),
+                            color: Color(0xFF7B8798),
                           ),
                         ),
                       )
@@ -205,7 +205,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                       hintText: 'মন্তব্য লিখুন…',
                       hintStyle: TextStyle(
                         fontSize: 13.5,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                       ),
                       filled: true,
                       fillColor: const Color(0xFFF8FAFC),
@@ -285,9 +285,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                   Text(
                     c.content,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 12.5,
                       height: 1.4,
-                      color: Color(0xFF334155),
+                      color: Color(0xFF2C3949),
                     ),
                   ),
                 ],

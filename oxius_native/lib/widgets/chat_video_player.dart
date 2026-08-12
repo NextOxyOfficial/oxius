@@ -107,7 +107,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
               'Failed to load video',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
             ),
           ],

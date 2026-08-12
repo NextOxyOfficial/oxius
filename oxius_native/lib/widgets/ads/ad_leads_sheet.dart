@@ -140,7 +140,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFF5A6273),
                         ),
                       ),
                     ],
@@ -207,7 +207,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
               ),
             ),
           ],
@@ -278,7 +278,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                           TimeUtils.formatTimeAgo(when.toIso8601String()),
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF9CA3AF),
+                            color: Color(0xFF858E9C),
                           ),
                         ),
                     ],
@@ -303,7 +303,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF5A6273),
                       ),
                     ),
                   ],

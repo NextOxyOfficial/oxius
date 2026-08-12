@@ -58,7 +58,7 @@ class _DrawerContributorsState extends State<DrawerContributors> {
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.6,
             ),
           ),
@@ -84,7 +84,7 @@ class _DrawerContributorsState extends State<DrawerContributors> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Text(
               'No contributors yet',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
             ),
           )
         else
@@ -189,7 +189,7 @@ class _DrawerContributorsState extends State<DrawerContributors> {
                               Text(
                                 '$postCount posts',
                                 style: TextStyle(
-                                    fontSize: 9, color: Colors.grey.shade500),
+                                    fontSize: 9, color: Colors.grey.shade600),
                               ),
                             ],
                           ),

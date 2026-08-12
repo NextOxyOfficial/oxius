@@ -154,7 +154,7 @@ class ProfileCompletionSheet {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF475569),
+                        color: Color(0xFF3D4759),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -164,7 +164,7 @@ class ProfileCompletionSheet {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -193,7 +193,7 @@ class ProfileCompletionSheet {
                                   label,
                                   style: const TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF334155),
+                                    color: Color(0xFF2C3949),
                                   ),
                                 ),
                               ),
@@ -237,7 +237,7 @@ class ProfileCompletionSheet {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF556278),
                           ),
                         ),
                       ),

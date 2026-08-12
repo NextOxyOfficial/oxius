@@ -1380,7 +1380,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                         height: 1.4,
                       ),
                     ),

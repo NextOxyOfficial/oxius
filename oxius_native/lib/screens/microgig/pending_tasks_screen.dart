@@ -564,7 +564,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 11.5,
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFF7B8798),
                       ),
                     ),
                   ),
@@ -763,7 +763,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                       ),
                     ),
                     const SizedBox(height: 7),
@@ -788,7 +788,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                       ),
                     ),
                     const SizedBox(height: 7),

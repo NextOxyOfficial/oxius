@@ -22,7 +22,7 @@ class DrawerUsefulLinks extends StatelessWidget {
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.6,
             ),
           ),
@@ -69,7 +69,7 @@ class DrawerUsefulLinks extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF334155),
+                  color: Color(0xFF2C3949),
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,

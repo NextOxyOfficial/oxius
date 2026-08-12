@@ -151,7 +151,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                         style: const TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                     ],
@@ -194,7 +194,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
           Center(
             child: Text(
               'এখনো কোনো কমেন্ট নেই',
-              style: TextStyle(fontSize: 13.5, color: Color(0xFF94A3B8)),
+              style: TextStyle(fontSize: 13.5, color: Color(0xFF7B8798)),
             ),
           ),
         ],
@@ -269,7 +269,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                         c.content,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF334155),
+                          color: Color(0xFF2C3949),
                           height: 1.4,
                         ),
                       ),
@@ -282,7 +282,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                     TimeUtils.formatTimeAgo(c.createdAt.toIso8601String()),
                     style: const TextStyle(
                       fontSize: 11.5,
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFF7B8798),
                     ),
                   ),
                 ),
@@ -311,7 +311,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                 decoration: InputDecoration(
                   hintText: 'কমেন্ট লিখুন...',
                   hintStyle:
-                      const TextStyle(fontSize: 16, color: Color(0xFF94A3B8)),
+                      const TextStyle(fontSize: 16, color: Color(0xFF7B8798)),
                   filled: true,
                   fillColor: const Color(0xFFF1F5F9),
                   contentPadding:

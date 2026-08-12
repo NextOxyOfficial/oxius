@@ -154,10 +154,12 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     Widget glyph;
     if (avatar.isNotEmpty) {
       // Facebook-style avatar tab — blue ring marks the active state.
-      // Same 24px box as the icon tabs so all glyphs sit on one baseline.
+      // Slightly larger than the plain icon tabs: a face at 24px next to a
+      // stroked glyph at 24px reads as the smaller of the two, because the
+      // photo has no whitespace around its subject.
       glyph = Container(
-        width: 24,
-        height: 24,
+        width: 28,
+        height: 28,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -169,7 +171,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
           child: AppNetworkImage(
             avatar,
             errorWidget:
-                Icon(isActive ? activeIcon : icon, size: 21, color: color),
+                Icon(isActive ? activeIcon : icon, size: 24, color: color),
           ),
         ),
       );
@@ -184,7 +186,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         },
       );
     } else {
-      glyph = Icon(isActive ? activeIcon : icon, size: 24, color: color);
+      // The bell and clock carry the same weight as the avatar beside them.
+      glyph = Icon(isActive ? activeIcon : icon, size: 26, color: color);
     }
 
     return Expanded(

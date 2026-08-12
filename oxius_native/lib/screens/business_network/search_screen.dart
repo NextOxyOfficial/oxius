@@ -421,7 +421,7 @@ class _SearchScreenState extends State<SearchScreen> {
               'Results for "$_currentQuery"',
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
               ),
             ),
           ),
@@ -622,7 +622,7 @@ class _SearchScreenState extends State<SearchScreen> {
               message,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
             ),
           ],
@@ -657,7 +657,7 @@ class _SearchScreenState extends State<SearchScreen> {
             style: const TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.8,
             ),
           ),
@@ -673,7 +673,7 @@ class _SearchScreenState extends State<SearchScreen> {
               style: const TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
               ),
             ),
           ),
@@ -752,7 +752,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         person['profession'],
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade700,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -798,7 +798,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
+                      color: Colors.grey.shade800,
                     ),
                   ),
                 ],
@@ -829,7 +829,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFF7B8798),
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -861,7 +861,7 @@ class _SearchScreenState extends State<SearchScreen> {
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
+                color: Color(0xFF7B8798),
                 letterSpacing: 0.8,
               ),
             ),
@@ -879,7 +879,7 @@ class _SearchScreenState extends State<SearchScreen> {
               style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
+                color: Color(0xFF7B8798),
                 letterSpacing: 0.8,
               ),
             ),
@@ -902,7 +902,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   'Search people by name, posts by keyword, or use # to find hashtags.',
                   style: TextStyle(
                     fontSize: 12.5,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF556278),
                     height: 1.4,
                   ),
                 ),
@@ -955,7 +955,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF556278),
                       ),
                     )
                   : null,
@@ -982,7 +982,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12.5,
-                      color: Color(0xFF64748B),
+                      color: Color(0xFF556278),
                     ),
                   ),
                 ],
@@ -1013,7 +1013,7 @@ class _SearchScreenState extends State<SearchScreen> {
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF64748B),
+            color: Color(0xFF556278),
           ),
         ),
       ]);
@@ -1065,7 +1065,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 '$count posts',
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFF7B8798),
                 ),
               ),
           ],
@@ -1158,7 +1158,7 @@ class _SearchScreenState extends State<SearchScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12.5,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
                 height: 1.45,
               ),
             ),

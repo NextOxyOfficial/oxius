@@ -218,7 +218,7 @@ class NewsCard extends StatelessWidget {
                       post.summary,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

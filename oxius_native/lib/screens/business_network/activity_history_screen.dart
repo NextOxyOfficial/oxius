@@ -106,7 +106,7 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
         child: Text(
           'Please login to view your activity',
           style: TextStyle(
-              color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              color: Colors.grey.shade800, fontWeight: FontWeight.w600),
         ),
       );
     }
@@ -116,7 +116,7 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
         child: Text(
           'No MindForce replies yet',
           style: TextStyle(
-              color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              color: Colors.grey.shade800, fontWeight: FontWeight.w600),
         ),
       );
     }
@@ -227,7 +227,7 @@ class _MindForceReplyTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.25,
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade800,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -238,7 +238,7 @@ class _MindForceReplyTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -350,7 +350,7 @@ class _SavedPostsTab extends StatelessWidget {
             child: Text(
               'Failed to load saved posts',
               style: TextStyle(
-                  color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                  color: Colors.grey.shade800, fontWeight: FontWeight.w600),
             ),
           );
         }
@@ -361,7 +361,7 @@ class _SavedPostsTab extends StatelessWidget {
             child: Text(
               'No saved posts yet',
               style: TextStyle(
-                  color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                  color: Colors.grey.shade800, fontWeight: FontWeight.w600),
             ),
           );
         }
@@ -422,7 +422,7 @@ class _ActivityPlaceholderTab extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.35,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
               textAlign: TextAlign.center,
             ),

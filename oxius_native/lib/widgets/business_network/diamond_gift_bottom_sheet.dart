@@ -243,7 +243,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                                     'Your Balance',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.grey.shade500,
+                                      color: Colors.grey.shade600,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -307,7 +307,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade500,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -381,7 +381,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade500,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -395,7 +395,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                       hintText: 'Enter diamond amount',
                       hintStyle: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade400,
+                        color: Colors.grey.shade500,
                         fontWeight: FontWeight.w400,
                       ),
                       prefixIcon: const Padding(
@@ -455,7 +455,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade500,
                       letterSpacing: 0.8,
                     ),
                   ),
@@ -467,7 +467,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     decoration: InputDecoration(
                       hintText: 'Write a nice message... ✨',
                       hintStyle:
-                          TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                          TextStyle(fontSize: 13, color: Colors.grey.shade500),
                       filled: true,
                       fillColor: const Color(0xFFFAFAFA),
                       border: OutlineInputBorder(

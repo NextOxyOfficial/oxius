@@ -22,13 +22,10 @@ class NotificationItem extends StatelessWidget {
     final actorDisplayName = actorNameRaw.isNotEmpty ? actorNameRaw : 'Someone';
     return Container(
       decoration: BoxDecoration(
-        color: notification.read ? Colors.white : const Color(0xFFEFF6FF),
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade100,
-            width: 0.5,
-          ),
-        ),
+        // Unread rows carry a wash of blue; read rows are plain. That is the
+        // whole separator system — the hairline under every row made a list of
+        // faces look like a spreadsheet.
+        color: notification.read ? Colors.white : const Color(0xFFEBF3FF),
       ),
       child: Material(
         color: Colors.transparent,
@@ -54,8 +51,8 @@ class NotificationItem extends StatelessWidget {
                             ? AppNetworkImage(
                                 notification.actor!.image!,
                                 fit: BoxFit.cover,
-                                width: 44,
-                                height: 44,
+                                width: 52,
+                                height: 52,
                                 errorWidget: _buildAvatarFallback(),
                               )
                             : _buildAvatarFallback(),
@@ -67,15 +64,15 @@ class NotificationItem extends StatelessWidget {
                       bottom: -1,
                       right: -1,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(4.5),
                         decoration: BoxDecoration(
                           color: _getTypeColor(),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
                         child: Icon(
                           _getTypeIcon(),
-                          size: 10,
+                          size: 12,
                           color: Colors.white,
                         ),
                       ),
@@ -115,8 +112,13 @@ class NotificationItem extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (notification.content != null &&
-                          notification.content!.isNotEmpty)
+                      // Only show the body when it ADDS something. For a like
+                      // the API sends "Liked your post", which is what the
+                      // sentence above already says — so the row read
+                      // "Anisur Rahman liked your post / Liked your post".
+                      // A comment's body is the comment itself and does earn
+                      // its line.
+                      if (_hasDistinctBody())
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
@@ -125,7 +127,7 @@ class NotificationItem extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               height: 1.25,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                               letterSpacing: -0.2,
                             ),
                             maxLines: 1,
@@ -134,11 +136,15 @@ class NotificationItem extends StatelessWidget {
                         ),
                       const SizedBox(height: 3),
                       Text(
-                        TimeUtils.formatTimeAgo(notification.createdAt),
+                        _shortTimeAgo(),
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade500,
+                          // Unread timestamps take the accent, which is how
+                          // Facebook marks recency without another badge.
+                          color: notification.read
+                              ? Colors.grey.shade500
+                              : const Color(0xFF1877F2),
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -165,6 +171,51 @@ class NotificationItem extends StatelessWidget {
     );
   }
 
+  /// True when [notification.content] says something the headline does not.
+  bool _hasDistinctBody() {
+    final body = (notification.content ?? '').trim();
+    if (body.isEmpty) return false;
+    final plain = HtmlContentUtils.toPlainText(body).trim();
+    if (plain.isEmpty) return false;
+    final headline = _getNotificationText().trim();
+    // Compare loosely: the API's casing and trailing punctuation vary.
+    String norm(String s) => s
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9ঀ-৿ ]'), '')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    final a = norm(plain);
+    final b = norm(headline);
+    if (a.isEmpty) return false;
+    return a != b && !b.contains(a) && !a.contains(b);
+  }
+
+  /// "8h", "3d", "2w" — the long form ("8 Hours") pushed the row taller than
+  /// it needed to be and read as a sentence rather than a timestamp.
+  String _shortTimeAgo() {
+    final long = TimeUtils.formatTimeAgo(notification.createdAt);
+    final m = RegExp(r'^(\d+)\s*(\w)', caseSensitive: false).firstMatch(long);
+    if (m == null) return long;
+    final n = m.group(1)!;
+    switch (m.group(2)!.toLowerCase()) {
+      case 'y':
+        return '${n}y';
+      case 'm':
+        // Month vs Minute both start with M — disambiguate on the full word.
+        return long.toLowerCase().contains('mo') ? '${n}mo' : '${n}m';
+      case 'w':
+        return '${n}w';
+      case 'd':
+        return '${n}d';
+      case 'h':
+        return '${n}h';
+      case 's':
+        return '${n}s';
+      default:
+        return long;
+    }
+  }
+
   Widget _buildAvatarFallback() {
     return Container(
       color: Colors.grey.shade300,
@@ -172,7 +223,7 @@ class NotificationItem extends StatelessWidget {
         child: Text(
           _getInitials(),
           style: TextStyle(
-            color: Colors.grey.shade700,
+            color: Colors.grey.shade800,
             fontWeight: FontWeight.w600,
             fontSize: 16,
             letterSpacing: -0.2,

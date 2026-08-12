@@ -99,7 +99,7 @@ class ResharedNewsCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF475569),
+                          color: Color(0xFF3D4759),
                           height: 1.45,
                         ),
                       ),
@@ -138,7 +138,7 @@ class ResharedNewsCard extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF64748B),
+                                    color: Color(0xFF556278),
                                   ),
                                 ),
                               ],
@@ -154,7 +154,7 @@ class ResharedNewsCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF556278),
                           ),
                         ),
                       ],

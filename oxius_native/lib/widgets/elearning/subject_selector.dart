@@ -179,7 +179,7 @@ class _SubjectSelectorState extends State<SubjectSelector> {
                 size: 36, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(label,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
           ],
         ),
       ),

@@ -118,7 +118,7 @@ class MessageReactionChips extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                     ],

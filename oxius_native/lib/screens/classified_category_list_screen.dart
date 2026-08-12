@@ -804,7 +804,7 @@ class _ClassifiedCategoryListScreenState
             '$_totalCount results',
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF5A6273),
               fontWeight: FontWeight.w600,
               letterSpacing: -0.1,
             ),
@@ -861,7 +861,7 @@ class _ClassifiedCategoryListScreenState
                   hintText: 'Search ads...',
                   hintStyle: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9CA3AF),
+                    color: Color(0xFF858E9C),
                   ),
                   prefixIcon: Icon(
                     Icons.search_rounded,
@@ -1118,7 +1118,7 @@ class _ClassifiedCategoryListScreenState
                           post.getRelativeTime(),
                           style: const TextStyle(
                             fontSize: 10,
-                            color: Color(0xFF9CA3AF),
+                            color: Color(0xFF858E9C),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1143,7 +1143,7 @@ class _ClassifiedCategoryListScreenState
                                 .join(', '),
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFF5A6273),
                               fontWeight: FontWeight.w500,
                               letterSpacing: -0.1,
                             ),
@@ -1499,7 +1499,7 @@ class _ClassifiedCategoryListScreenState
               'Finding information in ${_location?.displayLocation ?? "your area"}',
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
               ),
             ),
           ],
@@ -1509,7 +1509,7 @@ class _ClassifiedCategoryListScreenState
             const Icon(
               Icons.smart_toy,
               size: 48,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF5A6273),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -1665,7 +1665,7 @@ class _ClassifiedCategoryListScreenState
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
             ),

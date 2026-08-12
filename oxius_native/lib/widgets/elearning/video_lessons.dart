@@ -210,7 +210,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                         'Video lessons are available to Pro members. Pro upgrades cannot be purchased inside the iOS app due to App Store guidelines — please upgrade from our website.'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontSize: 14, color: Color(0xFF6B7280), height: 1.5),
+                    fontSize: 14, color: Color(0xFF5A6273), height: 1.5),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -353,7 +353,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                         _i18n.t('el_no_videos',
                             fallback: 'No videos available yet'),
                         style: TextStyle(
-                            fontSize: 14, color: Colors.grey.shade600)),
+                            fontSize: 14, color: Colors.grey.shade700)),
                   ],
                 ),
               ),
@@ -376,7 +376,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                         _i18n.t('el_no_videos_filter',
                             fallback: 'No videos match your filters'),
                         style: TextStyle(
-                            fontSize: 14, color: Colors.grey.shade600)),
+                            fontSize: 14, color: Colors.grey.shade700)),
                   ],
                 ),
               ),
@@ -461,7 +461,7 @@ class _VideoLessonsState extends State<VideoLessons> {
               label,
               style: TextStyle(
                 fontSize: 10,
-                color: Colors.grey.shade500,
+                color: Colors.grey.shade600,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -534,7 +534,7 @@ class _VideoLessonsState extends State<VideoLessons> {
             decoration: InputDecoration(
               hintText: _i18n.t('el_search_hint',
                   fallback: 'Search by title or description'),
-              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+              hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
               prefixIcon: const Icon(Icons.search, size: 20),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
@@ -719,7 +719,7 @@ class _VideoLessonsState extends State<VideoLessons> {
                           '${video.viewsCount} ${_i18n.t('el_views', fallback: 'views')}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ],

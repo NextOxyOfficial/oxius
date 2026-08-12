@@ -201,7 +201,7 @@ class VideoUploadHelper {
                                 : 'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ '
                                     '${mmss(const Duration(seconds: maxSeconds))} মিনিট পাঠানো যায়'),
                             style: const TextStyle(
-                                fontSize: 12.5, color: Color(0xFF64748B))),
+                                fontSize: 12.5, color: Color(0xFF556278))),
                       ],
                     ),
                   ),
@@ -218,7 +218,7 @@ class VideoUploadHelper {
                 child: const Text(
                   'বড় ভিডিও Google Drive-এ আপলোড করে লিংকটি চ্যাটে পাঠান — রিসিভার এক ট্যাপে দেখতে পারবেন।',
                   style: TextStyle(
-                      fontSize: 12.5, height: 1.5, color: Color(0xFF475569)),
+                      fontSize: 12.5, height: 1.5, color: Color(0xFF3D4759)),
                 ),
               ),
               const SizedBox(height: 14),

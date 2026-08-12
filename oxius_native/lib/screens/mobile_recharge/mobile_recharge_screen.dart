@@ -553,7 +553,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     : _t('recharge_try_filters', 'ফিল্টার বদলে দেখুন'),
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -766,7 +766,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             text,
             style: TextStyle(
               fontSize: isSmallMobile ? 11 : 12,
-              color: const Color(0xFF6B7280),
+              color: const Color(0xFF5A6273),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -990,7 +990,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     _t('recharge_available_balance',
                                         'ব্যালেন্স আছে'),
                                     style: const TextStyle(
-                                        fontSize: 11, color: Color(0xFF6B7280)),
+                                        fontSize: 11, color: Color(0xFF5A6273)),
                                   ),
                                   Text(
                                     '৳${userBalance.toStringAsFixed(2)}',
@@ -1133,7 +1133,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           decoration: InputDecoration(
                             hintText: '01XXXXXXXXX',
                             hintStyle: TextStyle(
-                                color: Colors.grey.shade400, fontSize: 14),
+                                color: Colors.grey.shade500, fontSize: 14),
                             prefixIcon: const Icon(Icons.phone_android_rounded,
                                 size: 20),
                             filled: true,
@@ -1166,7 +1166,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               'শুধু বাংলাদেশি মোবাইল নম্বর দিন'),
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ],
@@ -1200,7 +1200,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFF5A6273),
                             ),
                           ),
                         ),
@@ -1266,7 +1266,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF6B7280),
+            color: Color(0xFF5A6273),
           ),
         ),
         Text(
@@ -1471,7 +1471,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade700,
+                                  color: Colors.grey.shade800,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -1479,7 +1479,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 friendlyErrorMessage,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.grey.shade700,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -1516,7 +1516,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                                color: Colors.grey.shade800,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -1525,7 +1525,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   'আপনার রিচার্জ এখানে দেখা যাবে'),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ],
@@ -1663,7 +1663,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                           recharge['created_at'] ?? '',
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: Colors.grey.shade500,
+                                            color: Colors.grey.shade600,
                                           ),
                                         ),
                                       ],

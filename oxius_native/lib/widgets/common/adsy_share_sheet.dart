@@ -368,7 +368,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
           style: const TextStyle(fontSize: 14.5, height: 1.4),
           decoration: InputDecoration(
             hintText: data.repostHint ?? 'এই পোস্ট সম্পর্কে কিছু লিখুন…',
-            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
             isDense: true,
             contentPadding: const EdgeInsets.all(12),
             border: OutlineInputBorder(
@@ -518,7 +518,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF475569))),
+                    color: Color(0xFF3D4759))),
           ],
         ),
       ),
@@ -583,7 +583,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                 style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF475569))),
+                    color: Color(0xFF3D4759))),
           ],
         ),
       ),
@@ -766,7 +766,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF334155),
+                              color: Color(0xFF2C3949),
                             ),
                           ),
                         ),
@@ -940,7 +940,7 @@ class _SharePreview extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         height: 1.25,
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF556278),
                       ),
                     ),
                   ],
@@ -1196,7 +1196,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                           color: Colors.grey.shade500, size: 20),
                       hintText: 'সার্চ করুন',
                       hintStyle:
-                          TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                          TextStyle(color: Colors.grey.shade600, fontSize: 14),
                       border: InputBorder.none,
                       contentPadding:
                           const EdgeInsets.symmetric(vertical: 11),
@@ -1222,7 +1222,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                                 _query.isEmpty
                                     ? 'কোনো চ্যাট নেই'
                                     : 'কোনো ব্যবহারকারী পাওয়া যায়নি',
-                                style: TextStyle(color: Colors.grey.shade600)),
+                                style: TextStyle(color: Colors.grey.shade700)),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.only(bottom: 12),
@@ -1359,7 +1359,7 @@ class _SharePlatformButton extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF475569),
+                    color: Color(0xFF3D4759),
                     height: 1.1,
                   ),
                 ),

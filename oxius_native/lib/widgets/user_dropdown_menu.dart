@@ -378,7 +378,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                                 : _tr('upgrade_pro_text', fallback: 'Get premium features'),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -570,7 +570,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
+                            color: Colors.grey.shade800,
                           ),
                           textAlign: TextAlign.center,
                           maxLines: 1,

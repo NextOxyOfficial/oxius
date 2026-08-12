@@ -654,7 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                              fontSize: 12.5, color: Color(0xFF475569)),
+                              fontSize: 12.5, color: Color(0xFF3D4759)),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -776,7 +776,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     const SizedBox(height: 1),
                     Text(subtitle,
                         style: const TextStyle(
-                            fontSize: 11.5, color: Color(0xFF94A3B8))),
+                            fontSize: 11.5, color: Color(0xFF7B8798))),
                   ],
                 ],
               ),
@@ -1390,7 +1390,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         profession,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -1773,7 +1773,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
+              color: Colors.grey.shade800,
             ),
           )
         : null;
@@ -2154,7 +2154,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         child: Center(
           child: Text(
             'No profile information added yet',
-            style: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
+            style: TextStyle(fontSize: 13.5, color: Color(0xFF556278)),
           ),
         ),
       );
@@ -2179,7 +2179,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               style: const TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF94A3B8),
+                color: Color(0xFF7B8798),
                 letterSpacing: 0.8,
               ),
             ),
@@ -2259,7 +2259,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     style: const TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF475569),
+                      color: Color(0xFF3D4759),
                     ),
                   ),
                 ))
@@ -2848,7 +2848,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               message,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
               textAlign: TextAlign.center,
             ),
@@ -3216,7 +3216,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -3260,7 +3260,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Colors.grey.shade500,
+                                  color: Colors.grey.shade600,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -3365,7 +3365,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
-                                              color: Color(0xFF6B7280),
+                                              color: Color(0xFF5A6273),
                                             ),
                                           )
                                         : null,
@@ -3411,7 +3411,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                             profession,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Colors.grey.shade500,
+                                              color: Colors.grey.shade600,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,

@@ -592,18 +592,18 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                 const SizedBox(width: 4),
                 Text(
                   '${_problem!.views} views',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                 ),
               ],
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+                Icon(Icons.access_time, size: 16, color: Colors.grey.shade700),
                 const SizedBox(width: 4),
                 Text(
                   formatTimeAgo(_problem!.createdAt),
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                 ),
               ],
             ),
@@ -735,7 +735,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -743,7 +743,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     'Be the first to provide a solution',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey.shade500,
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ],
@@ -926,7 +926,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                           '• ${formatTimeAgo(comment.createdAt)}',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                         if (comment.isSolved) ...[
@@ -1129,7 +1129,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                   decoration: InputDecoration(
                     hintText: 'Add a solution...',
                     hintStyle:
-                        TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                        TextStyle(fontSize: 14, color: Colors.grey.shade600),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide(color: Colors.grey.shade300),

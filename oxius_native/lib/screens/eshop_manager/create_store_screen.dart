@@ -159,7 +159,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       'আপনার "$storeName" স্টোরটা তৈরি হয়ে গেছে। এখন প্রোডাক্ট অ্যাড করা শুরু করতে পারেন।'),
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF5A6273),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -245,7 +245,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           'আপনার অনলাইন স্টোর সেট করুন আর প্রোডাক্ট বিক্রি করা শুরু করুন'),
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF5A6273),
                         height: 1.5,
                       ),
                       textAlign: TextAlign.center,
@@ -296,12 +296,12 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                               'আপনার ব্যবসার নাম লিখুন'),
                           hintStyle: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade400,
+                            color: Colors.grey.shade500,
                           ),
                           prefixIcon: const Icon(
                             Icons.store_rounded,
                             size: 20,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -349,12 +349,12 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                               'আপনার স্টোরের ইউজারনেম লিখুন'),
                           hintStyle: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade400,
+                            color: Colors.grey.shade500,
                           ),
                           prefixIcon: const Icon(
                             Icons.alternate_email,
                             size: 20,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                           suffixIcon: _isCheckingUsername
                               ? const Padding(
@@ -471,7 +471,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                               'এগুলোর একটা ট্রাই করে দেখুন:'),
                           style: TextStyle(
                             fontSize: 11,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -525,7 +525,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                   'আপনার স্টোরের URL হবে:'),
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -535,7 +535,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                   'https://adsyclub.com/eshop/',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey.shade700,
                                   ),
                                 ),
                                 Text(

@@ -356,7 +356,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFF5A6273),
                 ),
               ),
               const SizedBox(height: 16),
@@ -398,7 +398,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                   fontWeight: FontWeight.w600,
                 ),
               ),

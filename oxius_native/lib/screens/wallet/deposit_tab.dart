@@ -149,7 +149,7 @@ class _DepositTabState extends State<DepositTab> {
                         'This information is required for secure payment processing.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade700,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ),
@@ -164,7 +164,7 @@ class _DepositTabState extends State<DepositTab> {
               child: Text(
                 'Cancel',
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                   fontWeight: FontWeight.w500,
                 ),
               ),

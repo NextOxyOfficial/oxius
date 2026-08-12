@@ -2286,7 +2286,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                   height: 1.4,
                 ),
               ),
@@ -2309,7 +2309,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ),
@@ -2518,7 +2518,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF6B7280),
+              color: Color(0xFF5A6273),
               letterSpacing: -0.1,
             ),
             textAlign: TextAlign.center,
@@ -3048,7 +3048,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 'মেসেজ আগের মতোই দেখতে পাবে — দুজনেই ক্লিয়ার করলে '
                 'মেসেজগুলো একেবারে মুছে যাবে।',
                 style: TextStyle(
-                    fontSize: 13.5, color: Colors.grey.shade600, height: 1.5),
+                    fontSize: 13.5, color: Colors.grey.shade700, height: 1.5),
               ),
               const SizedBox(height: 18),
               Row(
@@ -3323,7 +3323,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.45,
-                  color: Colors.grey.shade700,
+                  color: Colors.grey.shade800,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -3562,7 +3562,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                                 'Loading older messages...',
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Colors.grey.shade600,
+                                                  color: Colors.grey.shade700,
                                                 ),
                                               ),
                                             ],
@@ -3589,7 +3589,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                                 'No more messages',
                                                 style: TextStyle(
                                                   fontSize: 11,
-                                                  color: Colors.grey.shade500,
+                                                  color: Colors.grey.shade600,
                                                   fontWeight: FontWeight.w500,
                                                 ),
                                               ),
@@ -3744,7 +3744,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             'Send a message to ${widget.userName}',
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
           ),
         ],
@@ -4170,7 +4170,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         fontStyle: FontStyle.italic,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                   ),
@@ -4242,7 +4242,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 11.5,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF5A6273),
                   ),
                 ),
               ],

@@ -85,7 +85,7 @@ class GroupCallJoinBanner extends StatelessWidget {
           const SizedBox(width: 8),
           if (full)
             const Text('Call is full',
-                style: TextStyle(fontSize: 11.5, color: Color(0xFF6B7280)))
+                style: TextStyle(fontSize: 11.5, color: Color(0xFF5A6273)))
           else
             TextButton(
               onPressed: joining ? null : onJoin,

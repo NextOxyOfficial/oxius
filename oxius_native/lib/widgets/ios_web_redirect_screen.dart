@@ -159,7 +159,7 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
-                  color: Color(0xFF64748B),
+                  color: Color(0xFF556278),
                   height: 1.5,
                 ),
               ),
@@ -205,7 +205,7 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                   'You\'ll be signed in automatically',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: Colors.grey.shade600,
                   ),
                 ),
               const SizedBox(height: 8),
@@ -215,7 +215,7 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                   'Go Back',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF556278),
                   ),
                 ),
               ),

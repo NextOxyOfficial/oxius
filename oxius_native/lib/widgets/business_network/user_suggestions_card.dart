@@ -415,7 +415,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
           fontSize: 10,
           fontWeight: FontWeight.w500,
           fontStyle: FontStyle.italic,
-          color: Color(0xFF94A3B8),
+          color: Color(0xFF7B8798),
         ),
       );
     }
@@ -467,7 +467,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF64748B),
+              color: Color(0xFF556278),
             ),
           ),
         ),

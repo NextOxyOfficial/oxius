@@ -158,7 +158,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                   'প্রোডাক্টের ডিটেইলস আর স্ট্যাটাস আপডেট করুন'),
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFF5A6273),
                               ),
                             ),
                           ],
@@ -279,7 +279,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B7280),
+                                  color: Color(0xFF5A6273),
                                 ),
                               ),
                             ),
@@ -773,7 +773,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                     'আরও প্রোডাক্ট লোড হচ্ছে...'),
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF6B7280),
+                                  color: Color(0xFF5A6273),
                                 ),
                               ),
                             ],
@@ -864,7 +864,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                 'বিক্রি শুরু করতে প্রোডাক্ট অ্যাড করুন'),
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
           ),
         ],
@@ -997,7 +997,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B7280),
+                                  color: Color(0xFF5A6273),
                                 ),
                               ),
                             ],
@@ -1021,7 +1021,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B7280),
+                                  color: Color(0xFF5A6273),
                                 ),
                               ),
                             ],

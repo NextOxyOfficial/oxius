@@ -538,7 +538,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                               style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF6B7280)),
+                                  color: Color(0xFF5A6273)),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -555,7 +555,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                                 style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF475569)),
+                                    color: Color(0xFF3D4759)),
                               ),
                             ),
                           ],
@@ -840,7 +840,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
               ),
             ),
           ],

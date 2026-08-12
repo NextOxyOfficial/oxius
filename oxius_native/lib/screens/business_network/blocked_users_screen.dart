@@ -154,7 +154,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   "message you or see your activity.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.grey.shade500,
+                    color: Colors.grey.shade600,
                     fontSize: 13.5,
                     height: 1.55,
                   ),
@@ -236,7 +236,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12.5,
-                          color: Colors.grey.shade500,
+                          color: Colors.grey.shade600,
                         ),
                       ),
                     ],
@@ -282,7 +282,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF64748B),
+          color: Color(0xFF556278),
         ),
       ),
     );

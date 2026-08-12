@@ -380,7 +380,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose division',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 15),
+                                    color: Color(0xFF858E9C), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -464,7 +464,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose city',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 15),
+                                    color: Color(0xFF858E9C), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -548,7 +548,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                               decoration: const InputDecoration(
                                 hintText: 'Choose area',
                                 hintStyle: TextStyle(
-                                    color: Color(0xFF9CA3AF), fontSize: 15),
+                                    color: Color(0xFF858E9C), fontSize: 15),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
                                   horizontal: 12,

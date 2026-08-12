@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../services/feed_video_handoff.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
 import '../../services/house_ads_service.dart';
@@ -1261,26 +1263,21 @@ class AutoPlaySingleVideoPreviewState
                   color: Colors.white, size: 32),
             ),
           ),
-        Positioned(
-          top: 8,
-          left: 8,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.55),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-            ),
-            child: const Icon(Icons.videocam_rounded,
-                color: Colors.white, size: 12),
-          ),
-        ),
+        // The camera chip is gone. On an autoplaying video it labelled the
+        // obvious — the thing was already moving — and it covered the top-left
+        // of the frame, which is where a lot of clips put their own titling.
         if (widget.onTap != null)
           Positioned.fill(
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: widget.onTap,
+                onTap: () {
+                  // Hand the inline player's position to the shorts viewer so
+                  // the clip carries on instead of restarting.
+                  FeedVideoHandoff.remember(
+                      widget.media.bestUrl, _controller?.value.position);
+                  widget.onTap!();
+                },
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
@@ -1295,8 +1292,8 @@ class AutoPlaySingleVideoPreviewState
             child: GestureDetector(
               onTap: () => feedMuted.value = !feedMuted.value,
               child: Container(
-                width: 30,
-                height: 30,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.55),
                   shape: BoxShape.circle,
@@ -1308,7 +1305,7 @@ class AutoPlaySingleVideoPreviewState
                       ? Icons.volume_off_rounded
                       : Icons.volume_up_rounded,
                   color: Colors.white,
-                  size: 16,
+                  size: 21,
                 ),
               ),
             ),

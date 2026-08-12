@@ -275,7 +275,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           const SizedBox(height: 16),
           Text(
             'Seller not found',
-            style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -396,7 +396,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               Text(
                                 'Member since ${_formatDate(dateJoined)}',
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey.shade600),
+                                    fontSize: 12, color: Colors.grey.shade700),
                               ),
                             ],
                           ),
@@ -475,7 +475,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               child: Text(
                                 address,
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey.shade600),
+                                    fontSize: 12, color: Colors.grey.shade700),
                               ),
                             ),
                           ],
@@ -518,10 +518,10 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       value: _selectedCategory,
                       hint: Text('Category',
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600)),
+                              fontSize: 12, color: Colors.grey.shade700)),
                       icon: const Icon(Icons.arrow_drop_down, size: 18),
                       style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                          TextStyle(fontSize: 12, color: Colors.grey.shade800),
                       isDense: true,
                       items: [
                         const DropdownMenuItem<String>(
@@ -554,7 +554,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       icon: const Icon(Icons.arrow_drop_down, size: 18),
                       isDense: true,
                       style:
-                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                          TextStyle(fontSize: 12, color: Colors.grey.shade800),
                       items: const [
                         DropdownMenuItem(
                             value: 'recent', child: Text('Recent')),
@@ -599,7 +599,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade600)),
+                                      color: Colors.grey.shade700)),
                             ],
                           ),
                         ),
@@ -690,11 +690,11 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           children: [
             Text('You need to be logged in to chat with the seller.',
                 style: TextStyle(
-                    fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
+                    fontSize: 14, color: Color(0xFF5A6273), height: 1.5)),
             SizedBox(height: 12),
             Text('Please login or create an account to continue.',
                 style: TextStyle(
-                    fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
+                    fontSize: 14, color: Color(0xFF5A6273), height: 1.5)),
           ],
         ),
         actions: [
@@ -702,7 +702,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel',
                 style: TextStyle(
-                    color: Color(0xFF6B7280), fontWeight: FontWeight.w600)),
+                    color: Color(0xFF5A6273), fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -849,7 +849,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               '${post.division}, ${post.district}, ${post.area}',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                                 height: 1.3,
                               ),
                               maxLines: 2,

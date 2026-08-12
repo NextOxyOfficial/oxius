@@ -136,7 +136,7 @@ class _ClassifiedCategoriesWidgetState
                       'No categories available',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF5A6273),
                       ),
                     ),
                   ],

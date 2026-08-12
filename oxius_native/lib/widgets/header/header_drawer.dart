@@ -183,7 +183,7 @@ class HeaderDrawer extends StatelessWidget {
                                 'Coming Soon',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Colors.grey.shade600,
+                                  color: Colors.grey.shade700,
                                 ),
                               ),
                             ),

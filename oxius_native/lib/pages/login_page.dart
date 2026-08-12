@@ -217,7 +217,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     bool agreed = false;
     final referralCtrl = TextEditingController();
     const labelStyle =
-        TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF334155));
+        TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF2C3949));
     final linkStyle = TextStyle(
       fontSize: 13,
       height: 1.6,
@@ -267,7 +267,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     'নতুন একটি অ্যাকাউন্ট খুলে শুরু করতে চান?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 14, height: 1.55, color: Color(0xFF475569)),
+                        fontSize: 14, height: 1.55, color: Color(0xFF3D4759)),
                   ),
                   const SizedBox(height: 16),
                   // Optional referral code (someone invited you? enter it here).
@@ -280,10 +280,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       hintText: 'রেফারেল কোড (ঐচ্ছিক)',
                       hintStyle: const TextStyle(
                           fontSize: 13.5,
-                          color: Color(0xFF94A3B8),
+                          color: Color(0xFF7B8798),
                           fontWeight: FontWeight.w400),
                       prefixIcon: const Icon(Icons.card_giftcard_rounded,
-                          size: 19, color: Color(0xFF64748B)),
+                          size: 19, color: Color(0xFF556278)),
                       isDense: true,
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

@@ -473,7 +473,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             child: Text(
                                               '• Following',
                                               style: TextStyle(
-                                                color: Colors.grey.shade600,
+                                                color: Colors.grey.shade700,
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -486,7 +486,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   Text(
                                     formatTimeAgo(_post.createdAt),
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade700,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -673,7 +673,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 'No comments yet',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                 ),
               ),
               const SizedBox(height: 4),
@@ -681,7 +681,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 'Be the first to comment!',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade600,
                 ),
               ),
             ],

@@ -71,7 +71,7 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.6,
             ),
           ),
@@ -99,7 +99,7 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
               : _tags.isEmpty
                   ? Text(
                       'No trending hashtags',
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                     )
                   : Wrap(
                       spacing: 5,
@@ -133,7 +133,7 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: Color(0xFF334155),
+                                      color: Color(0xFF2C3949),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -142,7 +142,7 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
                                     style: const TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF94A3B8),
+                                      color: Color(0xFF7B8798),
                                     ),
                                   ),
                                 ],

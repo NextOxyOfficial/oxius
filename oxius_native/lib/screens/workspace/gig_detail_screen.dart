@@ -661,7 +661,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   // Descriptions written on the web carry HTML wrappers.
                   HtmlContentUtils.toPlainText(_gig!['description'] ?? ''),
                   style: const TextStyle(
-                      color: Color(0xFF334155), fontSize: 15, height: 1.6),
+                      color: Color(0xFF2C3949), fontSize: 15, height: 1.6),
                 ),
                 const SizedBox(height: 18),
 
@@ -683,7 +683,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                           Expanded(
                               child: Text(feature,
                                   style: const TextStyle(
-                                      color: Color(0xFF334155),
+                                      color: Color(0xFF2C3949),
                                       fontSize: 14.5,
                                       height: 1.45))),
                         ],

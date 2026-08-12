@@ -662,7 +662,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                           profession,
                           style: const TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF556278),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -682,7 +682,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF94A3B8),
+                                  color: Color(0xFF7B8798),
                                 ),
                               ),
                             ),
@@ -941,7 +941,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
               ),
             ),
           ],
@@ -1000,7 +1000,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
             style: const TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.8,
             ),
           ),
@@ -1054,7 +1054,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       item.subtitle,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFF7B8798),
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -1433,7 +1433,7 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -1464,7 +1464,7 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                                   : 'Not following anyone',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade600,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -1541,7 +1541,7 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                                             style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF6B7280),
+                                              color: Color(0xFF5A6273),
                                             ),
                                           )
                                         : null,
@@ -1568,7 +1568,7 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: Colors.grey.shade500,
+                                              color: Colors.grey.shade600,
                                             ),
                                           ),
                                       ],

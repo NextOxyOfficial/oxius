@@ -519,7 +519,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                       TimeUtils.formatTimeAgo(_problem!.createdAt),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                   ],
@@ -620,7 +620,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                     '${_problem!.views}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -632,7 +632,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                     '${_comments.length}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -681,7 +681,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         const SizedBox(height: 12),
         LinkifyText(HtmlContentUtils.toPlainText(_problem!.description),
             style: TextStyle(
-                fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
+                fontSize: 15, color: Colors.grey.shade800, height: 1.5)),
         FirstLinkPreview(text: _problem!.description),
       ],
     );
@@ -759,7 +759,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                   Text(
                     'No advice has been posted yet.\nBe the first to help!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                 ],
               ),
@@ -883,7 +883,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                       ),
                       Text(TimeUtils.formatTimeAgo(comment.createdAt),
                           style: TextStyle(
-                              fontSize: 12, color: Colors.grey.shade600)),
+                              fontSize: 12, color: Colors.grey.shade700)),
                     ],
                   ),
                 ),
@@ -969,7 +969,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: 'Share your solution or ask for clarification...',
-              hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
+              hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -992,7 +992,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               ),
               const SizedBox(width: 8),
               Text('${_commentImages.length}/3 images',
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
               const Spacer(),
               ElevatedButton.icon(
                 onPressed: _isSubmittingComment ? null : _submitComment,

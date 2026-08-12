@@ -183,7 +183,7 @@ class _DobPickerDialogState extends State<_DobPickerDialog> {
             style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B))),
+                color: Color(0xFF556278))),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),

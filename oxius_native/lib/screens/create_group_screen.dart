@@ -265,7 +265,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                         decoration: InputDecoration(
                                           hintText: 'মেম্বার সার্চ করুন',
                                           hintStyle: TextStyle(
-                                              color: Colors.grey.shade500,
+                                              color: Colors.grey.shade600,
                                               fontSize: 13),
                                           isDense: true,
                                           border: InputBorder.none,
@@ -311,7 +311,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
-                          color: Colors.grey.shade500),
+                          color: Colors.grey.shade600),
                     ),
                   ),
                 ),
@@ -332,7 +332,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                             ? const AdsyLoadingIndicator()
                             : Text('কেউ পাওয়া যায়নি',
                                 style: TextStyle(
-                                    fontSize: 13, color: Colors.grey.shade600)),
+                                    fontSize: 13, color: Colors.grey.shade700)),
                       ),
                     ),
                   )
@@ -427,7 +427,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               decoration: InputDecoration(
                 hintText: 'গ্রুপের নাম দিন',
                 hintStyle: TextStyle(
-                    color: Colors.grey.shade400,
+                    color: Colors.grey.shade500,
                     fontSize: 13.5,
                     fontWeight: FontWeight.w400),
                 counterText: '',
@@ -557,7 +557,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF475569))),
+                          color: Color(0xFF3D4759))),
                 ],
               ),
             ),
@@ -689,7 +689,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget _initial(String name) => Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
         style: const TextStyle(
-            color: Color(0xFF334155),
+            color: Color(0xFF2C3949),
             fontSize: 17,
             fontWeight: FontWeight.w700),
       );

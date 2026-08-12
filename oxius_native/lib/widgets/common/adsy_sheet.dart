@@ -55,7 +55,7 @@ class AdsySheet {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                       ),
                     ),
                   ),
@@ -140,7 +140,7 @@ class AdsySheetAction extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 11.5,
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF556278),
                       ),
                     ),
                   ],

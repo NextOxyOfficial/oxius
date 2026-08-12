@@ -108,7 +108,7 @@ class _EditSheetState extends State<_EditSheet> {
                   'পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: Colors.grey.shade600,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -131,7 +131,7 @@ class _EditSheetState extends State<_EditSheet> {
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: .3,
-                          color: Colors.grey.shade500,
+                          color: Colors.grey.shade600,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -160,7 +160,7 @@ class _EditSheetState extends State<_EditSheet> {
                       fontSize: 15, height: 1.45, color: _ink),
                   decoration: InputDecoration(
                     hintText: 'নতুন মেসেজ লিখুন…',
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
                     contentPadding: const EdgeInsets.all(13),

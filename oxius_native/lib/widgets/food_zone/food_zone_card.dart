@@ -338,7 +338,7 @@ class FoodZoneListCard extends StatelessWidget {
                                   .join(', '),
                               style: const TextStyle(
                                 fontSize: 10,
-                                color: Color(0xFF9CA3AF),
+                                color: Color(0xFF858E9C),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -365,7 +365,7 @@ class FoodZoneListCard extends StatelessWidget {
                             'Contact for price',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFF5A6273),
                             ),
                           ),
                         // Views count
@@ -381,7 +381,7 @@ class FoodZoneListCard extends StatelessWidget {
                               '${post.viewsCount}',
                               style: const TextStyle(
                                 fontSize: 10,
-                                color: Color(0xFF9CA3AF),
+                                color: Color(0xFF858E9C),
                               ),
                             ),
                           ],

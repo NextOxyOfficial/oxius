@@ -412,7 +412,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                     Text(
                       'Join our exclusive Gold Sponsors and showcase your business to thousands of potential customers. Gold Sponsors receive premium visibility and additional benefits.',
                       style:
-                          TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                          TextStyle(fontSize: 14, color: Colors.grey.shade800),
                     ),
                   ],
                 ),
@@ -578,7 +578,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                             child: Text(
                               _logoFileName!,
                               style: TextStyle(
-                                  fontSize: 12, color: Colors.grey.shade600),
+                                  fontSize: 12, color: Colors.grey.shade700),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -590,7 +590,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
               ),
               Text(
                 'Recommended: 250x250px, PNG or JPG',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
               ),
 
               const SizedBox(height: 24),
@@ -605,7 +605,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                           fontWeight: FontWeight.w700,
                           color: _ink)),
                   Text('${_banners.length}/$_maxBanners',
-                      style: TextStyle(color: Colors.grey.shade600)),
+                      style: TextStyle(color: Colors.grey.shade700)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -817,7 +817,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
       helperMaxLines: 2,
       hintStyle: const TextStyle(
           fontSize: 14.5,
-          color: Color(0xFF9CA3AF),
+          color: Color(0xFF858E9C),
           fontWeight: FontWeight.w400),
       helperStyle: const TextStyle(fontSize: 12, color: _muted),
       filled: true,
@@ -1016,7 +1016,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             const SizedBox(width: 8),
             Text('${_locations.length}/$_maxLocations',
                 style:
-                    const TextStyle(fontSize: 11.5, color: Color(0xFF9CA3AF))),
+                    const TextStyle(fontSize: 11.5, color: Color(0xFF858E9C))),
           ],
         ),
       ),
@@ -1049,7 +1049,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 Text('৳${_selectedPackagePrice.toStringAsFixed(0)}',
                     style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF9CA3AF),
+                        color: Color(0xFF858E9C),
                         decoration: TextDecoration.lineThrough)),
                 const SizedBox(width: 6),
                 Text('৳${_effectivePrice.toStringAsFixed(0)}',
@@ -1211,7 +1211,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           size: 20, color: Color(0xFF9CA3AF)),
       style: const TextStyle(fontSize: 13, color: _ink),
       hint: Text(hint,
-          style: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
+          style: const TextStyle(fontSize: 12.5, color: Color(0xFF858E9C)),
           overflow: TextOverflow.ellipsis),
       decoration: InputDecoration(
         isDense: true,
@@ -1341,7 +1341,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   ),
                   Text(
                     package.description,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                   ),
                   if (!hasEnoughBalance)
                     Text(

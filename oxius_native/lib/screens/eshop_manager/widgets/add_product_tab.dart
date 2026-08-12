@@ -93,7 +93,7 @@ class _AddProductTabState extends State<AddProductTab> {
                 'আপনি আরও $remainingSlots টা প্রোডাক্ট অ্যাড করতে পারবেন'),
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 24),
@@ -152,7 +152,7 @@ class _AddProductTabState extends State<AddProductTab> {
                       'আপনি সর্বোচ্চ ${widget.productLimit} টা প্রোডাক্টের লিমিটে পৌঁছে গেছেন। আরও প্রোডাক্ট দিতে এক্সট্রা স্লট কিনুন।'),
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -733,7 +733,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                       isIOSPlatform
                           ? _t('eshop_close', 'বন্ধ করুন')
                           : _t('eshop_cancel', 'ক্যান্সেল'),
-                      style: const TextStyle(color: Color(0xFF6B7280)),
+                      style: const TextStyle(color: Color(0xFF5A6273)),
                     ),
                   ),
                   if (!isIOSPlatform)

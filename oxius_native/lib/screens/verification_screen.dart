@@ -450,7 +450,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             : '$progress% of your required documents are ready.',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                           height: 1.4,
                         ),
                       ),
@@ -560,7 +560,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             'Make sure every image is bright, readable, and fully visible before you submit.',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
               height: 1.45,
             ),
           ),
@@ -596,7 +596,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               text,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
                 height: 1.45,
               ),
             ),
@@ -818,7 +818,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       'Upload clean, readable images for every required document.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                         height: 1.45,
                       ),
                     ),
@@ -1150,7 +1150,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                       height: 1.4,
                     ),
                   ),

@@ -339,7 +339,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                       'Available Diamonds',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -366,7 +366,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                       'Account funds',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -521,7 +521,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                                   'diamonds',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: Colors.grey.shade600,
+                                    color: Colors.grey.shade700,
                                   ),
                                 ),
                               ],
@@ -707,7 +707,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
               const SizedBox(height: 8),
               Text(
                 'You haven\'t purchased any diamonds yet.',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
               ),
               const SizedBox(height: 16),
               TextButton(
@@ -764,7 +764,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                                 .format(transaction.createdAt),
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ],

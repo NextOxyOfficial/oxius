@@ -122,7 +122,7 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
               const Expanded(
                 child: Text(
                   'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF475569)),
+                  style: TextStyle(fontSize: 12, color: Color(0xFF3D4759)),
                 ),
               ),
               TextButton(

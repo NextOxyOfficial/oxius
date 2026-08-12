@@ -167,7 +167,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFF7B8798),
                   letterSpacing: 0.6,
                 ),
               ),

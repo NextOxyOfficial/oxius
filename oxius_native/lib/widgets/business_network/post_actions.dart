@@ -313,7 +313,7 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
                                   'No likes yet',
                                   style: TextStyle(
                                     fontSize: 13.5,
-                                    color: Color(0xFF64748B),
+                                    color: Color(0xFF556278),
                                   ),
                                 ),
                               )
@@ -375,7 +375,7 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
                                 ? like.userName[0].toUpperCase()
                                 : '?',
                             style: TextStyle(
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                               fontWeight: FontWeight.w700,
                             ),
                           )
@@ -419,7 +419,7 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                 ),
               ),
             )

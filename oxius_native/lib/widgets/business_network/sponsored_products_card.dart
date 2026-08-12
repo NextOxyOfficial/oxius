@@ -288,7 +288,7 @@ class _ProductTile extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF9CA3AF),
+                              color: Color(0xFF858E9C),
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),

@@ -340,7 +340,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
           Text(
             _t('eshop_reviews_appear_hint',
                 'কাস্টমার রিভিউ দিলে এখানে দেখা যাবে'),
-            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
             textAlign: TextAlign.center,
           ),
         ],
@@ -454,7 +454,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
           const SizedBox(height: 5),
           Text(r.comment,
               style: const TextStyle(
-                  fontSize: 12.5, height: 1.4, color: Color(0xFF334155))),
+                  fontSize: 12.5, height: 1.4, color: Color(0xFF2C3949))),
 
           // Seller reply block
           const SizedBox(height: 10),

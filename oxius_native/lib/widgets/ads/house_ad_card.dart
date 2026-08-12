@@ -232,7 +232,7 @@ class _HouseAdCardState extends State<HouseAdCard>
               'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
               style: TextStyle(
                 fontSize: 12.5,
-                color: Color(0xFF475569),
+                color: Color(0xFF3D4759),
                 height: 1.4,
               ),
             ),
@@ -341,7 +341,7 @@ class _HouseAdCardState extends State<HouseAdCard>
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF475569),
+          color: Color(0xFF3D4759),
         ),
       );
 
@@ -439,7 +439,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF94A3B8),
+                                color: Color(0xFF7B8798),
                               ),
                             ),
                           ],
@@ -544,7 +544,7 @@ class _HouseAdCardState extends State<HouseAdCard>
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 11.5,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF556278),
                               height: 1.35,
                             ),
                           ),
@@ -560,16 +560,16 @@ class _HouseAdCardState extends State<HouseAdCard>
                     height: 40,
                     child: FilledButton.icon(
                       onPressed: _onCtaTap,
-                      icon: ad.ctaIconWidget(size: 17),
+                      icon: ad.ctaIconWidget(size: 15),
                       label: Text(
                         ad.ctaLabel,
                         style: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 12.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFEFF6FF),
+                        backgroundColor: const Color(0xFFDBEAFE),
                         foregroundColor: const Color(0xFF1D4ED8),
                         elevation: 0,
                         padding: EdgeInsets.zero,

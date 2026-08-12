@@ -1403,7 +1403,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                             color: Color(0xFF1E293B))),
                     Text('$memberCount জন মেম্বার',
                         style: TextStyle(
-                            fontSize: 11.5, color: Colors.grey.shade600)),
+                            fontSize: 11.5, color: Colors.grey.shade700)),
                   ],
                 ),
               ),
@@ -1412,7 +1412,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.call_rounded, color: Color(0xFF334155)),
+            icon: const Icon(Icons.call_rounded, color: Color(0xFF2C3949)),
             onPressed: () => _startGroupCall('audio'),
             tooltip: 'অডিও কল',
           ),
@@ -1443,7 +1443,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                     ? Center(
                         child: Text('এখনো কোনো মেসেজ নেই — শুরু করুন!',
                             style: TextStyle(
-                                fontSize: 13, color: Colors.grey.shade600)),
+                                fontSize: 13, color: Colors.grey.shade700)),
                       )
                     : Stack(
                         children: [
@@ -1619,7 +1619,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
               style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
                 height: 1.35,
               ),
             ),
@@ -1741,7 +1741,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF475569),
+                        color: Color(0xFF3D4759),
                       ),
                     ),
                   ),
@@ -1830,7 +1830,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                           fontSize: 11.5,
                           fontWeight: FontWeight.w500,
                           fontStyle: FontStyle.italic,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ),

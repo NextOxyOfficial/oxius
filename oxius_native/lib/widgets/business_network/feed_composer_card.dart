@@ -78,7 +78,7 @@ class FeedComposerCard extends StatelessWidget {
                         fontSize: 14,
                         // Was #64748B — on the light #F1F5F9 pill it read as
                         // disabled rather than as a prompt.
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -136,7 +136,7 @@ class FeedComposerCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF475569),
+                color: Color(0xFF3D4759),
               ),
             ),
           ],

@@ -431,7 +431,7 @@ class _AppFooterState extends State<AppFooter>
             ),
           ),
         ),
-        Text('•', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
+        Text('•', style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
         InkWell(
           onTap: () => _handleNavigation(context, t('privacy_policy')),
           borderRadius: BorderRadius.circular(4),

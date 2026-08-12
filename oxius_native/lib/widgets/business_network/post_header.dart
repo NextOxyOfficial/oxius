@@ -185,7 +185,7 @@ class PostHeader extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 12.5,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ),
@@ -206,7 +206,7 @@ class PostHeader extends StatelessWidget {
                           : _formatTimeAgo(post.createdAt),
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                   ],
@@ -249,7 +249,7 @@ class PostHeader extends StatelessWidget {
             icon: Icon(
               Icons.more_horiz,
               color: Colors.grey.shade600,
-              size: 20,
+              size: 24,
             ),
             padding: const EdgeInsets.all(4),
             constraints: const BoxConstraints(),

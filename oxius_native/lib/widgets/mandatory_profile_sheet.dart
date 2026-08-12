@@ -215,7 +215,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                             Text(
                               'অ্যাপ ব্যবহার করতে নিচের তথ্যগুলো দিন',
                               style: TextStyle(
-                                  fontSize: 12.5, color: Color(0xFF64748B)),
+                                  fontSize: 12.5, color: Color(0xFF556278)),
                             ),
                           ],
                         ),
@@ -281,7 +281,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
             style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF334155))),
+                color: Color(0xFF2C3949))),
         const SizedBox(height: 6),
         TextField(
           controller: c,
@@ -301,7 +301,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF334155))),
+                color: Color(0xFF2C3949))),
         const SizedBox(height: 6),
         InkWell(
           onTap: _pickDob,
@@ -349,7 +349,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
 
   InputDecoration _decoration(String? hint) => InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+        hintStyle: const TextStyle(color: Color(0xFF7B8798), fontSize: 14),
         filled: true,
         fillColor: Colors.white,
         contentPadding:

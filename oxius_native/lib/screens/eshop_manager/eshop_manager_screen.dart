@@ -539,7 +539,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                                   fallback:
                                       'সিকিউর পেমেন্ট • যেকোনো সময় রিনিউ'),
                               style: const TextStyle(
-                                  fontSize: 11, color: Color(0xFF94A3B8)),
+                                  fontSize: 11, color: Color(0xFF7B8798)),
                             ),
                           ],
                         ),
@@ -584,7 +584,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                 Text(subtitle,
                     style: const TextStyle(
                         fontSize: 11.5,
-                        color: Color(0xFF64748B),
+                        color: Color(0xFF556278),
                         height: 1.35)),
               ],
             ),
@@ -1026,7 +1026,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                           fontSize: 12.5,
-                          color: Color(0xFF475569),
+                          color: Color(0xFF3D4759),
                           height: 1.45),
                     ),
                   ),
@@ -1044,7 +1044,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 12, color: Color(0xFF64748B)),
+                                fontSize: 12, color: Color(0xFF556278)),
                           ),
                         ),
                       ],
@@ -1065,7 +1065,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                               const TextSpan(
                                   text: 'adsyclub.com/eshop/',
                                   style: TextStyle(
-                                      fontSize: 12, color: Color(0xFF64748B))),
+                                      fontSize: 12, color: Color(0xFF556278))),
                               TextSpan(
                                   text: uname,
                                   style: const TextStyle(
@@ -1141,7 +1141,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               style: const TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF94A3B8))),
+                  color: Color(0xFF7B8798))),
           const SizedBox(height: 2),
           Text(value,
               maxLines: 1,
@@ -1149,7 +1149,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF334155))),
+                  color: Color(0xFF2C3949))),
         ],
       ),
     );
@@ -1178,7 +1178,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               const SizedBox(height: 3),
               Text(label,
                   style:
-                      const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                      const TextStyle(fontSize: 12, color: Color(0xFF556278))),
             ],
           ),
         ),
@@ -1215,7 +1215,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   fontSize: 16.5, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 2),
           Text(label,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+              style: const TextStyle(fontSize: 11, color: Color(0xFF556278))),
         ],
       ),
     );
@@ -1234,7 +1234,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
             const SizedBox(height: 8),
             Text(t('eshop_no_orders_yet', fallback: 'এখনো কোনো অর্ডার আসেনি'),
                 style:
-                    const TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8))),
+                    const TextStyle(fontSize: 12.5, color: Color(0xFF7B8798))),
           ],
         ),
       );
@@ -1289,7 +1289,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                   const SizedBox(height: 2),
                   Text('#$ref',
                       style: const TextStyle(
-                          fontSize: 11, color: Color(0xFF94A3B8))),
+                          fontSize: 11, color: Color(0xFF7B8798))),
                 ],
               ),
             ),
@@ -1508,7 +1508,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
               child: Text(
                 '$_currentProductCount / $_productLimit ${t('eshop_slots_used', fallback: 'প্রোডাক্ট স্লট ইউজড')}',
                 style:
-                    const TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
+                    const TextStyle(fontSize: 11.5, color: Color(0xFF7B8798)),
               ),
             ),
           ],

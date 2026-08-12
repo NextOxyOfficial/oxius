@@ -153,7 +153,7 @@ class ChatMessageInput extends StatelessWidget {
                     blockedByMe
                         ? 'Unblock to send messages again.'
                         : 'Messaging is disabled in this conversation.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                   ),
                 ],
               ),
@@ -442,7 +442,7 @@ class ChatMessageInput extends StatelessWidget {
                         hintText: 'Type a message...',
                         hintStyle: TextStyle(
                           fontSize: 15.5,
-                          color: Colors.grey.shade400,
+                          color: Colors.grey.shade500,
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
@@ -577,7 +577,7 @@ class ChatMessageInput extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ),

@@ -551,7 +551,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                                   post.getRelativeTime(),
                                   style: const TextStyle(
                                     fontSize: 10,
-                                    color: Color(0xFF6B7280),
+                                    color: Color(0xFF5A6273),
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),

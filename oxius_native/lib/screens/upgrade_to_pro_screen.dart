@@ -994,7 +994,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               'Current balance: ৳${_userState.balance.toStringAsFixed(2)}',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
               ),
             ),
             const SizedBox(height: 8),

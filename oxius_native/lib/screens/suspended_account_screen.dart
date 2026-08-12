@@ -73,7 +73,7 @@ class SuspendedAccountScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.5,
-                      color: Color(0xFF475569),
+                      color: Color(0xFF3D4759),
                     ),
                   ),
                   if (trimmedReason.isNotEmpty) ...[
@@ -104,7 +104,7 @@ class SuspendedAccountScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 14,
                               height: 1.5,
-                              color: Color(0xFF334155),
+                              color: Color(0xFF2C3949),
                             ),
                           ),
                         ],
@@ -115,7 +115,7 @@ class SuspendedAccountScreen extends StatelessWidget {
                   const Text(
                     'If you think this is a mistake, please contact support.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF7B8798)),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(

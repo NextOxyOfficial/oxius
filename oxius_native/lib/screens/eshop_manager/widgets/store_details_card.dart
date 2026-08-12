@@ -325,7 +325,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_shop_name',
                                   'স্টোরের নাম লিখুন'),
-                              hintStyle: TextStyle(color: Colors.grey.shade400),
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
                               border: OutlineInputBorder(
@@ -376,7 +376,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                                   'adsyclub.com/eshop/',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Color(0xFF6B7280),
+                                    color: Color(0xFF5A6273),
                                   ),
                                 ),
                                 Text(
@@ -413,7 +413,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             'URL চেঞ্জ করা যাবে না'),
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Color(0xFF9CA3AF),
+                          color: Color(0xFF858E9C),
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -432,7 +432,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_shop_address',
                                   'স্টোরের ঠিকানা লিখুন'),
-                              hintStyle: TextStyle(color: Colors.grey.shade400),
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
                               border: OutlineInputBorder(
@@ -479,7 +479,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_description',
                                   'ছোট একটা ডিসক্রিপশন লিখুন...'),
-                              hintStyle: TextStyle(color: Colors.grey.shade400),
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -545,7 +545,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   _t('eshop_store_active', 'স্টোর অ্যাক্টিভ'),
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF5A6273),
                   ),
                 ),
                 const Spacer(),
@@ -553,7 +553,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   _t('eshop_slots_label', 'স্লট: '),
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF5A6273),
                   ),
                 ),
                 Text(
@@ -640,7 +640,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   '${_t('eshop_last_order', 'লাস্ট অর্ডার')}: ${_getLastOrderDate()}',
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFF5A6273),
                   ),
                 ),
               ],
@@ -666,7 +666,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+              style: const TextStyle(fontSize: 11, color: Color(0xFF7B8798))),
           const SizedBox(height: 3),
           Text(value,
               maxLines: 1,
@@ -759,7 +759,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFF5A6273),
                     ),
                   ),
                   if (isRequired)

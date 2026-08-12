@@ -1144,7 +1144,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             _chatTabEmptyMessage,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1190,7 +1190,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                               style: TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
-                                                color: Color(0xFF6B7280),
+                                                color: Color(0xFF5A6273),
                                                 letterSpacing: -0.2,
                                               ),
                                             ),
@@ -1199,7 +1199,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                               'You\'re all caught up!',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey.shade500,
+                                                color: Colors.grey.shade600,
                                               ),
                                             ),
                                           ],
@@ -1321,7 +1321,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF475569),
+                        color: Color(0xFF3D4759),
                       ),
                     ),
                   ],
@@ -1361,7 +1361,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                         ? name[0].toUpperCase()
                                         : '?',
                                     style: const TextStyle(
-                                      color: Color(0xFF334155),
+                                      color: Color(0xFF2C3949),
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -1374,7 +1374,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                       ? name[0].toUpperCase()
                                       : '?',
                                   style: const TextStyle(
-                                    color: Color(0xFF334155),
+                                    color: Color(0xFF2C3949),
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -1406,7 +1406,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF475569),
+                      color: Color(0xFF3D4759),
                     ),
                   ),
                 ],
@@ -1506,7 +1506,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           decoration: InputDecoration(
                             hintText: 'Search chats',
                             hintStyle: TextStyle(
-                                color: Colors.grey.shade500, fontSize: 13),
+                                color: Colors.grey.shade600, fontSize: 13),
                             isDense: true,
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -1599,7 +1599,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF475569),
+                                color: Color(0xFF3D4759),
                               ),
                             ),
                           ),
@@ -1858,7 +1858,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 Text('এখনো কোনো গ্রুপ চ্যাট নেই',
                     style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: Colors.grey.shade700,
                         fontWeight: FontWeight.w500)),
                 const SizedBox(height: 14),
                 FilledButton.icon(
@@ -1945,7 +1945,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                       ],
@@ -2061,7 +2061,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               child: Center(
                 child: Text(
                   'এই ফিল্টারে কেউ নেই',
-                  style: TextStyle(fontSize: 12.5, color: Color(0xFF94A3B8)),
+                  style: TextStyle(fontSize: 12.5, color: Color(0xFF7B8798)),
                 ),
               ),
             ),
@@ -2090,7 +2090,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   'No results found',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2111,7 +2111,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           style: const TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF94A3B8),
+            color: Color(0xFF7B8798),
             letterSpacing: 0.2,
           ),
         ),
@@ -2210,7 +2210,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                         child: Text(
                           name.isNotEmpty ? name[0].toUpperCase() : '?',
                           style: const TextStyle(
-                            color: Color(0xFF334155),
+                            color: Color(0xFF2C3949),
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
@@ -2221,7 +2221,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : '?',
                         style: const TextStyle(
-                          color: Color(0xFF334155),
+                          color: Color(0xFF2C3949),
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -2267,7 +2267,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFF7B8798),
                     ),
                   ),
                 ],
@@ -2476,7 +2476,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                         : '?')
                                     .toUpperCase(),
                                 style: const TextStyle(
-                                  color: Color(0xFF334155),
+                                  color: Color(0xFF2C3949),
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -2487,7 +2487,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             child: Text(
                               ((chat['userName'] ?? '').toString().isNotEmpty ? chat['userName'][0] : '?').toUpperCase(),
                               style: const TextStyle(
-                                color: Color(0xFF334155),
+                                color: Color(0xFF2C3949),
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -2613,7 +2613,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade500,
+                        color: Colors.grey.shade600,
                         letterSpacing: -0.1,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -2815,7 +2815,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
           const SizedBox(height: 12),
           Text('কোনো আর্কাইভ করা চ্যাট নেই',
               style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Colors.grey.shade700,
                   fontSize: 14,
                   fontWeight: FontWeight.w500)),
         ],
@@ -2880,7 +2880,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          fontSize: 12.5, color: Colors.grey.shade600)),
+                          fontSize: 12.5, color: Colors.grey.shade700)),
                 ],
               ),
             ),

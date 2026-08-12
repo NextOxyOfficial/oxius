@@ -1021,7 +1021,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade700,
+                          color: Colors.grey.shade800,
                         ),
                       ),
                     ],
@@ -1038,7 +1038,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade800,
                       ),
                     ),
                   ),
@@ -1123,7 +1123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               t('upgrade_pro_text'),
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade600,
+                                color: Colors.grey.shade700,
                               ),
                             ),
                           ],
@@ -1295,7 +1295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             'Valid until Dec 31, 2025',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ],
@@ -1438,7 +1438,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF334155),
+                      color: Color(0xFF2C3949),
                       height: 1.2,
                     ),
                   ),
@@ -1563,7 +1563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF334155), // text-slate-700
+                  color: Color(0xFF2C3949), // text-slate-700
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -1663,7 +1663,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                    fontSize: 12.5, color: Color(0xFF64748B)),
+                                    fontSize: 12.5, color: Color(0xFF556278)),
                               ),
                             ],
                           ),
@@ -1690,7 +1690,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextStyle(
                                   fontSize: 12,
                                   height: 1.5,
-                                  color: Color(0xFF475569)),
+                                  color: Color(0xFF3D4759)),
                             ),
                           ),
                         ],
@@ -1982,7 +1982,7 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 11.5,
             height: 1.25,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
+            color: Color(0xFF5A6273),
             letterSpacing: 0.1,
           ),
         ),

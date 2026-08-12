@@ -121,7 +121,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF64748B),
+              color: Color(0xFF556278),
             ),
           ),
         ],
@@ -222,7 +222,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                               style: const TextStyle(
                                 fontSize: 12,
                                 height: 1.3,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFF556278),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -315,7 +315,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
           style: const TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF94A3B8),
+            color: Color(0xFF7B8798),
           ),
         ),
       ],

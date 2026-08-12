@@ -532,7 +532,7 @@ class _SponsorDetailModalState extends State<SponsorDetailModal> {
                       child: Text(
                         '${_formatViews(widget.sponsor.views)} views',
                         style: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                          color: Color(0xFF7B8798),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),

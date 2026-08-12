@@ -78,7 +78,7 @@ class HouseAdStripView extends StatelessWidget {
                     note!,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFF7B8798),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -113,7 +113,7 @@ class HouseAdStripView extends StatelessWidget {
                                   fontSize: 10,
                                   letterSpacing: 0.3,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF9CA3AF),
+                                  color: Color(0xFF858E9C),
                                 ),
                               ),
                               const Spacer(),
@@ -152,7 +152,7 @@ class HouseAdStripView extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 12,
                                 height: 1.35,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFF5A6273),
                               ),
                             ),
                           ],
@@ -178,7 +178,7 @@ class HouseAdStripView extends StatelessWidget {
                       ),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFEFF6FF),
+                      backgroundColor: const Color(0xFFDBEAFE),
                       foregroundColor: const Color(0xFF1D4ED8),
                       elevation: 0,
                       padding: EdgeInsets.zero,

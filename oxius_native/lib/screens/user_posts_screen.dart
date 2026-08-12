@@ -586,7 +586,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                                 .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                             style: const TextStyle(
-                                fontSize: 11, color: Color(0xFF9CA3AF)),
+                                fontSize: 11, color: Color(0xFF858E9C)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -607,7 +607,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                   else
                     const Text(
                       'Contact for price',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF5A6273)),
                     ),
                 ],
               ),

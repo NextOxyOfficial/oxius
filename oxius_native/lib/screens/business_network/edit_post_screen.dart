@@ -418,7 +418,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
+                    color: Colors.grey.shade800,
                   ),
                   items: [
                     DropdownMenuItem(
@@ -516,7 +516,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 15.5),
+          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15.5),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
         ),
@@ -610,7 +610,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
                 letterSpacing: 0.1,
               ),
             ),
@@ -636,9 +636,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
                   decoration: InputDecoration(
                     hintText: 'Type a hashtag',
                     hintStyle:
-                        TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                        TextStyle(color: Colors.grey.shade500, fontSize: 14),
                     prefixIcon: Icon(Icons.tag,
-                        size: 18, color: Colors.grey.shade400),
+                        size: 18, color: Colors.grey.shade500),
                     prefixIconConstraints:
                         const BoxConstraints(minWidth: 36, minHeight: 0),
                     border: InputBorder.none,
@@ -839,7 +839,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
                 letterSpacing: 0.1,
               ),
             ),
@@ -999,7 +999,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
           'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে',
           style: TextStyle(
             fontSize: 11.5,
-            color: Colors.grey.shade500,
+            color: Colors.grey.shade600,
             height: 1.4,
           ),
         ),

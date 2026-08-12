@@ -331,7 +331,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 10,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFF5A6273),
                             ),
                           ),
                         ),
@@ -346,7 +346,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                           _formatDate(ad.createdAt),
                           style: const TextStyle(
                             fontSize: 10,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                         ),
                       ],

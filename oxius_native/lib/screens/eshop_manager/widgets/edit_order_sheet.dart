@@ -131,7 +131,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                       return Center(
                         child: Text(
                           _t('eshop_no_products_found', 'কোনো প্রোডাক্ট নেই'),
-                          style: const TextStyle(color: Color(0xFF94A3B8)),
+                          style: const TextStyle(color: Color(0xFF7B8798)),
                         ),
                       );
                     }
@@ -252,7 +252,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                     Text(
                       '#${widget.order.orderNumber ?? ''}',
                       style: const TextStyle(
-                          fontSize: 12, color: Color(0xFF94A3B8)),
+                          fontSize: 12, color: Color(0xFF7B8798)),
                     ),
                   ],
                 ),
@@ -265,7 +265,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                         child: Text(
                           _t('eshop_no_items_left',
                               'কোনো আইটেম নেই — প্রোডাক্ট অ্যাড করুন'),
-                          style: const TextStyle(color: Color(0xFF94A3B8)),
+                          style: const TextStyle(color: Color(0xFF7B8798)),
                         ),
                       )
                     : ListView.separated(
@@ -305,7 +305,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                       children: [
                         Text(_t('eshop_items_total', 'আইটেম টোটাল'),
                             style: const TextStyle(
-                                fontSize: 13, color: Color(0xFF64748B))),
+                                fontSize: 13, color: Color(0xFF556278))),
                         const Spacer(),
                         Text('৳${_total.toStringAsFixed(0)}',
                             style: const TextStyle(
@@ -369,7 +369,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                 const SizedBox(height: 2),
                 Text('৳${l.unitPrice.toStringAsFixed(0)} × ${l.qty}',
                     style: const TextStyle(
-                        fontSize: 11.5, color: Color(0xFF64748B))),
+                        fontSize: 11.5, color: Color(0xFF556278))),
               ],
             ),
           ),

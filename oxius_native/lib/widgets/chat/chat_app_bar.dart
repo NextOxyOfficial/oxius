@@ -200,7 +200,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       decoration: InputDecoration(
         hintText: 'Search messages',
         hintStyle: TextStyle(
-          color: Colors.grey.shade400,
+          color: Colors.grey.shade500,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -283,7 +283,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: Text(
         userName.isNotEmpty ? userName[0].toUpperCase() : '?',
         style: const TextStyle(
-          color: Color(0xFF334155),
+          color: Color(0xFF2C3949),
           fontSize: 15,
           fontWeight: FontWeight.w700,
         ),
@@ -391,7 +391,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ? '${currentMatchPosition + 1}/$searchMatchCount'
                   : '0/0',
               style: const TextStyle(
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),

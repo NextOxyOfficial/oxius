@@ -281,7 +281,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
           Text(
             _successMessage,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF475569)),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF3D4759)),
           ),
         ],
       ),
@@ -357,7 +357,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                         _productSubtitle,
                         style: const TextStyle(
                           fontSize: 12.5,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                     ],
@@ -373,7 +373,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFF7B8798),
               letterSpacing: 0.2,
             ),
           ),
@@ -444,7 +444,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
               Text(
                 'নিরাপদ পেমেন্ট • Google দ্বারা সুরক্ষিত',
                 style: TextStyle(
-                    fontSize: 11, color: Colors.grey.shade500),
+                    fontSize: 11, color: Colors.grey.shade600),
               ),
             ],
           ),
@@ -463,7 +463,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF475569),
+            color: Color(0xFF3D4759),
           ),
         ),
       ],
@@ -532,7 +532,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                         subtitle,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                     ],

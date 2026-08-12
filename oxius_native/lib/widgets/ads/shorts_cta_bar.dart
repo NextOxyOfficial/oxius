@@ -88,7 +88,7 @@ class ShortsCtaBar extends StatelessWidget {
                 ),
               ),
               const Icon(Icons.chevron_right_rounded,
-                  size: 20, color: Color(0xFF6B7280)),
+                  size: 20, color: Color(0xFF5A6273)),
             ],
           ),
         ),

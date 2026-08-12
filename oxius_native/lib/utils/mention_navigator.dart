@@ -128,11 +128,11 @@ class MentionNavigator {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 12, color: Color(0xFF64748B)),
+                                fontSize: 12, color: Color(0xFF556278)),
                           )
                         : null,
                     trailing: const Icon(Icons.chevron_right_rounded,
-                        size: 20, color: Color(0xFF94A3B8)),
+                        size: 20, color: Color(0xFF7B8798)),
                   );
                 },
               ),

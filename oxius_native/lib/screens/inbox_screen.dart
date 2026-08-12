@@ -600,7 +600,7 @@ class _InboxScreenState extends State<InboxScreen>
                         Text(
                           'Chats, Notifications & Support',
                           style: TextStyle(
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade600,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             letterSpacing: -0.1,
@@ -1235,7 +1235,7 @@ class _InboxScreenState extends State<InboxScreen>
                         _formatTimestamp(update['timestamp']),
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey.shade400,
+                          color: Colors.grey.shade500,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1248,7 +1248,7 @@ class _InboxScreenState extends State<InboxScreen>
                       fontSize: 13,
                       height: 1.35,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF6B7280),
+                      color: const Color(0xFF5A6273),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 2,
@@ -1411,7 +1411,7 @@ class _InboxScreenState extends State<InboxScreen>
                       fontSize: 13,
                       height: 1.35,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF6B7280),
+                      color: const Color(0xFF5A6273),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 2,
@@ -1422,7 +1422,7 @@ class _InboxScreenState extends State<InboxScreen>
                     _formatTimestamp(ticket['timestamp']),
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey.shade400,
+                      color: Colors.grey.shade500,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1554,7 +1554,7 @@ class _InboxScreenState extends State<InboxScreen>
                           _formatTimestamp(update['timestamp']),
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1613,7 +1613,7 @@ class _InboxScreenState extends State<InboxScreen>
                                     'Reference ID',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade700,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -1984,7 +1984,7 @@ class _NewChatModalState extends State<NewChatModal> {
                             hintText: 'Search people...',
                             hintStyle: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey.shade400,
+                              color: Colors.grey.shade500,
                             ),
                             border: InputBorder.none,
                             contentPadding:
@@ -2045,7 +2045,7 @@ class _NewChatModalState extends State<NewChatModal> {
                                   : 'No results found',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ],
@@ -2089,7 +2089,7 @@ class _NewChatModalState extends State<NewChatModal> {
                                         ? Text(
                                             userInitial,
                                             style: const TextStyle(
-                                              color: Color(0xFF334155),
+                                              color: Color(0xFF2C3949),
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
                                             ),
@@ -2141,7 +2141,7 @@ class _NewChatModalState extends State<NewChatModal> {
                                             user['profession'],
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Colors.grey.shade600,
+                                              color: Colors.grey.shade700,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,

@@ -469,7 +469,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
               ),
             ),
           ],

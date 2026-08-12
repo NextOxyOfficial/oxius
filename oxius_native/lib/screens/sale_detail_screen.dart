@@ -209,7 +209,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           const SizedBox(height: 16),
           Text(
             _t('sale_post_not_found', 'পোস্টটা পাওয়া যায়নি'),
-            style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -509,7 +509,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       deliveryLocation,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -525,7 +525,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     '${post.viewsCount}',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade700,
+                      color: Colors.grey.shade800,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -541,7 +541,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     _formatDate(post.createdAt),
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade700,
+                      color: Colors.grey.shade800,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1225,7 +1225,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             location,
                             style: const TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFF5A6273),
                                 height: 1.2),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1463,7 +1463,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   'বিক্রেতার সাথে চ্যাট করতে হলে আগে লগইন করতে হবে।'),
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
             ),
@@ -1472,7 +1472,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               _t('sale_login_or_signup', 'লগইন করুন বা নতুন একাউন্ট খুলে নিন।'),
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 height: 1.5,
               ),
             ),
@@ -1484,7 +1484,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             child: Text(
               _t('sale_cancel', 'ক্যান্সেল'),
               style: const TextStyle(
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -241,7 +241,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             _t('eshop_orders_appear_hint', 'কাস্টমার কিনলে অর্ডার এখানে দেখা যাবে'),
             style: TextStyle(
               fontSize: 13,
-              color: Colors.grey.shade600,
+              color: Colors.grey.shade700,
             ),
             textAlign: TextAlign.center,
           ),
@@ -307,7 +307,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                       _formatDate(order.createdAt),
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Color(0xFF9CA3AF),
+                        color: Color(0xFF858E9C),
                       ),
                     ),
                   ],
@@ -350,7 +350,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                         '+${order.items!.length - 2} ${_t('eshop_more_items', 'আরও')}',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Color(0xFF9CA3AF),
+                          color: Color(0xFF858E9C),
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -569,7 +569,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                             '${_t('eshop_order_hash', 'অর্ডার')} #${order.orderNumber ?? order.id.substring(0, 8)}',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFF5A6273),
                             ),
                           ),
                         ],
@@ -599,7 +599,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -749,7 +749,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
               label,
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF6B7280),
+                color: Color(0xFF5A6273),
               ),
             ),
           ),
@@ -816,7 +816,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                       '${_t('eshop_qty', 'কোয়ান্টিটি')}: ${item.quantity}',
                       style: const TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFF5A6273),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -900,7 +900,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                           '${_t('eshop_order_hash', 'অর্ডার')} #${order.orderNumber ?? order.id.substring(0, 8)}',
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFF5A6273),
                           ),
                         ),
                       ],
@@ -1040,7 +1040,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                     description,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                 ],

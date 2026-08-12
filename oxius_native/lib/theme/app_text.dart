@@ -18,13 +18,15 @@ class AppText {
   AppText._();
 
   // ── Semantic text colours ──────────────────────────────────────────────
-  // One step darker across the board — the old values read washed-out/gray
-  // ("dhusor") on real phone panels, especially outdoors.
-  static const Color primary = Color(0xFF0F172A); // headings / key text
-  static const Color secondary = Color(0xFF2B3648); // strong body
-  static const Color body = Color(0xFF3B4757); // normal body
-  static const Color tertiary = Color(0xFF525F73); // supporting text
-  static const Color muted = Color(0xFF7C8AA0); // captions / meta / hints
+  // Darkened twice now. The first pass fixed text that read washed-out on
+  // real phone panels; this one takes it another step, because at outdoor
+  // brightness the mid-greys still greyed out. Sweep the app's hardcoded
+  // TextStyle greys alongside these — most screens do not use these tokens.
+  static const Color primary = Color(0xFF0A1120); // headings / key text
+  static const Color secondary = Color(0xFF212C3C); // strong body
+  static const Color body = Color(0xFF313C4B); // normal body
+  static const Color tertiary = Color(0xFF465268); // supporting text
+  static const Color muted = Color(0xFF6C7A91); // captions / meta / hints
   static const Color inverse = Colors.white;
   static const Color link = Color(0xFF2563EB);
   static const Color success = Color(0xFF059669);

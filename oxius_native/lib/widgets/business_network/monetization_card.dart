@@ -183,7 +183,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
                 'Complete these to apply and start earning from your content:',
                 style: TextStyle(
                   fontSize: 11.5,
-                  color: Color(0xFF64748B),
+                  color: Color(0xFF556278),
                   height: 1.4,
                 ),
               ),
@@ -245,7 +245,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF334155),
+                color: Color(0xFF2C3949),
               ),
             ),
           ),
@@ -312,7 +312,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
               SizedBox(height: 2),
               Text(
                 'Apply now and start earning from your content.',
-                style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                style: TextStyle(fontSize: 11.5, color: Color(0xFF556278)),
               ),
             ],
           ),
@@ -390,7 +390,7 @@ class _MonetizationCardState extends State<MonetizationCard> {
               Text(
                 subtitle,
                 style:
-                    const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                    const TextStyle(fontSize: 11.5, color: Color(0xFF556278)),
               ),
             ],
           ),
@@ -582,7 +582,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                           'I have read and accept the Terms & Conditions and Community Guidelines.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF475569),
+                            color: Color(0xFF3D4759),
                             height: 1.35,
                           ),
                         ),
@@ -667,7 +667,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                   subtitle,
                   style: const TextStyle(
                     fontSize: 11.5,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFF556278),
                     height: 1.4,
                   ),
                 ),
@@ -687,7 +687,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
         style: const TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF94A3B8),
+          color: Color(0xFF7B8798),
           letterSpacing: 0.8,
         ),
       ),
@@ -723,7 +723,7 @@ class _MonetizationApplySheetState extends State<MonetizationApplySheet> {
                       item,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF475569),
+                        color: Color(0xFF3D4759),
                         height: 1.45,
                       ),
                     ),

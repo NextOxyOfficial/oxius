@@ -450,11 +450,11 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             isDense: true,
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            labelStyle: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+            labelStyle: const TextStyle(fontSize: 13, color: Color(0xFF556278)),
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF7B8798)),
             prefixIconColor: const Color(0xFF94A3B8),
             counterStyle:
-                const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                const TextStyle(fontSize: 10, color: Color(0xFF7B8798)),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
             enabledBorder: OutlineInputBorder(
@@ -626,7 +626,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                       Text(
                         subtitle,
                         style: const TextStyle(
-                            fontSize: 11, color: Color(0xFF64748B)),
+                            fontSize: 11, color: Color(0xFF556278)),
                       ),
                   ],
                 ),
@@ -863,7 +863,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         Text(
           _t('sale_add_photos_hint',
               'জিনিসের ছবি দিন, ছবি ভালো হলে তাড়াতাড়ি বিক্রি হয় (সর্বোচ্চ ৮টা)'),
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -893,7 +893,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 const SizedBox(width: 8),
                 Text(
                   _t('sale_processing_image', 'ছবি প্রসেস হচ্ছে...'),
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                 ),
               ],
             ),
@@ -1123,7 +1123,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                   Text(
                     subtitle,
                     style:
-                        const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                        const TextStyle(fontSize: 11, color: Color(0xFF556278)),
                   ),
                 ],
               ),
@@ -1284,7 +1284,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   InputDecoration _dlInputDecoration(String label, {bool loading = false}) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+      labelStyle: const TextStyle(fontSize: 12, color: Color(0xFF556278)),
       isDense: true,
       filled: true,
       fillColor: const Color(0xFFF8FAFC),

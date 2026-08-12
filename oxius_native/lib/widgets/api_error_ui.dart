@@ -102,7 +102,7 @@ class ApiErrorUI {
                     style: const TextStyle(
                       fontSize: 14,
                       height: 1.5,
-                      color: Color(0xFF475569),
+                      color: Color(0xFF3D4759),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -144,7 +144,7 @@ class ApiErrorUI {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF556278),
                         ),
                       ),
                     ),

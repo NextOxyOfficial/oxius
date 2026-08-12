@@ -200,7 +200,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ],
@@ -546,7 +546,7 @@ class _ReplyInputState extends State<_ReplyInput> {
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle:
-                      TextStyle(fontSize: 13.5, color: Colors.grey.shade500),
+                      TextStyle(fontSize: 13.5, color: Colors.grey.shade600),
                   filled: true,
                   fillColor: Colors.grey.shade50,
                   border: OutlineInputBorder(
@@ -975,7 +975,7 @@ class _CommentItemState extends State<_CommentItem> {
                         _formatTimeAgo(widget.comment.createdAt),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade500,
+                          color: Colors.grey.shade600,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
@@ -993,7 +993,7 @@ class _CommentItemState extends State<_CommentItem> {
                           'Replying to ',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey.shade500,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                         GestureDetector(
@@ -1100,7 +1100,7 @@ class _CommentItemState extends State<_CommentItem> {
                                             Text(
                                               extractedMessage,
                                               style: TextStyle(
-                                                fontSize: 14.5,
+                                                fontSize: 13.5,
                                                 color: Colors.grey.shade800,
                                                 height: 1.45,
                                               ),
@@ -1135,7 +1135,7 @@ class _CommentItemState extends State<_CommentItem> {
                           decoration: InputDecoration(
                             hintText: 'Edit comment...',
                             hintStyle: TextStyle(
-                                fontSize: 13, color: Colors.grey.shade500),
+                                fontSize: 13, color: Colors.grey.shade600),
                             filled: true,
                             fillColor: Colors.grey.shade50,
                             border: OutlineInputBorder(
@@ -1279,7 +1279,7 @@ class _CommentItemState extends State<_CommentItem> {
                                   widget.comment.content),
                               context,
                               style: TextStyle(
-                                fontSize: widget.isReply ? 14.5 : 15.5,
+                                fontSize: widget.isReply ? 13.5 : 14.5,
                                 color: Colors.grey.shade800,
                                 height: 1.45,
                               ),

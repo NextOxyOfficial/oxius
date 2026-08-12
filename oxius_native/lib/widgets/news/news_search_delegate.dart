@@ -19,7 +19,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+        hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 15),
       ),
     );
   }
@@ -85,7 +85,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ],
@@ -123,7 +123,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
               ),
             ),
           ],
@@ -260,7 +260,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                     post.summary,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -271,7 +271,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                     post.formattedDate,
                     style: TextStyle(
                       fontSize: 10,
-                      color: Colors.grey.shade500,
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ],

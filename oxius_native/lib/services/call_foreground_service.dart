@@ -3,6 +3,14 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+/// Android-only, safely askable on web too.
+///
+/// Reading `Platform.isAndroid` throws UnsupportedError on web because dart:io
+/// is absent there, so `if (!Platform.isAndroid) return;` crashed instead of
+/// skipping. `kIsWeb` short-circuits before dart:io is ever touched; on Android
+/// and iOS this is the same check it always was.
+bool get _isAndroid => !kIsWeb && Platform.isAndroid;
+
 /// Dart side of the Android foreground service that keeps a call alive while
 /// the app is not on screen.
 ///
@@ -71,7 +79,7 @@ class CallForegroundService {
   /// [sync] does this too, but only once a call is running — and PiP can be
   /// entered on the very first one, before sync has ever been reached.
   static void ensureHandlerAttached() {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     _ensureHandler();
   }
 
@@ -83,7 +91,7 @@ class CallForegroundService {
     required bool inCall,
     Map<String, dynamic>? info,
   }) async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     _ensureHandler();
 
     if (!inCall) {
@@ -126,7 +134,7 @@ class CallForegroundService {
   /// Unconditional teardown, for the paths that drop call state without going
   /// through the normal end-of-call bookkeeping.
   static Future<void> stop() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     _running = false;
     _signature = null;
     await _invoke('stop');

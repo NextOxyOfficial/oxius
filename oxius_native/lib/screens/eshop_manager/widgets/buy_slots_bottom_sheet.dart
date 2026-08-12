@@ -169,7 +169,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             'আপনার স্টোরের ক্যাপাসিটি বাড়ান'),
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFF5A6273),
                         ),
                       ),
                     ],
@@ -212,7 +212,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                 _t('eshop_buyslots_no_packages',
                                     'কোনো প্যাকেজ নেই'),
                                 style: TextStyle(
-                                    fontSize: 13, color: Colors.grey.shade600),
+                                    fontSize: 13, color: Colors.grey.shade700),
                               ),
                             ],
                           ),
@@ -265,7 +265,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                       'ব্যালেন্স:'),
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade600),
+                                      color: Colors.grey.shade700),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -430,7 +430,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       color:
-                                                          Colors.grey.shade600),
+                                                          Colors.grey.shade700),
                                                 ),
                                               ],
                                             ),

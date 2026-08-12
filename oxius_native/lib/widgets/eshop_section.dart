@@ -342,7 +342,7 @@ class _EshopSectionState extends State<EshopSection> {
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: Color(0xFF556278),
               ),
             ),
           ),

@@ -161,7 +161,7 @@ class _MentionTextFieldState extends State<MentionTextField> {
                             '@${user.username}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                             ),
                           )
                         : null,

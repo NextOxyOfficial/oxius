@@ -72,7 +72,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF94A3B8),
+                  color: Color(0xFF7B8798),
                   letterSpacing: 0.6,
                 ),
               ),
@@ -130,7 +130,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               const Expanded(
                 child: Text(
                   'partnership@adsyclub.com',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF334155)),
+                  style: TextStyle(fontSize: 11, color: Color(0xFF2C3949)),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -143,7 +143,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               const SizedBox(width: 5),
               const Text(
                 '+8801896144066',
-                style: TextStyle(fontSize: 11, color: Color(0xFF334155)),
+                style: TextStyle(fontSize: 11, color: Color(0xFF2C3949)),
               ),
             ],
           ),
@@ -195,7 +195,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
         Expanded(
           child: Text(
             'Login to manage your Gold Sponsorships',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
           ),
         ),
         const SizedBox(width: 8),
@@ -249,7 +249,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       fontSize: 14, fontWeight: FontWeight.w700, color: color)),
             const SizedBox(height: 2),
             Text(label,
-                style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+                style: const TextStyle(fontSize: 10, color: Color(0xFF7B8798))),
           ],
         ),
       ),

@@ -81,7 +81,7 @@ class _PostUploadStripState extends State<PostUploadStrip> {
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF334155),
+                        color: Color(0xFF2C3949),
                       ),
                     ),
                   ),

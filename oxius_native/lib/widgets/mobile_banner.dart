@@ -268,7 +268,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                 ),
@@ -302,7 +302,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                   'No mobile banners available',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
               ],

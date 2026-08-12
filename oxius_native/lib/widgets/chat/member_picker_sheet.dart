@@ -157,7 +157,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                               ? 'কেউ পাওয়া যায়নি'
                               : 'নাম লিখে সার্চ করুন',
                           style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade600)),
+                              fontSize: 13, color: Colors.grey.shade700)),
                     );
                   }
                   return ListView.builder(
@@ -171,7 +171,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF94A3B8),
+                                  color: Color(0xFF7B8798),
                                   letterSpacing: 0.3)),
                         );
                       }

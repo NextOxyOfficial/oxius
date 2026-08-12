@@ -131,7 +131,7 @@ class LoginPromptDialog extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF9CA3AF),
+                      color: Color(0xFF858E9C),
                       height: 1.4,
                     ),
                   ),

@@ -463,66 +463,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           : null,
       body: Column(
         children: [
-          // Compact Professional Header
-          Container(
-            padding: const EdgeInsets.fromLTRB(6, 12, 6, 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-              ),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 2),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_rounded,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                if (_unreadCount > 0) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-
+          // The in-page "Notifications" header is gone. The app bar sits
+          // directly above it and the bottom tab is already labelled
+          // Notifications, so it was the third time the screen said its own
+          // name — and it cost a whole row of the list on a phone.
           // Content
           Expanded(
             child: Container(
@@ -686,7 +630,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.5,
-                      color: Colors.grey.shade600,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -711,7 +655,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade700,
                           ),
                         ),
                       ],
@@ -722,6 +666,67 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// The list, split into "New" and "Earlier" the way Facebook does it.
+  ///
+  /// Grouping on read/unread would look right for about a second: the screen
+  /// marks everything read as soon as it opens, so "New" would always be
+  /// empty. Recency is what actually survives that, and it is also what a
+  /// person means when they ask what is new.
+  ///
+  /// Returns a flat list of section titles (String) and notifications, so one
+  /// ListView.builder can render both without nesting.
+  List<Object> get _rows {
+    if (_notifications.isEmpty) return const [];
+
+    const fresh = Duration(hours: 24);
+    final now = DateTime.now();
+    final recent = <NotificationModel>[];
+    final earlier = <NotificationModel>[];
+
+    for (final n in _notifications) {
+      DateTime? at;
+      try {
+        at = DateTime.parse(n.createdAt).toLocal();
+      } catch (_) {
+        at = null;
+      }
+      if (at != null && now.difference(at) < fresh) {
+        recent.add(n);
+      } else {
+        earlier.add(n);
+      }
+    }
+
+    // One bucket only: no headers at all. A lone "Earlier" over the whole
+    // list tells the reader nothing.
+    if (recent.isEmpty || earlier.isEmpty) {
+      return List<Object>.from(_notifications);
+    }
+
+    return <Object>[
+      'New',
+      ...recent,
+      'Earlier',
+      ...earlier,
+    ];
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      color: const Color(0xFFF9FAFB),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 6),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF050505),
+          letterSpacing: -0.3,
+        ),
       ),
     );
   }
@@ -738,9 +743,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         // A trailing spinner row appears only while the next page loads.
-        itemCount: _notifications.length + (_isLoadingMore ? 1 : 0),
+        itemCount: _rows.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == _notifications.length) {
+          if (index == _rows.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 18),
               child: Center(
@@ -756,7 +761,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             );
           }
 
-          final notification = _notifications[index];
+          final row = _rows[index];
+          if (row is String) return _buildSectionHeader(row);
+
+          final notification = row as NotificationModel;
           return NotificationItem(
             notification: notification,
             onTap: () => _handleNotificationTap(notification),

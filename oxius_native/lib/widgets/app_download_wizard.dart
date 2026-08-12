@@ -181,7 +181,7 @@ class _AppDownloadWizardButtonState extends State<AppDownloadWizardButton> {
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.35,
-                  color: Colors.grey.shade700,
+                  color: Colors.grey.shade800,
                 ),
               ),
               const SizedBox(height: 12),

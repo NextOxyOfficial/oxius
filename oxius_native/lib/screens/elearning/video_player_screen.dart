@@ -157,7 +157,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                     '${widget.video.viewsCount} ${TranslationService().t('el_views', fallback: 'views')}',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade700,
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -171,7 +171,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                     widget.video.duration,
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.grey.shade600,
+                                      color: Colors.grey.shade700,
                                     ),
                                   ),
                                 ],
@@ -188,7 +188,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                                     widget.video.displayDescription,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: Colors.grey.shade700,
+                                      color: Colors.grey.shade800,
                                       height: 1.5,
                                     ),
                                   ),

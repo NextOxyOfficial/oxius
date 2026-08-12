@@ -78,7 +78,7 @@ class MindForceProblemCard extends StatelessWidget {
                         TimeUtils.formatTimeAgo(problem.createdAt),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -207,7 +207,7 @@ class MindForceProblemCard extends StatelessWidget {
               problem.description,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade700,
+                color: Colors.grey.shade800,
                 height: 1.4,
               ),
               maxLines: 3,
@@ -276,20 +276,20 @@ class MindForceProblemCard extends StatelessWidget {
                   '${problem.views}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
 
                 const SizedBox(width: 16),
 
                 Icon(Icons.chat_bubble_outline,
-                    size: 16, color: Colors.grey.shade600),
+                    size: 16, color: Colors.grey.shade700),
                 const SizedBox(width: 4),
                 Text(
                   '${problem.comments.length}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                   ),
                 ),
 

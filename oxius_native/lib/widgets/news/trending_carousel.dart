@@ -294,7 +294,7 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
                         article.formattedDate,
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.grey.shade600,
+                          color: Colors.grey.shade700,
                         ),
                       ),
                       Row(
@@ -309,7 +309,7 @@ class _TrendingCarouselState extends State<TrendingCarousel> {
                             '${article.comments.length}',
                             style: TextStyle(
                               fontSize: 11,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ],

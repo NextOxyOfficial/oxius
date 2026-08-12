@@ -262,7 +262,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                               '${_images.length}/4 photos',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey.shade700,
+                                color: Colors.grey.shade800,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -288,7 +288,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                                       'Processing...',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey.shade700,
+                                        color: Colors.grey.shade800,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -320,7 +320,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                                       'No categories available',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: Colors.grey.shade600,
+                                        color: Colors.grey.shade700,
                                       ),
                                     ),
                                   ),
@@ -411,7 +411,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                     child: Text(
                       'Cancel',
                       style: TextStyle(
-                        color: Colors.grey.shade700,
+                        color: Colors.grey.shade800,
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                       ),
@@ -482,7 +482,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
       hintText: hint,
       hintStyle: TextStyle(
         fontSize: 14,
-        color: Colors.grey.shade400,
+        color: Colors.grey.shade500,
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
@@ -599,7 +599,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
               'Add Photo',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
               ),
             ),

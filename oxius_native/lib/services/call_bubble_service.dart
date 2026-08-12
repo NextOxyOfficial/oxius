@@ -13,6 +13,21 @@ import 'call_navigation.dart';
 import 'fcm_service.dart';
 import 'livekit_call_service.dart';
 
+/// Android-only, safely askable from anywhere — including web.
+///
+/// `Platform` lives in dart:io, which does not exist on web: merely READING
+/// `Platform.isAndroid` there throws UnsupportedError. Every guard in this file
+/// was written as `if (!Platform.isAndroid) return;` to make the whole service a
+/// no-op off Android, but on web that guard threw instead of returning — and
+/// because `start()` is called straight from `main()` with nothing around it,
+/// the throw killed main() before it could run `_bootstrap`. The session was
+/// never initialised, `isInitializing` never went false, and the app sat on the
+/// splash screen forever having made no network calls at all.
+///
+/// `kIsWeb` is a compile-time constant and `||` short-circuits, so on Android
+/// and iOS this compiles to exactly the old check and costs nothing.
+bool get _isAndroid => !kIsWeb && Platform.isAndroid;
+
 /// Keeping a live call reachable after the user leaves the app.
 ///
 /// Two mechanisms, and which one runs is decided by what the user has
@@ -54,7 +69,7 @@ class CallBubbleService with WidgetsBindingObserver {
   }
 
   void start() {
-    if (_started || !Platform.isAndroid) return;
+    if (_started || !_isAndroid) return;
     _started = true;
     WidgetsBinding.instance.addObserver(this);
     // The channel has one handler and CallForegroundService owns it; this
@@ -77,7 +92,7 @@ class CallBubbleService with WidgetsBindingObserver {
   /// moment is too late — onUserLeaveHint cannot wait for a round trip — so
   /// the answer is pushed ahead of time on every call state change.
   Future<void> _publishCallState() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     final info = AgoraCallService.activeCallInfo;
     await _invoke('setCallActive', <String, dynamic>{
       'active': AgoraCallService.isInCall && info != null,
@@ -137,7 +152,7 @@ class CallBubbleService with WidgetsBindingObserver {
   }
 
   Future<void> _sync() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     _updateDeathWatch();
 
     final info = AgoraCallService.activeCallInfo;
@@ -258,13 +273,13 @@ class CallBubbleService with WidgetsBindingObserver {
   }
 
   Future<bool> canDrawOverlays() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
     return (await _invoke('canDrawOverlays')) == true;
   }
 
   /// Whether this device can host a floating Picture-in-Picture window.
   Future<bool> pipSupported() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
     return (await _invoke('pipSupported')) == true;
   }
 
@@ -274,7 +289,7 @@ class CallBubbleService with WidgetsBindingObserver {
   /// onUserLeaveHint; this is for the call screen's own minimise button, so
   /// that control does the same visible thing as pressing Home.
   Future<bool> enterPictureInPicture() async {
-    if (!Platform.isAndroid) return false;
+    if (!_isAndroid) return false;
     return (await _invoke('enterPip')) == true;
   }
 
@@ -287,7 +302,7 @@ class CallBubbleService with WidgetsBindingObserver {
   /// manage it. They use Picture-in-Picture, which is what this app now does
   /// by default.
   Future<void> openOverlaySettings() async {
-    if (!Platform.isAndroid) return;
+    if (!_isAndroid) return;
     await _invoke('requestOverlayPermission');
   }
 

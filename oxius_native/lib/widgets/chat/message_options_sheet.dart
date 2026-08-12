@@ -130,7 +130,7 @@ Future<void> showChatMessageOptions(
                             style: const TextStyle(
                               fontSize: 13.5,
                               height: 1.35,
-                              color: Color(0xFF334155),
+                              color: Color(0xFF2C3949),
                             ),
                           ),
                         ),

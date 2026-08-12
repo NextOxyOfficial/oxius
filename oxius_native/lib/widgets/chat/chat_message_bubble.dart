@@ -400,7 +400,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                                   'পাঠানো হচ্ছে…',
                                   style: TextStyle(
                                     fontSize: 10,
-                                    color: Colors.grey.shade500,
+                                    color: Colors.grey.shade600,
                                   ),
                                 ),
                               ],
@@ -415,7 +415,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: .2,
-                                color: Colors.grey.shade500,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ),
@@ -874,7 +874,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF6B7280),
+                                  color: Color(0xFF5A6273),
                                   height: 1.3),
                             ),
                           ],
@@ -1325,7 +1325,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             message['timeDisplay'].toString(),
             style: TextStyle(
               fontSize: 10.5,
-              color: Colors.grey.shade500,
+              color: Colors.grey.shade600,
               // Inherited from the ambient DefaultTextStyle otherwise, which
               // was drawing a line under every timestamp.
               decoration: TextDecoration.none,
