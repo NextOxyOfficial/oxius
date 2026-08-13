@@ -521,12 +521,7 @@ class LiveKitCallService {
 
   static Future<void> toggleSpeaker(bool speakerOn) async {
     try {
-      // Hardware.setSpeakerphoneOn is deprecated in livekit 2.11 and is now
-      // a forwarder to exactly this call, so the behaviour is unchanged —
-      // but audio-routing shims are the kind of thing that quietly becomes a
-      // no-op a version later, and losing the speaker toggle mid-call is not
-      // a failure anyone would report clearly.
-      await lk.AudioManager.instance.setSpeakerOutputPreferred(speakerOn);
+      await lk.Hardware.instance.setSpeakerphoneOn(speakerOn);
     } catch (error) {
       _log('speaker toggle failed: $error');
     }
