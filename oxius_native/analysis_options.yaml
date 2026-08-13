@@ -9,6 +9,15 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    # A vendored third-party package (see dependency_overrides in pubspec.yaml).
+    # It lives inside the project directory, so `flutter analyze` would walk it
+    # and report several hundred lints against code we do not own — which is
+    # how a real warning in lib/ gets lost. It is still compiled normally; the
+    # compiler, not the linter, is what has to accept it.
+    - third_party/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

@@ -189,3 +189,30 @@ flutter_launcher_icons:
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/logo.png"
   remove_alpha_ios: true
+
+# VENDORED, PATCHED livekit_client.
+#
+# 2.5.4 does not compile on newer Dart SDKs: inside LocalParticipant's
+# negotiate(), `publishOptions` is a nullable local captured by that closure
+# and reassigned by the enclosing method, so Dart will not keep it promoted
+# across the closure's `await` — the five member accesses after it became hard
+# errors ("Target kernel_snapshot_program failed"). That broke the iOS build on
+# Codemagic, which resolves `stable` at build time and so compiles with
+# whatever Dart is current rather than the version this project was written on.
+#
+# Upgrading is not an option yet: 2.11 needs device_info_plus >=12.3, and its
+# Android plugin wants native WebRTC symbols (AudioProcessors, visualizers)
+# that the resolvable flutter_webrtc does not export, plus newer Gradle/AGP/
+# Kotlin than this project pins. That is a toolchain migration, not a bump.
+#
+# third_party/livekit_client is 2.5.4 with one change: negotiate() binds
+# `final opts = publishOptions!` once instead of re-reading a nullable across
+# the await. Semantically identical — the original already asserted non-null.
+# Search for 'VENDORED PATCH' in that file.
+#
+# REMOVE THIS OVERRIDE once livekit_client can be upgraded properly. Nothing
+# else here should ever be vendored casually; this exists because a release
+# build cannot depend on which Dart a CI machine happened to install.
+dependency_overrides:
+  livekit_client:
+    path: third_party/livekit_client

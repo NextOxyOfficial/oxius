@@ -1179,10 +1179,9 @@ packages:
   livekit_client:
     dependency: "direct main"
     description:
-      name: livekit_client
-      sha256: "4b8ef07d4acbd21e43a1edfd05932c2d71cc0c433607cefe64afdfe87bb53962"
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/livekit_client"
+      relative: true
+    source: path
     version: "2.5.4"
   logger:
     dependency: transitive
