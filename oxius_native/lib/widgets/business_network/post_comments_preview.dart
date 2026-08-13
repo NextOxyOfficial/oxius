@@ -17,6 +17,7 @@ import 'package:oxius_native/widgets/common/adsy_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -1341,7 +1342,7 @@ class _CommentItemState extends State<_CommentItem> {
         if (_isCommentAuthor)
           AdsySheetAction(
             icon: Icons.edit_outlined,
-            title: 'কমেন্ট এডিট করুন',
+            title: tr('কমেন্ট এডিট করুন'),
             onTap: () {
               final plainContent =
                   HtmlContentUtils.toPlainText(widget.comment.content)
@@ -1355,7 +1356,7 @@ class _CommentItemState extends State<_CommentItem> {
           ),
         AdsySheetAction(
           icon: Icons.delete_outline_rounded,
-          title: 'কমেন্ট মুছুন',
+          title: tr('কমেন্ট মুছুন'),
           destructive: true,
           onTap: _confirmDeleteComment,
         ),
@@ -1366,10 +1367,10 @@ class _CommentItemState extends State<_CommentItem> {
   Future<void> _confirmDeleteComment() async {
     final confirm = await AdsyDialog.confirm(
       context,
-      title: 'কমেন্ট মুছবেন?',
-      message: 'এই কমেন্টটি মুছে ফেলা হবে, এটি আর ফেরানো যাবে না।',
-      confirmLabel: 'মুছুন',
-      cancelLabel: 'বাতিল',
+      title: tr('কমেন্ট মুছবেন?'),
+      message: tr('এই কমেন্টটি মুছে ফেলা হবে, এটি আর ফেরানো যাবে না।'),
+      confirmLabel: tr('মুছুন'),
+      cancelLabel: tr('বাতিল'),
       destructive: true,
       icon: Icons.delete_outline_rounded,
     );
@@ -1380,11 +1381,11 @@ class _CommentItemState extends State<_CommentItem> {
     if (success) {
       widget.onCommentDeleted?.call();
       if (mounted && context.mounted) {
-        AdsyToast.info(context, 'কমেন্ট মুছে ফেলা হয়েছে');
+        AdsyToast.info(context, tr('কমেন্ট মুছে ফেলা হয়েছে'));
       }
     } else {
       if (mounted && context.mounted) {
-        AdsyToast.error(context, 'কমেন্ট মুছতে ব্যর্থ');
+        AdsyToast.error(context, tr('কমেন্ট মুছতে ব্যর্থ'));
       }
     }
   }

@@ -11,6 +11,7 @@ import 'ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -49,7 +50,7 @@ class _AppFooterState extends State<AppFooter>
   // Translation helper (matching Vue.js translations)
   String t(String key) {
     final translations = {
-      'classified_service': 'আমার সেবা',
+      'classified_service': tr('আমার সেবা'),
       'earn_money': 'Earn Money',
       'mobile_recharge': 'Mobile Recharge',
       'packeges': 'Packages',
@@ -228,7 +229,7 @@ class _AppFooterState extends State<AppFooter>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'জয়েন হন • আয় করুন • সেবা খুঁজুন',
+            tr('জয়েন হন • আয় করুন • সেবা খুঁজুন'),
             style: AppText.caption(),
             textAlign: TextAlign.center,
           ),
@@ -239,14 +240,14 @@ class _AppFooterState extends State<AppFooter>
 
   Widget _buildNavigationSection(BuildContext context, bool isMobile) {
     final navLinks = [
-      {'title': 'আমার সেবা', 'route': '/'},
-      {'title': 'আয় করুন', 'route': '/micro-gigs'},
-      {'title': 'মোবাইল রিচার্জ', 'route': '/mobile-recharge'},
-      if (!isIOSPlatform) {'title': 'প্রো আপগ্রেড', 'route': '/upgrade-to-pro'},
-      {'title': 'রেফার প্রোগ্রাম', 'route': '/refer-a-friend'},
-      {'title': 'আমাদের সম্পর্কে', 'route': '/about'},
-      {'title': 'সাধারণ প্রশ্ন', 'route': '/faq'},
-      {'title': 'যোগাযোগ করুন', 'route': '/contact-us'},
+      {'title': tr('আমার সেবা'), 'route': '/'},
+      {'title': tr('আয় করুন'), 'route': '/micro-gigs'},
+      {'title': tr('মোবাইল রিচার্জ'), 'route': '/mobile-recharge'},
+      if (!isIOSPlatform) {'title': tr('প্রো আপগ্রেড'), 'route': '/upgrade-to-pro'},
+      {'title': tr('রেফার প্রোগ্রাম'), 'route': '/refer-a-friend'},
+      {'title': tr('আমাদের সম্পর্কে'), 'route': '/about'},
+      {'title': tr('সাধারণ প্রশ্ন'), 'route': '/faq'},
+      {'title': tr('যোগাযোগ করুন'), 'route': '/contact-us'},
     ];
 
     return Container(
@@ -353,7 +354,7 @@ class _AppFooterState extends State<AppFooter>
                 size: 12, color: Colors.grey.shade400),
             const SizedBox(width: 4),
             Text(
-              'নিরাপদ পেমেন্ট',
+              tr('নিরাপদ পেমেন্ট'),
               style: AppText.meta(),
             ),
           ],
@@ -426,7 +427,7 @@ class _AppFooterState extends State<AppFooter>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'শর্তাবলী',
+              tr('শর্তাবলী'),
               style: AppText.linkText(color: AppText.tertiary),
             ),
           ),
@@ -438,7 +439,7 @@ class _AppFooterState extends State<AppFooter>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'গোপনীয়তা নীতি',
+              tr('গোপনীয়তা নীতি'),
               style: AppText.linkText(color: AppText.tertiary),
             ),
           ),

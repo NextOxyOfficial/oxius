@@ -45,6 +45,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/home/home_popup_dialog.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool autoRefreshOnOpen;
@@ -390,16 +391,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// "ইন্টারনেট নেই — ২ ঘণ্টা আগের সংরক্ষিত কনটেন্ট দেখানো হচ্ছে"
   String _offlineAgeMessage(Duration? age) {
-    if (age == null) return 'ইন্টারনেট নেই — সংরক্ষিত কনটেন্ট দেখানো হচ্ছে';
+    if (age == null) return tr('ইন্টারনেট নেই — সংরক্ষিত কনটেন্ট দেখানো হচ্ছে');
     final String when;
     if (age.inMinutes < 60) {
-      when = '${age.inMinutes} মিনিট';
+      when = '${age.inMinutes} ${tr('মিনিট')}';
     } else if (age.inHours < 24) {
-      when = '${age.inHours} ঘণ্টা';
+      when = '${age.inHours} ${tr('ঘণ্টা')}';
     } else {
-      when = '${age.inDays} দিন';
+      when = '${age.inDays} ${tr('দিন')}';
     }
-    return 'ইন্টারনেট নেই — $when আগের সংরক্ষিত কনটেন্ট দেখানো হচ্ছে';
+    return tr('${tr('ইন্টারনেট নেই —')} $when ${tr('আগের সংরক্ষিত কনটেন্ট দেখানো হচ্ছে')}');
   }
 
   Future<void> _handleRefresh() async {
@@ -1647,8 +1648,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'লগ আউট করবেন?',
+                              Text(
+                                tr('লগ আউট করবেন?'),
                                 style: TextStyle(
                                   fontSize: 16.5,
                                   fontWeight: FontWeight.w800,
@@ -1658,8 +1659,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 2),
                               Text(
                                 displayName.isNotEmpty
-                                    ? '$displayName হিসেবে লগইন করা আছে'
-                                    : 'আপনার অ্যাকাউন্ট থেকে সাইন আউট হবে',
+                                    ? tr('$displayName ${tr('হিসেবে লগইন করা আছে')}')
+                                    : tr('আপনার অ্যাকাউন্ট থেকে সাইন আউট হবে'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1678,7 +1679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      child: const Row(
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(Icons.info_outline_rounded,
@@ -1686,7 +1687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'আপনার ব্যালেন্স, পোস্ট ও ডেটা নিরাপদ থাকবে — যেকোনো সময় আবার লগইন করতে পারবেন।',
+                              tr('আপনার ব্যালেন্স, পোস্ট ও ডেটা নিরাপদ থাকবে — যেকোনো সময় আবার লগইন করতে পারবেন।'),
                               style: TextStyle(
                                   fontSize: 12,
                                   height: 1.5,
@@ -1709,8 +1710,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                         ),
-                        child: const Text(
-                          'লগ আউট',
+                        child: Text(
+                          tr('লগ আউট'),
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w700),
                         ),
@@ -1728,8 +1729,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                         ),
-                        child: const Text(
-                          'বাতিল',
+                        child: Text(
+                          tr('বাতিল'),
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w700),
                         ),
@@ -1817,7 +1818,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Try to show error message if context is still valid
           if (mounted && context.mounted) {
             try {
-              AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+              AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
             } catch (snackbarError) {
               debugPrint('❌ Could not show error snackbar: $snackbarError');
             }
@@ -1943,7 +1944,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? first
         : ((user?.displayName ?? '').trim().isNotEmpty
             ? user!.displayName
-            : 'বন্ধু');
+            : tr('বন্ধু'));
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1954,8 +1955,8 @@ class _HomeScreenState extends State<HomeScreen> {
           overflow: TextOverflow.ellipsis,
           text: TextSpan(
             children: [
-              const TextSpan(
-                text: 'হাই, ',
+              TextSpan(
+                text: tr('হাই, '),
                 style: TextStyle(
                   fontSize: 15,
                   height: 1.25,

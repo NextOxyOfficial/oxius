@@ -12,6 +12,7 @@ import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class UserPostsScreen extends StatefulWidget {
   final String userId;
@@ -208,7 +209,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
-      AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+      AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
     }
   }
 

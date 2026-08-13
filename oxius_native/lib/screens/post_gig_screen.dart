@@ -10,6 +10,7 @@ import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -89,7 +90,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingData = false);
-        AdsyToast.error(context, 'ডেটা লোড করা যায়নি');
+        AdsyToast.error(context, tr('ডেটা লোড করা যায়নি'));
       }
     }
   }
@@ -229,14 +230,14 @@ class _PostGigScreenState extends State<PostGigScreen> {
     }
 
     if (!_validateForm()) {
-      AdsyToast.warning(context, 'সব ঘর ঠিকভাবে পূরণ করুন');
+      AdsyToast.warning(context, tr('সব ঘর ঠিকভাবে পূরণ করুন'));
       return;
     }
 
     // Validate action link if provided
     if (_actionLinkController.text.trim().isNotEmpty &&
         !_isValidUrl(_actionLinkController.text.trim())) {
-      AdsyToast.warning(context, 'সঠিক লিংক দিন (যেমন https://example.com)');
+      AdsyToast.warning(context, tr('সঠিক লিংক দিন (যেমন https://example.com)'));
       return;
     }
 
@@ -281,7 +282,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
 
       if (mounted) {
         if (result['success'] == true) {
-          AdsyToast.success(context, 'গিগ সফলভাবে যোগ হয়েছে!');
+          AdsyToast.success(context, tr('গিগ সফলভাবে যোগ হয়েছে!'));
           Navigator.pop(context, true); // Return true to indicate success
         } else {
           final msg = (result['error'] ?? 'Failed to post gig').toString();

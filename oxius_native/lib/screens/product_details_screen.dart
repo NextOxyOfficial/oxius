@@ -15,6 +15,7 @@ import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -185,7 +186,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
         },
       );
     } catch (e) {
-      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
+      AdsyToast.error(context, tr('চেকআউটে যাওয়া যায়নি'));
     }
   }
 
@@ -268,7 +269,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
 
   Future<void> _openStore(String? storeUsername, String storeName) async {
     if (storeUsername == null || storeUsername.isEmpty) {
-      AdsyToast.error(context, 'এই প্রোডাক্টের দোকানের তথ্য পাওয়া যায়নি।');
+      AdsyToast.error(context, tr('এই প্রোডাক্টের দোকানের তথ্য পাওয়া যায়নি।'));
       return;
     }
 
@@ -574,7 +575,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       context,
       data: AdsyShareData(
         title: productTitle.toString(),
-        description: 'AdsyClub-এ প্রোডাক্টটা দেখে নিন।',
+        description: tr('AdsyClub-এ প্রোডাক্টটা দেখে নিন।'),
         url: 'https://adsyclub.com/product-details/$productSlug',
         imageUrl: imageUrl,
         subject: productTitle.toString(),
@@ -738,7 +739,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'প্রোডাক্টের বিস্তারিত',
+                      tr('প্রোডাক্টের বিস্তারিত'),
                       style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -746,7 +747,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                       ),
                     ),
                     Text(
-                      'এক নজরে প্রোডাক্টটি',
+                      tr('এক নজরে প্রোডাক্টটি'),
                       style: AppFonts.roboto(
                         fontSize: 11,
                         color: _slate500,
@@ -883,13 +884,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             children: [
               _buildMetaPill(
                 icon: Icons.inventory_2_outlined,
-                label: stock > 0 ? 'স্টকে $stockটা আছে' : 'এখন স্টকে নেই',
+                label: stock > 0 ? tr('${tr('স্টকে')} $stock${tr('টা আছে')}') : tr('এখন স্টকে নেই'),
                 color: stock > 0 ? _emerald : _rose,
               ),
               if (isFreeDelivery)
                 _buildMetaPill(
                   icon: Icons.local_shipping_outlined,
-                  label: 'ফ্রি ডেলিভারি',
+                  label: tr('ফ্রি ডেলিভারি'),
                   color: _emerald,
                 ),
               if (views > 0)
@@ -924,7 +925,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    _shortDescExpanded ? 'কম দেখান' : 'আরও দেখুন',
+                    _shortDescExpanded ? tr('কম দেখান') : tr('আরও দেখুন'),
                     style: AppFonts.roboto(
                       fontSize: 12,
                       color: _emerald,
@@ -1069,7 +1070,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                           const Icon(Icons.shopping_bag_outlined, size: 16),
                           const SizedBox(width: 6),
                           Text(
-                            stock > 0 ? 'এখনই কিনুন' : 'স্টকে নেই',
+                            stock > 0 ? tr('এখনই কিনুন') : tr('স্টকে নেই'),
                             style: AppFonts.roboto(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -1183,7 +1184,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         right: 14,
                         child: _buildHeroBadge(
                           icon: Icons.local_shipping_outlined,
-                          label: 'ফ্রি ডেলিভারি',
+                          label: tr('ফ্রি ডেলিভারি'),
                           color: _emerald,
                           background: const Color(0xFFECFDF5),
                         ),
@@ -1240,7 +1241,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('দোকান'),
+          _buildSectionTitle(tr('দোকান')),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -1283,7 +1284,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'ভেরিফায়েড বিক্রেতা — দোকানের সব প্রোডাক্ট দেখুন',
+                      tr('ভেরিফায়েড বিক্রেতা — দোকানের সব প্রোডাক্ট দেখুন'),
                       style: AppFonts.roboto(
                         fontSize: 11,
                         color: _slate500,
@@ -1311,7 +1312,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
               ),
               icon: const Icon(Icons.store_mall_directory_outlined, size: 17),
               label: Text(
-                'দোকানে যান',
+                tr('দোকানে যান'),
                 style: AppFonts.roboto(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -1332,7 +1333,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('প্রোডাক্ট সম্পর্কে'),
+          _buildSectionTitle(tr('প্রোডাক্ট সম্পর্কে')),
           const SizedBox(height: 8),
           Container(
             height: 42,
@@ -1363,10 +1364,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
-              tabs: const [
-                Tab(height: 34, text: 'বিবরণ'),
-                Tab(height: 34, text: 'ডেলিভারি'),
-                Tab(height: 34, text: 'রিভিউ'),
+              tabs: [
+                Tab(height: 34, text: tr('বিবরণ')),
+                Tab(height: 34, text: tr('ডেলিভারি')),
+                Tab(height: 34, text: tr('রিভিউ')),
               ],
             ),
           ),
@@ -1417,7 +1418,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
               },
             )
           : Text(
-              'কোনো বিবরণ দেওয়া নেই',
+              tr('কোনো বিবরণ দেওয়া নেই'),
               style: AppFonts.roboto(
                 fontSize: 12,
                 color: const Color(0xFF9CA3AF),
@@ -1453,7 +1454,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                       size: 16, color: Color(0xFF10B981)),
                   const SizedBox(width: 6),
                   Text(
-                    'ফ্রি ডেলিভারি পাবেন',
+                    tr('ফ্রি ডেলিভারি পাবেন'),
                     style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1463,9 +1464,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 ],
               ),
             ),
-          _buildDeliveryRow('ঢাকার ভেতরে', '৳$feeInsideDhaka'),
-          _buildDeliveryRow('ঢাকার বাইরে', '৳$feeOutsideDhaka'),
-          _buildDeliveryRow('আনুমানিক সময়', '৩-৫ কর্মদিবস'),
+          _buildDeliveryRow(tr('ঢাকার ভেতরে'), '৳$feeInsideDhaka'),
+          _buildDeliveryRow(tr('ঢাকার বাইরে'), '৳$feeOutsideDhaka'),
+          _buildDeliveryRow(tr('আনুমানিক সময়'), tr('৩-৫ কর্মদিবস')),
         ],
       ),
     );
@@ -1529,7 +1530,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ),
             const SizedBox(height: 10),
             Text(
-              'এখনো কোনো রিভিউ নেই',
+              tr('এখনো কোনো রিভিউ নেই'),
               style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -1538,7 +1539,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ),
             const SizedBox(height: 4),
             Text(
-              'প্রথম রিভিউটা আপনিই দিন — অন্য ক্রেতাদের সাহায্য হবে।',
+              tr('প্রথম রিভিউটা আপনিই দিন — অন্য ক্রেতাদের সাহায্য হবে।'),
               style: AppFonts.roboto(
                 fontSize: 11,
                 color: const Color(0xFF9CA3AF),
@@ -1621,7 +1622,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
         ),
         icon: const Icon(Icons.edit_outlined, size: 17),
         label: Text(
-          'রিভিউ লিখুন',
+          tr('রিভিউ লিখুন'),
           style: AppFonts.roboto(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
@@ -1761,7 +1762,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                           size: 12, color: Color(0xFF059669)),
                       const SizedBox(width: 4),
                       Text(
-                        'দোকানের উত্তর',
+                        tr('দোকানের উত্তর'),
                         style: AppFonts.roboto(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
@@ -1794,7 +1795,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final currentUserId = AuthService.currentUser?.id;
 
     if (ownerId != null && ownerId == currentUserId) {
-      AdsyToast.warning(context, 'নিজের প্রোডাক্টে রিভিউ দেওয়া যায় না।');
+      AdsyToast.warning(context, tr('নিজের প্রোডাক্টে রিভিউ দেওয়া যায় না।'));
       return;
     }
 
@@ -1844,7 +1845,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'রিভিউ লিখুন',
+                            tr('রিভিউ লিখুন'),
                             style: AppFonts.roboto(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -1856,7 +1857,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'আপনার রেটিং',
+                      tr('আপনার রেটিং'),
                       style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -1912,9 +1913,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                         });
                       },
                       decoration: InputDecoration(
-                        labelText: 'আপনার রিভিউ',
+                        labelText: tr('আপনার রিভিউ'),
                         labelStyle: AppFonts.roboto(fontSize: 12),
-                        hintText: 'আপনার অভিজ্ঞতা লিখুন...',
+                        hintText: tr('আপনার অভিজ্ঞতা লিখুন...'),
                         hintStyle: AppFonts.roboto(fontSize: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1941,7 +1942,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                               ),
                             ),
                             child: Text(
-                              'বাতিল',
+                              tr('বাতিল'),
                               style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -1973,7 +1974,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                       Navigator.pop(sheetContext);
                                       if (mounted) {
                                         AdsyToast.success(context,
-                                            'রিভিউ দেওয়ার জন্য ধন্যবাদ!');
+                                            tr('রিভিউ দেওয়ার জন্য ধন্যবাদ!'));
                                         _loadReviews();
                                       }
                                     } else {
@@ -1983,7 +1984,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                           sheetContext,
                                           (msg != null && msg.isNotEmpty)
                                               ? msg
-                                              : 'রিভিউ জমা হয়নি — আবার চেষ্টা করুন।');
+                                              : tr('রিভিউ জমা হয়নি — আবার চেষ্টা করুন।'));
                                     }
                                   }
                                 : null,
@@ -2004,7 +2005,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                                         strokeWidth: 2, color: Colors.white),
                                   )
                                 : Text(
-                                    'জমা দিন',
+                                    tr('জমা দিন'),
                                     style: AppFonts.roboto(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
@@ -2048,7 +2049,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('আপনার পছন্দ হতে পারে'),
+              _buildSectionTitle(tr('আপনার পছন্দ হতে পারে')),
               const SizedBox(height: 10),
             ],
           ),

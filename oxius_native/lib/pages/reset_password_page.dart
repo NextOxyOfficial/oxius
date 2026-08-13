@@ -5,6 +5,7 @@ import '../services/user_state_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -61,7 +62,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         return _t('reset_step1_desc', 'রিসেট কোড পেতে আপনার ফোন নম্বরটা দিন');
       case 2:
         return _t(
-            'reset_step2_desc', 'আমরা যে কোডটা পাঠিয়েছি সেটা এখানে লিখুন');
+            'reset_step2_desc', tr('আমরা যে কোডটা পাঠিয়েছি সেটা এখানে লিখুন'));
       case 3:
         return _t('reset_step3_desc', 'একটা নতুন পাসওয়ার্ড বানান');
       default:
@@ -111,7 +112,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       setState(() => _errorMessage = _method == 'email'
           ? _t('reset_invalid_email', 'একটা সঠিক ইমেইল দিন')
           : _t('reset_invalid_phone',
-              'একটা সঠিক ফোন নম্বর দিন (যেমন: 01XXXXXXXXX)'));
+              tr('একটা সঠিক ফোন নম্বর দিন (যেমন: 01XXXXXXXXX)')));
       return;
     }
     setState(() => _isLoading = true);
@@ -177,7 +178,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
             _t('reset_pw_min', 'পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।'));
       } else if (!RegExp(r'[A-Z]').hasMatch(_newPasswordController.text)) {
         setState(() => _errorMessage = _t(
-            'reset_pw_upper', 'পাসওয়ার্ডে অন্তত একটা বড় হাতের অক্ষর দিন।'));
+            'reset_pw_upper', tr('পাসওয়ার্ডে অন্তত একটা বড় হাতের অক্ষর দিন।')));
       } else if (!RegExp(r'[0-9]').hasMatch(_newPasswordController.text)) {
         setState(() => _errorMessage =
             _t('reset_pw_number', 'পাসওয়ার্ডে অন্তত একটা সংখ্যা দিন।'));
@@ -574,10 +575,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           Text(
             _maskedContact.isNotEmpty
                 ? _t('reset_code_sent_to',
-                        '{contact}-এ ৬ ডিজিটের কোড পাঠানো হয়েছে')
+                        tr('{contact}-এ ৬ ডিজিটের কোড পাঠানো হয়েছে'))
                     .replaceFirst('{contact}', _maskedContact)
                 : _t('reset_code_sent_generic',
-                    'আপনার ফোন/ইমেইলে ৬ ডিজিটের কোড পাঠানো হয়েছে'),
+                    tr('আপনার ফোন/ইমেইলে ৬ ডিজিটের কোড পাঠানো হয়েছে')),
             style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor),
           ),
           const SizedBox(height: 16),

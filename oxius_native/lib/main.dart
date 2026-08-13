@@ -274,7 +274,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: userState,
+      // TranslationService is merged in so that picking a language repaints the
+      // whole tree. Most screens read their strings straight from tr() during
+      // build() and do not listen to the service themselves, so without this a
+      // language change only took effect on screens the user happened to
+      // navigate away from and back to.
+      listenable: Listenable.merge([userState, TranslationService()]),
       builder: (context, child) {
         // Show splash screen while initializing
         if (userState.isInitializing) {

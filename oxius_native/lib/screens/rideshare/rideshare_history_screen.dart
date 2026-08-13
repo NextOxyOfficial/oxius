@@ -6,6 +6,7 @@ import 'rideshare_page_header.dart';
 import 'rideshare_vehicle_catalog.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class RideshareHistoryScreen extends StatefulWidget {
   final bool asDriver;
@@ -124,9 +125,9 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
             RidesharePageHeader(
               title: widget.asDriver
                   ? t('rideshare_history_driver_title',
-                      fallback: 'ড্রাইভার ট্রিপ')
+                      fallback: tr('ড্রাইভার ট্রিপ'))
                   : t('rideshare_history_title', fallback: 'আমার ট্রিপ'),
-              subtitle: _rides.isEmpty ? null : '${_rides.length}টি ট্রিপ',
+              subtitle: _rides.isEmpty ? null : '${_rides.length}${tr('টি ট্রিপ')}',
             ),
             Expanded(child: _buildBody()),
           ],
@@ -205,7 +206,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               ElevatedButton(
                                 onPressed: _loadRides,
                                 child: Text(t('try_again',
-                                    fallback: 'আবার চেষ্টা করুন')),
+                                    fallback: tr('আবার চেষ্টা করুন'))),
                               ),
                             ],
                           )
@@ -227,7 +228,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 t('rideshare_no_rides_title',
-                                    fallback: 'এখনো কোনো রাইড নেই'),
+                                    fallback: tr('এখনো কোনো রাইড নেই')),
                                 style: AppFonts.roboto(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -457,8 +458,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                   _paymentMethodLabel(ride.paymentMethod)),
               if (counterpartName.trim().isNotEmpty)
                 _detailRow(
-                    widget.asDriver ? 'যাত্রী' : 'ড্রাইভার', counterpartName),
-              if (plate.trim().isNotEmpty) _detailRow('গাড়ি', plate),
+                    widget.asDriver ? tr('যাত্রী') : tr('ড্রাইভার'), counterpartName),
+              if (plate.trim().isNotEmpty) _detailRow(tr('গাড়ি'), plate),
             ],
           ),
         ),

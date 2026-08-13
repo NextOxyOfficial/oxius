@@ -10,6 +10,7 @@ import 'create_gig_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../utils/app_fonts.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -204,7 +205,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                               const Icon(Icons.inbox_rounded, size: 15),
                               const SizedBox(width: 5),
                               Text(_t('workspace_tab_orders_received',
-                                  'আসা অর্ডার')),
+                                  tr('আসা অর্ডার'))),
                             ],
                           ),
                         ),
@@ -219,7 +220,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                               const Icon(Icons.shopping_bag_outlined, size: 15),
                               const SizedBox(width: 5),
                               Text(_t('workspace_tab_gigs_ordered',
-                                  'অর্ডার করা গিগ')),
+                                  tr('অর্ডার করা গিগ'))),
                             ],
                           ),
                         ),

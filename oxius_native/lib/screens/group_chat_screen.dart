@@ -36,6 +36,7 @@ import 'business_network/profile_screen.dart';
 import 'group_info_screen.dart';
 import '../widgets/app_network_image.dart';
 import '../widgets/chat/chat_media_viewer.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Group conversation. Reuses the SAME polished pieces as the 1:1 chat —
 /// [ChatMessageInput] (text, mic recording, attachments with image preview)
@@ -522,7 +523,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
 
     if (event['removed'] == true) {
       if (!mounted) return;
-      AdsyToast.info(context, 'আপনি আর এই গ্রুপে নেই');
+      AdsyToast.info(context, tr('আপনি আর এই গ্রুপে নেই'));
       Navigator.of(context).maybePop();
       return;
     }
@@ -642,7 +643,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (res != null) {
       await _loadMessages(force: true);
     } else {
-      AdsyToast.error(context, 'মেসেজ পাঠানো যায়নি');
+      AdsyToast.error(context, tr('মেসেজ পাঠানো যায়নি'));
     }
   }
 
@@ -712,7 +713,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (res != null) {
       await _loadMessages();
     } else {
-      AdsyToast.error(context, 'এডিট করা যায়নি (১০ মিনিট পেরিয়ে গেছে?)');
+      AdsyToast.error(context, tr('এডিট করা যায়নি (১০ মিনিট পেরিয়ে গেছে?)'));
     }
   }
 
@@ -732,7 +733,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (ok) {
       await _loadMessages();
     } else {
-      AdsyToast.error(context, 'মুছা যায়নি');
+      AdsyToast.error(context, tr('মুছা যায়নি'));
     }
   }
 
@@ -760,7 +761,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             ListTile(
               leading: const Icon(Icons.photo_library_outlined,
                   color: Color(0xFF16A34A)),
-              title: const Text('ছবি'),
+              title: Text(tr('ছবি')),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickImagesFromGallery();
@@ -769,7 +770,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             ListTile(
               leading:
                   const Icon(Icons.videocam_outlined, color: Color(0xFFDC2626)),
-              title: const Text('ভিডিও'),
+              title: Text(tr('ভিডিও')),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickVideo();
@@ -778,7 +779,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
             ListTile(
               leading: const Icon(Icons.insert_drive_file_outlined,
                   color: Color(0xFF111827)),
-              title: const Text('ডকুমেন্ট'),
+              title: Text(tr('ডকুমেন্ট')),
               onTap: () {
                 Navigator.pop(ctx);
                 _pickDocument();
@@ -819,7 +820,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     } catch (e) {
       if (mounted) {
         setState(() => _isCompressingImages = false);
-        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ছবি সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -871,14 +872,14 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         AdsyToast.error(
             context,
             failures == count
-                ? 'ছবি পাঠানো যায়নি — আবার চেষ্টা করুন'
-                : '$failures টি ছবি পাঠানো যায়নি');
+                ? tr('ছবি পাঠানো যায়নি — আবার চেষ্টা করুন')
+                : tr('$failures ${tr('টি ছবি পাঠানো যায়নি')}'));
       }
       await _loadMessages(force: true);
     } catch (_) {
       if (mounted) {
         setState(() => _isUploadingAttachment = false);
-        AdsyToast.error(context, 'ছবি পাঠানো যায়নি');
+        AdsyToast.error(context, tr('ছবি পাঠানো যায়নি'));
       }
     }
   }
@@ -903,7 +904,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     } catch (_) {
       if (mounted) {
         setState(() => _isUploadingAttachment = false);
-        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ভিডিও সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -918,7 +919,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       if (path == null) return;
       await _sendMedia(path, 'document', fileName: result!.files.single.name);
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ডকুমেন্ট সিলেক্ট  করা যায়নি');
+      if (mounted) AdsyToast.error(context, tr('ডকুমেন্ট সিলেক্ট  করা যায়নি'));
     }
   }
 
@@ -937,7 +938,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (res != null) {
       await _loadMessages(force: true);
     } else {
-      AdsyToast.error(context, 'পাঠানো যায়নি');
+      AdsyToast.error(context, tr('পাঠানো যায়নি'));
     }
   }
 
@@ -946,7 +947,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   Future<void> _startRecording() async {
     try {
       if (!await _recorder.hasPermission()) {
-        if (mounted) AdsyToast.warning(context, 'মাইক্রোফোনের অনুমতি দিন');
+        if (mounted) AdsyToast.warning(context, tr('মাইক্রোফোনের অনুমতি দিন'));
         return;
       }
       final stamp = DateTime.now().millisecondsSinceEpoch;
@@ -958,7 +959,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
       });
       setState(() => _recording = true);
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'রেকর্ড শুরু করা যায়নি');
+      if (mounted) AdsyToast.error(context, tr('রেকর্ড শুরু করা যায়নি'));
     }
   }
 
@@ -1057,7 +1058,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (id.isEmpty) return;
     final idx = _messages.indexWhere((m) => (m['id']?.toString() ?? '') == id);
     if (idx == -1) {
-      AdsyToast.info(context, 'আগের মেসেজটি লোড করা নেই');
+      AdsyToast.info(context, tr('আগের মেসেজটি লোড করা নেই'));
       return;
     }
     final key = GlobalObjectKey('gmsg-$id');
@@ -1154,7 +1155,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     if (call == null || _joiningCall) return;
     if (AgoraCallService.isInCall) {
       AdsyToast.warning(
-          context, 'আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।');
+          context, tr('আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।'));
       return;
     }
     setState(() => _joiningCall = true);
@@ -1202,12 +1203,12 @@ class _GroupChatScreenState extends State<GroupChatScreen>
   void _startGroupCall(String callType) {
     final currentUser = AuthService.currentUser;
     if (currentUser == null) {
-      AdsyToast.warning(context, 'কল করতে সাইন ইন করুন');
+      AdsyToast.warning(context, tr('কল করতে সাইন ইন করুন'));
       return;
     }
     if (AgoraCallService.isInCall) {
       AdsyToast.warning(
-          context, 'আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।');
+          context, tr('আপনি ইতিমধ্যে একটি কলে আছেন। আগে সেটি শেষ করুন।'));
       return;
     }
 
@@ -1215,7 +1216,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     // A group of one is the person themselves; nobody to ring.
     final memberCount = (_group['members'] as List?)?.length ?? 0;
     if (memberCount <= 1) {
-      AdsyToast.info(context, 'এই গ্রুপে আর কেউ নেই');
+      AdsyToast.info(context, tr('এই গ্রুপে আর কেউ নেই'));
       return;
     }
 
@@ -1261,7 +1262,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
         url: AppConfig.getAbsoluteUrl(url),
         isVideo: type == 'video',
         senderName:
-            m['isMe'] == true ? 'আপনি' : (m['senderName'] ?? '').toString(),
+            m['isMe'] == true ? tr('আপনি') : (m['senderName'] ?? '').toString(),
         timeLabel: m['timeDisplay']?.toString(),
         // The raw payload, because that is what _replyingTo expects.
         sourceMessage: raw,
@@ -1401,7 +1402,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                             fontSize: 15.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1E293B))),
-                    Text('$memberCount জন মেম্বার',
+                    Text(tr('$memberCount ${tr('জন মেম্বার')}'),
                         style: TextStyle(
                             fontSize: 11.5, color: Colors.grey.shade700)),
                   ],
@@ -1414,18 +1415,18 @@ class _GroupChatScreenState extends State<GroupChatScreen>
           IconButton(
             icon: const Icon(Icons.call_rounded, color: Color(0xFF2C3949)),
             onPressed: () => _startGroupCall('audio'),
-            tooltip: 'অডিও কল',
+            tooltip: tr('অডিও কল'),
           ),
           IconButton(
             icon: const Icon(Icons.videocam_rounded, color: Color(0xFF334155)),
             onPressed: () => _startGroupCall('video'),
-            tooltip: 'ভিডিও কল',
+            tooltip: tr('ভিডিও কল'),
           ),
           IconButton(
             icon: const Icon(Icons.info_outline_rounded,
                 color: Color(0xFF334155)),
             onPressed: _openInfo,
-            tooltip: 'গ্রুপ ইনফো',
+            tooltip: tr('গ্রুপ ইনফো'),
           ),
         ],
       ),
@@ -1441,7 +1442,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                 ? const Center(child: AdsyLoadingIndicator())
                 : _messages.isEmpty
                     ? Center(
-                        child: Text('এখনো কোনো মেসেজ নেই — শুরু করুন!',
+                        child: Text(tr('এখনো কোনো মেসেজ নেই — শুরু করুন!'),
                             style: TextStyle(
                                 fontSize: 13, color: Colors.grey.shade700)),
                       )
@@ -1761,7 +1762,7 @@ class _GroupChatScreenState extends State<GroupChatScreen>
     final uid = (sender['id'] ?? '').toString();
     if (uid.isEmpty) return;
     if (sender['is_active'] == false || sender['is_suspended'] == true) {
-      AdsyToast.info(context, 'এই অ্যাকাউন্টটি সাসপেন্ডেড');
+      AdsyToast.info(context, tr('এই অ্যাকাউন্টটি সাসপেন্ডেড'));
       return;
     }
     Navigator.push(
@@ -1822,8 +1823,8 @@ class _GroupChatScreenState extends State<GroupChatScreen>
                     Flexible(
                       child: Text(
                         _typingNames.length == 1
-                            ? '${_typingNames.first} টাইপ করছেন…'
-                            : '${_typingNames.first} ও আরও ${_typingNames.length - 1} জন টাইপ করছে…',
+                            ? '${_typingNames.first} ${tr('টাইপ করছেন')}…'
+                            : '${_typingNames.first} ${tr('ও আরও')} ${_typingNames.length - 1} ${tr('জন টাইপ করছে')}…',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

@@ -5,6 +5,7 @@ import '../screens/classified_category_list_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Widget to display classified categories in a grid
 /// Can be added to the home screen or any other screen
@@ -67,8 +68,8 @@ class _ClassifiedCategoriesWidgetState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'আমার সেবা ক্যাটাগরি',
+              Text(
+                tr('আমার সেবা ক্যাটাগরি'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,

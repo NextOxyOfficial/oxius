@@ -8,6 +8,7 @@ import '../../widgets/chat/chat_media_viewer.dart';
 import '../../widgets/linkify_text.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class PendingTasksScreen extends StatefulWidget {
   const PendingTasksScreen({super.key});
@@ -455,13 +456,13 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   /// which is the thing you actually want when scanning the list.
   String _relativeTime(DateTime d) {
     final diff = DateTime.now().difference(d);
-    if (diff.inMinutes < 1) return 'এইমাত্র';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} মিনিট আগে';
-    if (diff.inHours < 24) return '${diff.inHours} ঘণ্টা আগে';
-    if (diff.inDays < 30) return '${diff.inDays} দিন আগে';
+    if (diff.inMinutes < 1) return tr('এইমাত্র');
+    if (diff.inMinutes < 60) return '${diff.inMinutes} ${tr('মিনিট আগে')}';
+    if (diff.inHours < 24) return '${diff.inHours} ${tr('ঘণ্টা আগে')}';
+    if (diff.inDays < 30) return '${diff.inDays} ${tr('দিন আগে')}';
     final months = diff.inDays ~/ 30;
-    if (months < 12) return '$months মাস আগে';
-    return '${diff.inDays ~/ 365} বছর আগে';
+    if (months < 12) return tr('$months ${tr('মাস আগে')}');
+    return '${diff.inDays ~/ 365} ${tr('বছর আগে')}';
   }
 
   /// One row of the submissions list.
@@ -596,8 +597,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                     const SizedBox(width: 5),
                     Text(
                       task.is48HoursPassed
-                          ? 'স্বয়ংক্রিয় অনুমোদন সম্পন্ন'
-                          : 'স্বয়ংক্রিয় অনুমোদন ${_formatCountdown(task)}',
+                          ? tr('স্বয়ংক্রিয় অনুমোদন সম্পন্ন')
+                          : '${tr('স্বয়ংক্রিয় অনুমোদন')} ${_formatCountdown(task)}',
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,

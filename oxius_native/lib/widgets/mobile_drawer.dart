@@ -7,6 +7,7 @@ import 'ios_web_redirect_screen.dart';
 import 'ads/advertise_button.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class MobileDrawer extends StatefulWidget {
   const MobileDrawer({super.key});
@@ -56,11 +57,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
     try {
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!ok && mounted) {
-        AdsyToast.error(context, 'Facebook পেজ খোলা যায়নি');
+        AdsyToast.error(context, tr('Facebook পেজ খোলা যায়নি'));
       }
     } catch (_) {
       if (mounted) {
-        AdsyToast.error(context, 'Facebook পেজ খোলা যায়নি');
+        AdsyToast.error(context, tr('Facebook পেজ খোলা যায়নি'));
       }
     }
   }
@@ -250,7 +251,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: AdvertiseButton(
                 label: _translationService.t(
-                    'advertise_on_adsyclub', fallback: 'AdsyClub-এ বিজ্ঞাপন দিন'),
+                    'advertise_on_adsyclub', fallback: tr('AdsyClub-এ বিজ্ঞাপন দিন')),
               ),
             ),
 
@@ -276,7 +277,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('classified_service',
-                        fallback: 'আমার সেবা'),
+                        fallback: tr('আমার সেবা')),
                     icon: Icons.design_services_rounded,
                     iconColor: const Color(0xFF10B981),
                     onTap: () {
@@ -301,7 +302,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('food_zone',
-                        fallback: 'ফুড জোন'),
+                        fallback: tr('ফুড জোন')),
                     icon: Icons.restaurant_rounded,
                     iconColor: const Color(0xFFEC4899),
                     onTap: () {
@@ -312,7 +313,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('classified',
-                        fallback: 'কেনাবেচা'),
+                        fallback: tr('কেনাবেচা')),
                     icon: Icons.sell_rounded,
                     iconColor: const Color(0xFF0EA5E9),
                     onTap: () {
@@ -322,11 +323,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   ),
 
                   _sectionLabel(_translationService.t('drawer_earn_learn',
-                      fallback: 'আয় ও শেখা')),
+                      fallback: tr('আয় ও শেখা'))),
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('earn_money',
-                        fallback: 'টাকা উপার্জন'),
+                        fallback: tr('টাকা উপার্জন')),
                     icon: Icons.payments_rounded,
                     iconColor: const Color(0xFFF59E0B),
                     onTap: () {
@@ -337,7 +338,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('elearning',
-                        fallback: 'ই-লার্নিং'),
+                        fallback: tr('ই-লার্নিং')),
                     icon: Icons.school_rounded,
                     iconColor: const Color(0xFF8B5CF6),
                     onTap: () {
@@ -348,7 +349,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('mobile_recharge',
-                        fallback: 'মোবাইল রিচার্জ'),
+                        fallback: tr('মোবাইল রিচার্জ')),
                     icon: Icons.smartphone_rounded,
                     iconColor: const Color(0xFF14B8A6),
                     onTap: () {
@@ -359,7 +360,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('rideshare',
-                        fallback: 'রাইড শেয়ার'),
+                        fallback: tr('রাইড শেয়ার')),
                     icon: Icons.directions_car_rounded,
                     iconColor: const Color(0xFF0891B2),
                     onTap: () {
@@ -369,11 +370,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   ),
 
                   _sectionLabel(_translationService.t('drawer_community',
-                      fallback: 'কমিউনিটি')),
+                      fallback: tr('কমিউনিটি'))),
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('business_network',
-                        fallback: 'বিজনেস নেটওয়ার্ক'),
+                        fallback: tr('বিজনেস নেটওয়ার্ক')),
                     icon: Icons.hub_rounded,
                     iconColor: const Color(0xFF06B6D4),
                     onTap: () {
@@ -394,7 +395,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('refer_program',
-                        fallback: 'রেফারেল প্রোগ্রাম'),
+                        fallback: tr('রেফারেল প্রোগ্রাম')),
                     icon: Icons.card_giftcard_rounded,
                     iconColor: const Color(0xFFD946EF),
                     onTap: () {
@@ -414,12 +415,12 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   ),
 
                   _sectionLabel(_translationService.t('drawer_account',
-                      fallback: 'অ্যাকাউন্ট')),
+                      fallback: tr('অ্যাকাউন্ট'))),
                   if (!isIOSPlatform)
                     _buildDrawerItem(
                       context: context,
                       title: _translationService.t('upgrade_pro',
-                          fallback: 'প্রো প্যাকেজ নিই'),
+                          fallback: tr('প্রো প্যাকেজ নিই')),
                       icon: Icons.workspace_premium_rounded,
                       iconColor: const Color(0xFFF59E0B),
                       badge: 'PRO',
@@ -446,7 +447,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   _buildDrawerItem(
                     context: context,
                     title: _translationService.t('support',
-                        fallback: 'সাপোর্ট'),
+                        fallback: tr('সাপোর্ট')),
                     icon: Icons.support_agent_rounded,
                     iconColor: const Color(0xFF64748B),
                     onTap: () {

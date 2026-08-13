@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The message-edit sheet, shared by 1:1 and group chats.
 ///
@@ -95,8 +96,8 @@ class _EditSheetState extends State<_EditSheet> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'মেসেজ এডিট করুন',
+                Text(
+                  tr('মেসেজ এডিট করুন'),
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -105,7 +106,7 @@ class _EditSheetState extends State<_EditSheet> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়',
+                  tr('পাঠানোর ১০ মিনিটের মধ্যে এডিট করা যায়'),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -126,7 +127,7 @@ class _EditSheetState extends State<_EditSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'আগের মেসেজ',
+                        tr('আগের মেসেজ'),
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
@@ -159,7 +160,7 @@ class _EditSheetState extends State<_EditSheet> {
                   style: const TextStyle(
                       fontSize: 15, height: 1.45, color: _ink),
                   decoration: InputDecoration(
-                    hintText: 'নতুন মেসেজ লিখুন…',
+                    hintText: tr('নতুন মেসেজ লিখুন…'),
                     hintStyle: TextStyle(color: Colors.grey.shade500),
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
@@ -187,8 +188,8 @@ class _EditSheetState extends State<_EditSheet> {
                             horizontal: 18, vertical: 12),
                         foregroundColor: Colors.grey.shade600,
                       ),
-                      child: const Text(
-                        'বাতিল',
+                      child: Text(
+                        tr('বাতিল'),
                         style: TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w600),
                       ),
@@ -213,8 +214,8 @@ class _EditSheetState extends State<_EditSheet> {
                             borderRadius: BorderRadius.circular(13),
                           ),
                         ),
-                        child: const Text(
-                          'সেভ করুন',
+                        child: Text(
+                          tr('সেভ করুন'),
                           style: TextStyle(
                               fontSize: 14.5, fontWeight: FontWeight.w700),
                         ),

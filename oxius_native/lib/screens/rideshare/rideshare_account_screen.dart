@@ -14,6 +14,7 @@ import 'rideshare_page_header.dart';
 import 'rideshare_vehicles_screen.dart';
 import '../../widgets/app_network_image.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The rideshare account page — and, since the sidebar drawer is gone, the
 /// single place every rideshare destination now lives.
@@ -133,10 +134,10 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
 
     if (result.success) {
       AdsyToast.success(
-          context, 'আবেদন জমা হয়েছে। এপ্রুভের জন্য অপেক্ষা করুন।');
+          context, tr('আবেদন জমা হয়েছে। এপ্রুভের জন্য অপেক্ষা করুন।'));
     } else {
       AdsyToast.error(context,
-          result.message.isNotEmpty ? result.message : 'আবেদন পাঠানো যায়নি');
+          result.message.isNotEmpty ? result.message : tr('আবেদন পাঠানো যায়নি'));
     }
   }
 
@@ -147,7 +148,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            const RidesharePageHeader(title: 'অ্যাকাউন্ট'),
+            RidesharePageHeader(title: tr('অ্যাকাউন্ট')),
             Expanded(
               child: _loading
                   ? const Center(child: AdsyLoadingIndicator())
@@ -187,20 +188,20 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       _buildStatStrip([
         _statItem(
           const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF59E0B)),
-          _riderRatingCount > 0 ? _riderRating.toStringAsFixed(2) : 'নতুন',
-          'রেটিং',
+          _riderRatingCount > 0 ? _riderRating.toStringAsFixed(2) : tr('নতুন'),
+          tr('রেটিং'),
         ),
         _statItem(
           const Icon(Icons.route_rounded, size: 15, color: Color(0xFF6366F1)),
           '$_riderTrips',
-          'ট্রিপ',
+          tr('ট্রিপ'),
         ),
       ]),
       const SizedBox(height: 18),
-      _SectionLabel('রাইড'),
+      _SectionLabel(tr('রাইড')),
       _MenuRow(
         icon: Icons.directions_car_rounded,
-        label: 'আমার ট্রিপ',
+        label: tr('আমার ট্রিপ'),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const RideshareHistoryScreen()),
@@ -208,7 +209,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       _MenuRow(
         icon: Icons.star_rounded,
-        label: 'সেভ করা জায়গা',
+        label: tr('সেভ করা জায়গা'),
         onTap: () {
           Navigator.of(context).maybePop();
           widget.onOpenSavedPlaces?.call();
@@ -216,21 +217,21 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       _MenuRow(
         icon: Icons.account_balance_wallet_rounded,
-        label: 'পেমেন্ট মেথড',
+        label: tr('পেমেন্ট মেথড'),
         // Rides are paid from the AdsyPay wallet, so that is what "payment
         // method" means here.
         onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
       ),
       const SizedBox(height: 14),
-      _SectionLabel('অ্যাকাউন্ট'),
+      _SectionLabel(tr('অ্যাকাউন্ট')),
       _MenuRow(
         icon: Icons.notifications_rounded,
-        label: 'নোটিফিকেশন',
+        label: tr('নোটিফিকেশন'),
         onTap: () => Navigator.pushNamed(context, '/inbox'),
       ),
       _MenuRow(
         icon: Icons.settings_rounded,
-        label: 'সেটিংস',
+        label: tr('সেটিংস'),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -238,7 +239,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       _MenuRow(
         icon: Icons.card_giftcard_rounded,
-        label: 'রেফার করে ডিসকাউন্ট নিন',
+        label: tr('রেফার করে ডিসকাউন্ট নিন'),
         onTap: () => Navigator.pushNamed(context, '/refer-a-friend'),
       ),
       const SizedBox(height: 14),
@@ -248,7 +249,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       const SizedBox(height: 18),
       _MenuRow(
         icon: Icons.logout_rounded,
-        label: 'লগ আউট',
+        label: tr('লগ আউট'),
         danger: true,
         onTap: _confirmLogout,
       ),
@@ -276,29 +277,29 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF59E0B)),
           driver.ratingCount > 0
               ? driver.ratingAverage.toStringAsFixed(2)
-              : 'নতুন',
-          'রেটিং',
+              : tr('নতুন'),
+          tr('রেটিং'),
         ),
         _statItem(
           const Icon(Icons.route_rounded, size: 15, color: Color(0xFF6366F1)),
           '${_earnings?.totalTrips ?? driver.totalTrips}',
-          'ট্রিপ',
+          tr('ট্রিপ'),
         ),
         _statItem(
           const Icon(Icons.payments_rounded,
               size: 15, color: Color(0xFF059669)),
           '৳${(_earnings?.totalEarnings ?? driver.totalEarnings).toStringAsFixed(0)}',
-          'আয়',
+          tr('আয়'),
         ),
       ]),
       const SizedBox(height: 18),
-      _SectionLabel('ড্রাইভিং'),
+      _SectionLabel(tr('ড্রাইভিং')),
       _MenuRow(
         icon: Icons.two_wheeler_rounded,
-        label: 'আমার গাড়ি',
+        label: tr('আমার গাড়ি'),
         trailingText: driver.vehicles.isEmpty
-            ? 'যোগ করুন'
-            : '${driver.vehicles.length}টি',
+            ? tr('যোগ করুন')
+            : '${driver.vehicles.length}${tr('টি')}',
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const RideshareVehiclesScreen()),
@@ -306,7 +307,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       _MenuRow(
         icon: Icons.history_rounded,
-        label: 'ড্রাইভার ট্রিপ',
+        label: tr('ড্রাইভার ট্রিপ'),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -315,20 +316,20 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       ),
       _MenuRow(
         icon: Icons.account_balance_wallet_rounded,
-        label: 'আয় ও পেমেন্ট',
+        label: tr('আয় ও পেমেন্ট'),
         onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
       ),
       if (driver.outstandingCashDueCount > 0) _buildCashDueNotice(driver),
       const SizedBox(height: 14),
-      _SectionLabel('অ্যাকাউন্ট'),
+      _SectionLabel(tr('অ্যাকাউন্ট')),
       _MenuRow(
         icon: Icons.notifications_rounded,
-        label: 'নোটিফিকেশন',
+        label: tr('নোটিফিকেশন'),
         onTap: () => Navigator.pushNamed(context, '/inbox'),
       ),
       _MenuRow(
         icon: Icons.settings_rounded,
-        label: 'সেটিংস',
+        label: tr('সেটিংস'),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -339,7 +340,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       const SizedBox(height: 18),
       _MenuRow(
         icon: Icons.logout_rounded,
-        label: 'লগ আউট',
+        label: tr('লগ আউট'),
         danger: true,
         onTap: _confirmLogout,
       ),
@@ -398,7 +399,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         .where((p) => p != null && p.trim().isNotEmpty)
         .join(' ')
         .trim();
-    return name.isNotEmpty ? name : (user?.username ?? 'ব্যবহারকারী');
+    return name.isNotEmpty ? name : (user?.username ?? tr('ব্যবহারকারী'));
   }
 
   /// The dashboard switch.
@@ -432,7 +433,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
               // The row names the mode you are IN, not the one the switch
               // would take you to — the badge above and this line must agree.
               Text(
-                isDriver ? 'ড্রাইভার মোড' : 'প্যাসেঞ্জার মোড',
+                isDriver ? tr('ড্রাইভার মোড') : tr('প্যাসেঞ্জার মোড'),
                 style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -441,8 +442,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
               ),
               Text(
                 isDriver
-                    ? 'সুইচ বন্ধ করলে প্যাসেঞ্জার মোডে ফিরবেন'
-                    : 'সুইচ চালু করলে ড্রাইভার মোডে যাবেন',
+                    ? tr('সুইচ বন্ধ করলে প্যাসেঞ্জার মোডে ফিরবেন')
+                    : tr('সুইচ চালু করলে ড্রাইভার মোডে যাবেন'),
                 style: AppFonts.roboto(fontSize: 11, color: _muted),
               ),
             ],
@@ -468,7 +469,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     if (_driver == null) {
       return _badge(
         icon: Icons.person_rounded,
-        label: 'প্যাসেঞ্জার',
+        label: tr('প্যাসেঞ্জার'),
         bg: const Color(0xFFF1F5F9),
         fg: const Color(0xFF475569),
       );
@@ -479,13 +480,13 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     return _showingDriver
         ? _badge(
             icon: Icons.verified_rounded,
-            label: 'ড্রাইভার',
+            label: tr('ড্রাইভার'),
             bg: const Color(0xFFECFDF5),
             fg: const Color(0xFF059669),
           )
         : _badge(
             icon: Icons.person_rounded,
-            label: 'প্যাসেঞ্জার',
+            label: tr('প্যাসেঞ্জার'),
             bg: const Color(0xFFF1F5F9),
             fg: const Color(0xFF475569),
           );
@@ -583,19 +584,19 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
         bg = const Color(0xFFECFDF5);
         fg = const Color(0xFF059669);
         icon = Icons.verified_rounded;
-        label = 'এপ্রুভড ড্রাইভার';
+        label = tr('এপ্রুভড ড্রাইভার');
         break;
       case 'suspended':
         bg = const Color(0xFFFEF2F2);
         fg = const Color(0xFFDC2626);
         icon = Icons.block_rounded;
-        label = 'সাসপেন্ডেড';
+        label = tr('সাসপেন্ডেড');
         break;
       default:
         bg = const Color(0xFFFFF7ED);
         fg = const Color(0xFFD97706);
         icon = Icons.hourglass_top_rounded;
-        label = 'এপ্রুভের অপেক্ষায়';
+        label = tr('এপ্রুভের অপেক্ষায়');
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -632,8 +633,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     if (status == 'pending') {
       return _StatusButton(
         icon: Icons.hourglass_top_rounded,
-        title: 'ড্রাইভার আবেদন জমা আছে',
-        subtitle: 'এপ্রুভ হলে এখানেই ড্রাইভার মোড চালু হবে',
+        title: tr('ড্রাইভার আবেদন জমা আছে'),
+        subtitle: tr('এপ্রুভ হলে এখানেই ড্রাইভার মোড চালু হবে'),
         tint: const Color(0xFFD97706),
         background: const Color(0xFFFFFBEB),
         border: const Color(0xFFFDE68A),
@@ -643,8 +644,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     if (status == 'suspended') {
       return _StatusButton(
         icon: Icons.block_rounded,
-        title: 'ড্রাইভার অ্যাকাউন্ট সাসপেন্ড',
-        subtitle: 'সহায়তার জন্য সাপোর্টে যোগাযোগ করুন',
+        title: tr('ড্রাইভার অ্যাকাউন্ট সাসপেন্ড'),
+        subtitle: tr('সহায়তার জন্য সাপোর্টে যোগাযোগ করুন'),
         tint: const Color(0xFFDC2626),
         background: const Color(0xFFFEF2F2),
         border: const Color(0xFFFECACA),
@@ -677,7 +678,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
                       size: 18, color: Colors.white),
                   const SizedBox(width: 8),
                   Text(
-                    'ড্রাইভার হতে আবেদন করুন',
+                    tr('ড্রাইভার হতে আবেদন করুন'),
                     style: AppFonts.roboto(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
@@ -705,8 +706,8 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '${driver.outstandingCashDueCount}টি রাইডে '
-              '৳${driver.outstandingCashDueAmount.toStringAsFixed(0)} ক্যাশ বকেয়া',
+              '${driver.outstandingCashDueCount}${tr('টি রাইডে')} '
+              '৳${driver.outstandingCashDueAmount.toStringAsFixed(0)} ${tr('ক্যাশ বকেয়া')}',
               style: AppFonts.roboto(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
@@ -721,11 +722,11 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
 
   List<Widget> _buildSupportSection() {
     return [
-      _SectionLabel('সাপোর্ট'),
+      _SectionLabel(tr('সাপোর্ট')),
       _MenuRow(
         icon: Icons.phone_rounded,
         label: '+8801896144066',
-        sublabel: 'সাপোর্ট হেল্পলাইন',
+        sublabel: tr('সাপোর্ট হেল্পলাইন'),
         iconBg: const Color(0xFFDCFCE7),
         iconColor: const Color(0xFF16A34A),
         onTap: () => launchUrl(Uri.parse('tel:+8801896144066')),
@@ -733,15 +734,15 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       _MenuRow(
         icon: Icons.email_rounded,
         label: 'support@adsyclub.com',
-        sublabel: 'ইমেইল সাপোর্ট',
+        sublabel: tr('ইমেইল সাপোর্ট'),
         iconBg: const Color(0xFFEDE9FE),
         iconColor: const Color(0xFF7C3AED),
         onTap: () => launchUrl(Uri.parse('mailto:support@adsyclub.com')),
       ),
       _MenuRow(
         icon: Icons.flag_rounded,
-        label: 'সমস্যা জানান',
-        sublabel: 'সাপোর্ট টিকিট খুলুন',
+        label: tr('সমস্যা জানান'),
+        sublabel: tr('সাপোর্ট টিকিট খুলুন'),
         iconBg: const Color(0xFFFEF3C7),
         iconColor: const Color(0xFFD97706),
         // The drawer used to pop a text box that showed a success toast and
@@ -776,12 +777,12 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('কল ৯৯৯',
+                    Text(tr('কল ৯৯৯'),
                         style: AppFonts.roboto(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFFDC2626))),
-                    Text('জরুরি সেবা',
+                    Text(tr('জরুরি সেবা'),
                         style: AppFonts.roboto(
                             fontSize: 11.5, color: const Color(0xFFEF4444))),
                   ],
@@ -801,18 +802,18 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text('লগ আউট করবেন?',
+        title: Text(tr('লগ আউট করবেন?'),
             style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.w700)),
-        content: Text('আবার ব্যবহার করতে লগ ইন করতে হবে।',
+        content: Text(tr('আবার ব্যবহার করতে লগ ইন করতে হবে।'),
             style: AppFonts.roboto(fontSize: 13.5)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('বাতিল'),
+            child: Text(tr('বাতিল')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('লগ আউট',
+            child: Text(tr('লগ আউট'),
                 style: TextStyle(color: Color(0xFFEF4444))),
           ),
         ],
@@ -821,7 +822,7 @@ class _RideshareAccountScreenState extends State<RideshareAccountScreen> {
     if (confirmed != true || !mounted) return;
     await AuthService.logout();
     if (!mounted) return;
-    AdsyToast.success(context, 'লগ আউট হয়েছে');
+    AdsyToast.success(context, tr('লগ আউট হয়েছে'));
     Navigator.of(context).pushNamedAndRemoveUntil('/', (r) => false);
   }
 }

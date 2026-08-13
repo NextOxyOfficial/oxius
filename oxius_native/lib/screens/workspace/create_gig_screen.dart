@@ -8,6 +8,7 @@ import '../../utils/network_error_handler.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -479,7 +480,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     const SizedBox(height: 2),
                     Text(
                       _t('workspace_post_pro_gig_sub',
-                          'অফারটি পরিষ্কার, ছোট আর মার্কেটপ্লেসের সাথে মানানসই রাখুন।'),
+                          tr('অফারটি পরিষ্কার, ছোট আর মার্কেটপ্লেসের সাথে মানানসই রাখুন।')),
                       style: AppFonts.roboto(
                         fontSize: 11,
                         height: 1.35,
@@ -576,7 +577,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return _buildSectionCard(
       title: _t('workspace_gig_gallery', 'গিগ গ্যালারি'),
       subtitle: _t('workspace_gig_gallery_sub',
-          'সর্বোচ্চ ৫টি সুন্দর প্রিভিউ ছবি দিন। প্রথমটি কভার হবে।'),
+          tr('সর্বোচ্চ ৫টি সুন্দর প্রিভিউ ছবি দিন। প্রথমটি কভার হবে।')),
       icon: Icons.photo_library_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,7 +741,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           const SizedBox(height: 8),
           Text(
             _t('workspace_image_size_hint',
-                'সাইজ ১২৮০x৭২০px রাখলে ভালো। পরিষ্কার প্রিভিউ বেশি কাজ করে।'),
+                tr('সাইজ ১২৮০x৭২০px রাখলে ভালো। পরিষ্কার প্রিভিউ বেশি কাজ করে।')),
             style: AppFonts.roboto(
               color: _slate500,
               fontSize: 11,
@@ -756,7 +757,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return _buildSectionCard(
       title: _t('workspace_gig_details_title', 'গিগের বিবরণ'),
       subtitle: _t('workspace_gig_details_sub',
-          'পজিশনিং, দাম আর সার্ভিসের বর্ণনা পরিষ্কারভাবে দিন।'),
+          tr('পজিশনিং, দাম আর সার্ভিসের বর্ণনা পরিষ্কারভাবে দিন।')),
       icon: Icons.description_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,7 +766,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             label: _t('workspace_gig_title_label', 'গিগ টাইটেল'),
             controller: _titleController,
             hintText: _t('workspace_gig_title_hint',
-                'আমি আপনার ব্যবসার জন্য পেশাদার লোগো ডিজাইন করব'),
+                tr('আমি আপনার ব্যবসার জন্য পেশাদার লোগো ডিজাইন করব')),
             isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -777,7 +778,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           const SizedBox(height: 4),
           Text(
             _t('workspace_title_helper',
-                'একনজরে বোঝা যায় এমন একটি প্রতিশ্রুতি দিয়ে শুরু করুন।'),
+                tr('একনজরে বোঝা যায় এমন একটি প্রতিশ্রুতি দিয়ে শুরু করুন।')),
             style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
           const SizedBox(height: 12),
@@ -828,7 +829,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
             minLines: 4,
             maxLines: 7,
             hintText: _t('workspace_description_hint',
-                'বায়াররা কী পাবে, আপনি কীভাবে কাজ করেন আর আপনার অফার কেন আলাদা তা লিখুন।'),
+                tr('বায়াররা কী পাবে, আপনি কীভাবে কাজ করেন আর আপনার অফার কেন আলাদা তা লিখুন।')),
             isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
@@ -840,7 +841,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           const SizedBox(height: 4),
           Text(
             _t('workspace_description_helper',
-                'ছোট কিন্তু পূর্ণাঙ্গ বিবরণ দিন যাতে বায়াররা সহজে ভরসা পায়।'),
+                tr('ছোট কিন্তু পূর্ণাঙ্গ বিবরণ দিন যাতে বায়াররা সহজে ভরসা পায়।')),
             style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],
@@ -852,7 +853,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return _buildSectionCard(
       title: _t('workspace_skills_title', 'দক্ষতা ও অভিজ্ঞতা'),
       subtitle: _t('workspace_skills_sub',
-          'প্রাসঙ্গিক ট্যাগ দিন যাতে গিগটি সঠিক বায়ার ও সার্চে আসে।'),
+          tr('প্রাসঙ্গিক ট্যাগ দিন যাতে গিগটি সঠিক বায়ার ও সার্চে আসে।')),
       icon: Icons.auto_awesome_motion_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -969,7 +970,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           const SizedBox(height: 6),
           Text(
             _t('workspace_skills_helper',
-                'সর্বোচ্চ ১০টি দক্ষতা দিন। এন্টার চাপুন বা প্লাস বাটন ব্যবহার করুন।'),
+                tr('সর্বোচ্চ ১০টি দক্ষতা দিন। এন্টার চাপুন বা প্লাস বাটন ব্যবহার করুন।')),
             style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],
@@ -981,7 +982,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return _buildSectionCard(
       title: _t('workspace_delivery_title', 'ডেলিভারি ও রিভিশন'),
       subtitle: _t('workspace_delivery_sub',
-          'বায়াররা ভরসা করতে পারে এমন বাস্তবসম্মত সময় ও রিভিশন সীমা দিন।'),
+          tr('বায়াররা ভরসা করতে পারে এমন বাস্তবসম্মত সময় ও রিভিশন সীমা দিন।')),
       icon: Icons.schedule_rounded,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -1073,7 +1074,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     return _buildSectionCard(
       title: _t('workspace_features_title', 'বায়াররা যা পাবে'),
       subtitle: _t('workspace_features_sub',
-          'এই সার্ভিস থেকে বায়াররা ঠিক কী কী পাবে তা লিখুন।'),
+          tr('এই সার্ভিস থেকে বায়াররা ঠিক কী কী পাবে তা লিখুন।')),
       icon: Icons.checklist_rounded,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1110,7 +1111,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                       ),
                       decoration: _buildInputDecoration(
                         hintText: _t('workspace_feature_hint',
-                            'যেমন: হাই-কোয়ালিটি লোগো ডিজাইন'),
+                            tr('যেমন: হাই-কোয়ালিটি লোগো ডিজাইন')),
                       ),
                     ),
                   ),
@@ -1178,7 +1179,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
           const SizedBox(height: 6),
           Text(
             _t('workspace_features_helper',
-                'অন্তত ৩টি নির্দিষ্ট ডেলিভারেবল দিন যা বায়াররা সহজে যাচাই করতে পারে।'),
+                tr('অন্তত ৩টি নির্দিষ্ট ডেলিভারেবল দিন যা বায়াররা সহজে যাচাই করতে পারে।')),
             style: AppFonts.roboto(color: _slate500, fontSize: 11),
           ),
         ],

@@ -4,6 +4,7 @@ import '../../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../../services/translation_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class BuySlotsBottomSheet extends StatefulWidget {
   final int currentProductCount;
@@ -81,7 +82,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
       AdsyToast.error(
           context,
           _t('eshop_buyslots_need_balance',
-              'ব্যালেন্স যথেষ্ট নয়। আপনার লাগবে ৳${price.toStringAsFixed(0)}'));
+              '${tr('ব্যালেন্স যথেষ্ট নয়')}। ${tr('আপনার লাগবে ৳')}${price.toStringAsFixed(0)}'));
       return;
     }
 
@@ -166,7 +167,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                       ),
                       Text(
                         _t('eshop_buyslots_subtitle',
-                            'আপনার স্টোরের ক্যাপাসিটি বাড়ান'),
+                            tr('আপনার স্টোরের ক্যাপাসিটি বাড়ান')),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF5A6273),
@@ -210,7 +211,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                               const SizedBox(height: 12),
                               Text(
                                 _t('eshop_buyslots_no_packages',
-                                    'কোনো প্যাকেজ নেই'),
+                                    tr('কোনো প্যাকেজ নেই')),
                                 style: TextStyle(
                                     fontSize: 13, color: Colors.grey.shade700),
                               ),
@@ -240,7 +241,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                   Expanded(
                                     child: Text(
                                       _t('eshop_buyslots_using_slots',
-                                          '${widget.currentProductCount}/${widget.productLimit} স্লট ব্যবহার হচ্ছে'),
+                                          '${widget.currentProductCount}/${widget.productLimit} ${tr('স্লট ব্যবহার হচ্ছে')}'),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF065F46),
@@ -262,7 +263,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                 const SizedBox(width: 6),
                                 Text(
                                   _t('eshop_buyslots_balance_label',
-                                      'ব্যালেন্স:'),
+                                      tr('ব্যালেন্স:')),
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade700),
@@ -284,7 +285,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                       size: 14),
                                   label: Text(
                                       _t('eshop_buyslots_add_funds',
-                                          'টাকা অ্যাড করুন'),
+                                          tr('টাকা অ্যাড করুন')),
                                       style: const TextStyle(fontSize: 11)),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF10B981),
@@ -410,7 +411,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                         ),
                                                         child: Text(
                                                           _t('eshop_buyslots_best_pill',
-                                                              'বেস্ট'),
+                                                              tr('বেস্ট')),
                                                           style: const TextStyle(
                                                             fontSize: 8,
                                                             fontWeight:
@@ -528,7 +529,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                     Expanded(
                                       child: Text(
                                         _t('eshop_buyslots_low_balance_warning',
-                                            'ব্যালেন্স যথেষ্ট নয়। টাকা অ্যাড করুন।'),
+                                            tr('ব্যালেন্স যথেষ্ট নয়। টাকা অ্যাড করুন।')),
                                         style: TextStyle(
                                             fontSize: 11,
                                             color: Colors.red.shade900),
@@ -604,7 +605,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             )
                           : Text(
                               _t('eshop_buyslots_purchase_now',
-                                  'এখনই কিনুন'),
+                                  tr('এখনই কিনুন')),
                               style: const TextStyle(
                                   fontSize: 13, fontWeight: FontWeight.w700),
                             ),

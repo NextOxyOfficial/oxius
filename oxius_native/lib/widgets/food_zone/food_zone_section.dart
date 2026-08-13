@@ -5,6 +5,7 @@ import '../../services/food_zone_service.dart';
 import '../../services/translation_service.dart';
 import '../../screens/classified_post_details_screen.dart';
 import 'food_zone_card.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class FoodZoneSection extends StatefulWidget {
   final String baseUrl;
@@ -94,14 +95,14 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
                       children: [
                         Text(
                           _translationService.t('food_zone',
-                              fallback: 'ফুড জোন'),
+                              fallback: tr('ফুড জোন')),
                           style: AppText.sectionTitle(
                             color: const Color(0xFFE91E63),
                           ),
                         ),
                         Text(
                           _translationService.t('food_zone_subtitle',
-                              fallback: 'আপনার কাছের মজাদার খাবার'),
+                              fallback: tr('আপনার কাছের মজাদার খাবার')),
                           style: AppText.sectionSubtitle(),
                         ),
                       ],

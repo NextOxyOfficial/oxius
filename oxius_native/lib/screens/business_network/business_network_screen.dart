@@ -28,6 +28,7 @@ import 'profile_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_options.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -841,9 +842,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           const Icon(Icons.cloud_off_rounded,
               size: 16, color: Color(0xFFD97706)),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'ইন্টারনেট নেই — আগে দেখা পোস্টগুলো দেখানো হচ্ছে',
+              tr('ইন্টারনেট নেই — আগে দেখা পোস্টগুলো দেখানো হচ্ছে'),
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
@@ -853,10 +854,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           ),
           GestureDetector(
             onTap: () => _loadPosts(forceRefresh: true),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: Text(
-                'আবার চেষ্টা',
+                tr('আবার চেষ্টা'),
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w800,

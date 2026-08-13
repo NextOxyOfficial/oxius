@@ -17,6 +17,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -217,7 +218,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ছবি সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -256,7 +257,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         // The ORIGINAL path — compression happens at submit.
         _selectedVideos.add({'path': path, 'name': video.name});
       });
-      AdsyToast.success(context, 'ভিডিও যোগ হয়েছে');
+      AdsyToast.success(context, tr('ভিডিও যোগ হয়েছে'));
       unawaited(ComposerDraft.saveVideos());
 
       // Over-limit clips are pulled back out; the tile is on screen in the
@@ -267,7 +268,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _selectedVideos.removeWhere((v) => v['path'] == path);
       });
       AdsyToast.warning(
-          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে');
+          context, tr('ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে'));
       unawaited(ComposerDraft.saveVideos());
     } catch (e) {
       setState(() {
@@ -276,7 +277,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       });
 
       if (mounted) {
-        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ভিডিও সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -337,7 +338,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
 
     if (PostUploadService.instance.isBusy) {
-      AdsyToast.warning(context, 'আগের পোস্টটি এখনো আপলোড হচ্ছে…');
+      AdsyToast.warning(context, tr('আগের পোস্টটি এখনো আপলোড হচ্ছে…'));
       return;
     }
 
@@ -794,8 +795,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               borderRadius: BorderRadius.circular(18),
                             ),
                           ),
-                          child: const Text(
-                            'যোগ করুন',
+                          child: Text(
+                            tr('যোগ করুন'),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -978,8 +979,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               Expanded(
                                 child: Text(
                                   _uploadProgress! >= 0.99
-                                      ? 'প্রসেস হচ্ছে...'
-                                      : 'আপলোড হচ্ছে... ${(_uploadProgress! * 100).round()}%',
+                                      ? tr('প্রসেস হচ্ছে...')
+                                      : '${tr('আপলোড হচ্ছে...')} ${(_uploadProgress! * 100).round()}%',
                                   style: const TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
@@ -1159,7 +1160,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         child: _mediaActionButton(
                           icon: Icons.photo_library_outlined,
                           iconColor: const Color(0xFF16A34A),
-                          label: 'ছবি',
+                          label: tr('ছবি'),
                           onTap: _pickImage,
                         ),
                       ),
@@ -1168,7 +1169,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         child: _mediaActionButton(
                           icon: Icons.videocam_outlined,
                           iconColor: const Color(0xFFDC2626),
-                          label: 'ভিডিও',
+                          label: tr('ভিডিও'),
                           onTap: _pickVideo,
                         ),
                       ),
@@ -1177,7 +1178,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   const SizedBox(height: 8),
                   // Limits, stated plainly so nobody discovers them by error.
                   Text(
-                    'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে',
+                    tr('${tr('প্রতি পোস্টে সর্বোচ্চ')} $_maxPhotos ${tr('টি ছবি এবং')} $_maxVideos ${tr('টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে')}'),
                     style: TextStyle(
                       fontSize: 11.5,
                       color: Colors.grey.shade600,

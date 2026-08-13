@@ -24,6 +24,7 @@ import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/dob_picker.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 enum _SettingsTab { profile, privacy, security }
 
@@ -556,7 +557,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     return isPublic
         ? normalized
         : _t('settings_hidden_on_profile',
-            'বিজনেস নেটওয়ার্ক প্রোফাইলে দেখানো হবে না');
+            tr('বিজনেস নেটওয়ার্ক প্রোফাইলে দেখানো হবে না'));
   }
 
   Future<void> _refreshUserCaches() async {
@@ -638,7 +639,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   _buildImageSourceAction(
                     icon: Icons.photo_library_outlined,
                     label: _t('settings_choose_from_gallery',
-                        'গ্যালারি থেকে সিলেক্ট করুন'),
+                        tr('গ্যালারি থেকে সিলেক্ট করুন')),
                     onTap: () => Navigator.of(context).pop(ImageSource.gallery),
                   ),
                   _buildImageSourceAction(
@@ -762,7 +763,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         _showSnackBar(
             result['message'] ??
                 _t('settings_profile_update_failed',
-                    'প্রোফাইল আপডেট করা গেল না'),
+                    tr('প্রোফাইল আপডেট করা গেল না')),
             isError: true);
       }
     } catch (_) {
@@ -808,13 +809,13 @@ class _SettingsScreenState extends State<SettingsScreen>
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
           successMessage: _t('settings_privacy_updated',
-              'বিজনেস নেটওয়ার্ক প্রাইভেসি আপডেট হয়েছে'),
+              tr('বিজনেস নেটওয়ার্ক প্রাইভেসি আপডেট হয়েছে')),
         );
       } else {
         _showSnackBar(
             result['message'] ??
                 _t('settings_privacy_update_failed',
-                    'প্রাইভেসি আপডেট করা গেল না'),
+                    tr('প্রাইভেসি আপডেট করা গেল না')),
             isError: true);
       }
     } catch (_) {
@@ -852,7 +853,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         _showSnackBar(
             result['message'] ??
                 _t('settings_password_change_failed',
-                    'পাসওয়ার্ড বদলানো গেল না'),
+                    tr('পাসওয়ার্ড বদলানো গেল না')),
             isError: true);
       }
     } catch (_) {
@@ -896,14 +897,14 @@ class _SettingsScreenState extends State<SettingsScreen>
             children: [
               Text(
                 _t('settings_delete_account_warning',
-                    'এতে আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।'),
+                    tr('এতে আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।')),
                 style: AppFonts.roboto(
                     fontSize: 14, color: _bodyTextColor, height: 1.5),
               ),
               const SizedBox(height: 16),
               Text(
                 _t('settings_delete_confirm_password',
-                    'নিশ্চিত করতে পাসওয়ার্ড দিন:'),
+                    tr('নিশ্চিত করতে পাসওয়ার্ড দিন:')),
                 style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -915,7 +916,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 obscureText: !showPassword,
                 decoration: InputDecoration(
                   hintText: _t('settings_current_password_hint',
-                      'আপনার বর্তমান পাসওয়ার্ড'),
+                      tr('আপনার বর্তমান পাসওয়ার্ড')),
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
                   suffixIcon: IconButton(
@@ -975,13 +976,13 @@ class _SettingsScreenState extends State<SettingsScreen>
         _showSnackBar(
             result['message'] ??
                 _t('settings_delete_account_failed',
-                    'অ্যাকাউন্ট ডিলিট করা গেল না'),
+                    tr('অ্যাকাউন্ট ডিলিট করা গেল না')),
             isError: true);
       }
     } catch (_) {
       _showSnackBar(
           _t('settings_delete_account_failed_retry',
-              'অ্যাকাউন্ট ডিলিট করা গেল না। আবার চেষ্টা করুন।'),
+              tr('অ্যাকাউন্ট ডিলিট করা গেল না। আবার চেষ্টা করুন।')),
           isError: true);
     } finally {
       passwordController.dispose();
@@ -1148,7 +1149,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final confirmed = await _confirmAction(
       title: _t('settings_remove_photo_title', 'প্রোফাইল ছবি সরাবেন?'),
       message: _t('settings_remove_photo_message',
-          'নতুন ছবি না দেওয়া পর্যন্ত আপনার প্রোফাইলে ডিফল্ট ছবি থাকবে।'),
+          tr('নতুন ছবি না দেওয়া পর্যন্ত আপনার প্রোফাইলে ডিফল্ট ছবি থাকবে।')),
       actionLabel: _t('settings_remove', 'সরান'),
     );
     if (!confirmed) {
@@ -1193,7 +1194,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final confirmed = await _confirmAction(
       title: _t('settings_remove_banner_title', 'ব্যানার ছবি সরাবেন?'),
       message: _t('settings_remove_banner_message',
-          'এতে প্রোফাইল হেডার থেকে আপনার ব্যানারটি সরে যাবে।'),
+          tr('এতে প্রোফাইল হেডার থেকে আপনার ব্যানারটি সরে যাবে।')),
       actionLabel: _t('settings_remove', 'সরান'),
     );
     if (!confirmed) {
@@ -1500,7 +1501,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 const SizedBox(height: 8),
                 Text(
                   _t('settings_unable_to_load_message',
-                      'আবার একবার চেষ্টা করুন। সমস্যা থাকলে লগইন আর ইন্টারনেট কানেকশন দেখে নিন।'),
+                      tr('আবার একবার চেষ্টা করুন। সমস্যা থাকলে লগইন আর ইন্টারনেট কানেকশন দেখে নিন।')),
                   textAlign: TextAlign.center,
                   style: AppFonts.roboto(
                       fontSize: 13, color: _bodyTextColor, height: 1.5),
@@ -1551,14 +1552,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                 color: _warningColor,
                 title: _t('settings_kyc_lock_title', 'KYC লক চালু আছে'),
                 message: _t('settings_kyc_lock_message',
-                    'KYC ভেরিফিকেশনের পর নাম আর ঠিকানা লক হয়ে যায়। বাকি তথ্য এডিট করা যাবে।'),
+                    tr('KYC ভেরিফিকেশনের পর নাম আর ঠিকানা লক হয়ে যায়। বাকি তথ্য এডিট করা যাবে।')),
               ),
               const SizedBox(height: 10),
             ],
             _buildSectionCard(
               title: _t('settings_identity_contact', 'পরিচয় ও যোগাযোগ'),
               subtitle: _t(
-                  'settings_identity_contact_sub', 'অ্যাকাউন্টের বেসিক তথ্য।'),
+                  'settings_identity_contact_sub', tr('অ্যাকাউন্টের বেসিক তথ্য।')),
               icon: Icons.person_outline_rounded,
               child: Column(
                 children: [
@@ -1567,12 +1568,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                       controller: _firstNameController,
                       label: _t('settings_first_name', 'নামের প্রথম অংশ'),
                       hintText: _t(
-                          'settings_first_name_hint', 'নামের প্রথম অংশ লিখুন'),
+                          'settings_first_name_hint', tr('নামের প্রথম অংশ লিখুন')),
                       icon: Icons.badge_outlined,
                       enabled: !_isKycLocked,
                       validator: (value) => _normalized(value).isEmpty
                           ? _t('settings_first_name_required',
-                              'নামের প্রথম অংশ দিতে হবে')
+                              tr('নামের প্রথম অংশ দিতে হবে'))
                           : null,
                     ),
                     right: _buildTextField(
@@ -1584,7 +1585,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       enabled: !_isKycLocked,
                       validator: (value) => _normalized(value).isEmpty
                           ? _t('settings_last_name_required',
-                              'নামের শেষ অংশ দিতে হবে')
+                              tr('নামের শেষ অংশ দিতে হবে'))
                           : null,
                     ),
                   ),
@@ -1643,7 +1644,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _addressController,
                     label: _t('settings_address', 'ঠিকানা'),
                     hintText: _t('settings_address_hint',
-                        'বাসা, রোড, এলাকা, ল্যান্ডমার্ক'),
+                        tr('বাসা, রোড, এলাকা, ল্যান্ডমার্ক')),
                     icon: Icons.home_outlined,
                     enabled: !_isKycLocked,
                     maxLines: 2,
@@ -1713,7 +1714,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             _buildSectionCard(
               title: _t('settings_professional_details', 'পেশাগত তথ্য'),
               subtitle: _t('settings_professional_details_sub',
-                  'বিজনেস আর সোশ্যাল লিংক।'),
+                  tr('বিজনেস আর সোশ্যাল লিংক।')),
               icon: Icons.work_outline_rounded,
               child: Column(
                 children: [
@@ -1722,14 +1723,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                       controller: _professionController,
                       label: _t('settings_profession', 'পেশা'),
                       hintText: _t('settings_profession_hint',
-                          'ডিজাইনার, দোকানদার, কনসালট্যান্ট...'),
+                          tr('ডিজাইনার, দোকানদার, কনসালট্যান্ট...')),
                       icon: Icons.work_outline_rounded,
                     ),
                     right: _buildTextField(
                       controller: _companyController,
                       label: _t('settings_company', 'কোম্পানি / ব্র্যান্ড'),
                       hintText: _t(
-                          'settings_company_hint', 'বিজনেস বা ব্র্যান্ডের নাম'),
+                          'settings_company_hint', tr('বিজনেস বা ব্র্যান্ডের নাম')),
                       icon: Icons.apartment_rounded,
                     ),
                   ),
@@ -1747,7 +1748,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       controller: _facebookController,
                       label: _t('settings_facebook', 'ফেসবুক'),
                       hintText: _t('settings_facebook_hint',
-                          'ফেসবুক প্রোফাইল বা পেজের লিংক'),
+                          tr('ফেসবুক প্রোফাইল বা পেজের লিংক')),
                       icon: Icons.facebook_rounded,
                       keyboardType: TextInputType.url,
                     ),
@@ -1755,7 +1756,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       controller: _instagramController,
                       label: _t('settings_instagram', 'ইনস্টাগ্রাম'),
                       hintText: _t('settings_instagram_hint',
-                          'ইনস্টাগ্রাম প্রোফাইলের লিংক'),
+                          tr('ইনস্টাগ্রাম প্রোফাইলের লিংক')),
                       icon: Icons.camera_alt_outlined,
                       keyboardType: TextInputType.url,
                     ),
@@ -1765,7 +1766,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _whatsappController,
                     label: _t('settings_whatsapp', 'হোয়াটসঅ্যাপ'),
                     hintText: _t('settings_whatsapp_hint',
-                        'হোয়াটসঅ্যাপ নম্বর বা wa.me লিংক'),
+                        tr('হোয়াটসঅ্যাপ নম্বর বা wa.me লিংক')),
                     icon: Icons.chat_bubble_outline_rounded,
                   ),
                   const SizedBox(height: 10),
@@ -1803,7 +1804,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             _buildSectionCard(
               title: _t('settings_more_info', 'অতিরিক্ত তথ্য'),
               subtitle: _t('settings_more_info_sub',
-                  'পড়াশোনা, ভাষা আর দক্ষতা — প্রোফাইলে দেখা যাবে।'),
+                  tr('পড়াশোনা, ভাষা আর দক্ষতা — প্রোফাইলে দেখা যাবে।')),
               icon: Icons.school_outlined,
               child: Column(
                 children: [
@@ -1811,7 +1812,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _educationController,
                     label: _t('settings_education', 'পড়াশোনা'),
                     hintText: _t('settings_education_hint',
-                        'যেমন: BBA — Dhaka University'),
+                        tr('যেমন: BBA — Dhaka University')),
                     icon: Icons.school_outlined,
                   ),
                   const SizedBox(height: 10),
@@ -1819,7 +1820,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _languagesController,
                     label: _t('settings_languages', 'ভাষা'),
                     hintText: _t('settings_languages_hint',
-                        'কমা দিয়ে লিখুন — যেমন: বাংলা, English'),
+                        tr('কমা দিয়ে লিখুন — যেমন: বাংলা, English')),
                     icon: Icons.translate_rounded,
                   ),
                   const SizedBox(height: 10),
@@ -1827,7 +1828,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     controller: _skillsController,
                     label: _t('settings_skills', 'দক্ষতা'),
                     hintText: _t('settings_skills_hint',
-                        'কমা দিয়ে লিখুন — যেমন: Graphic Design, Marketing'),
+                        tr('কমা দিয়ে লিখুন — যেমন: Graphic Design, Marketing')),
                     icon: Icons.workspace_premium_outlined,
                   ),
                 ],
@@ -1842,7 +1843,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 controller: _aboutController,
                 label: _t('settings_bio', 'বায়ো / পরিচিতি'),
                 hintText: _t('settings_bio_hint',
-                    'আপনার কাজ, বিজনেস আর প্রোফাইলে মানুষ কী পাবে সেটা লিখুন।'),
+                    tr('আপনার কাজ, বিজনেস আর প্রোফাইলে মানুষ কী পাবে সেটা লিখুন।')),
                 icon: Icons.subject_rounded,
                 maxLines: 5,
               ),
@@ -1870,7 +1871,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     return _buildSectionCard(
       title: _t('settings_profile_media', 'প্রোফাইল ছবি ও ব্যানার'),
       subtitle: _t(
-          'settings_profile_media_sub', 'ছবি আর ব্যানার একজায়গায় ঠিক করুন।'),
+          'settings_profile_media_sub', tr('ছবি আর ব্যানার একজায়গায় ঠিক করুন।')),
       icon: Icons.photo_library_outlined,
       child: Column(
         children: [
@@ -1908,7 +1909,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     key: const ValueKey('profile-photo-panel'),
                     title: _t('settings_profile_photo', 'প্রোফাইল ছবি'),
                     subtitle: _t('settings_profile_photo_sub',
-                        'অ্যাপ আর প্রোফাইলে দেখা যাবে।'),
+                        tr('অ্যাপ আর প্রোফাইলে দেখা যাবে।')),
                     preview: Container(
                       width: 140,
                       height: 140,
@@ -1944,7 +1945,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     key: const ValueKey('profile-banner-panel'),
                     title: _t('settings_business_banner', 'বিজনেস ব্যানার'),
                     subtitle: _t('settings_business_banner_sub',
-                        'আপনার পাবলিক প্রোফাইলের চওড়া কভার।'),
+                        tr('আপনার পাবলিক প্রোফাইলের চওড়া কভার।')),
                     preview: Container(
                       height: 90,
                       decoration: BoxDecoration(
@@ -2151,25 +2152,25 @@ class _SettingsScreenState extends State<SettingsScreen>
             value: 'everyone',
             label: _t('settings_reach_everyone', 'সবাই'),
             description: _t('settings_reach_everyone_desc',
-                'যেকোনো ব্যবহারকারী পারবে।'),
+                tr('যেকোনো ব্যবহারকারী পারবে।')),
           ),
           _PrivacyChoice(
             value: 'followers',
             label: _t('settings_reach_followers', 'যারা ফলো করে'),
             description: _t('settings_reach_followers_desc',
-                'শুধু আপনাকে ফলো করা ব্যবহারকারীরা পারবে।'),
+                tr('শুধু আপনাকে ফলো করা ব্যবহারকারীরা পারবে।')),
           ),
           _PrivacyChoice(
             value: 'following',
             label: _t('settings_reach_following', 'যাদের ফলো করি'),
             description: _t('settings_reach_following_desc',
-                'শুধু আপনি যাদের ফলো করেন তারাই পারবে।'),
+                tr('শুধু আপনি যাদের ফলো করেন তারাই পারবে।')),
           ),
           _PrivacyChoice(
             value: 'mutual',
             label: _t('settings_reach_mutual', 'শুধু মিউচুয়াল'),
             description: _t('settings_reach_mutual_desc',
-                'দুজন দুজনকে ফলো করলে তবেই পারবে।'),
+                tr('দুজন দুজনকে ফলো করলে তবেই পারবে।')),
           ),
         ];
 
@@ -2180,7 +2181,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           _buildSectionCard(
             title: _t('settings_who_can_reach', 'কারা আপনার কাছে পৌঁছাতে পারবে'),
             subtitle: _t('settings_who_can_reach_sub',
-                'প্রতিটি সেটিংয়ের ডানদিকে বর্তমান উত্তর দেখা যাচ্ছে — বদলাতে ট্যাপ করুন।'),
+                tr('প্রতিটি সেটিংয়ের ডানদিকে বর্তমান উত্তর দেখা যাচ্ছে — বদলাতে ট্যাপ করুন।')),
             icon: Icons.shield_outlined,
             child: Column(
               children: [
@@ -2204,7 +2205,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       value: 'nobody',
                       label: _t('settings_reach_nobody', 'কেউ নয়'),
                       description: _t('settings_reach_nobody_desc',
-                          'কেউ আপনাকে কল করতে পারবে না। মেসেজ আগের মতোই চলবে।'),
+                          tr('কেউ আপনাকে কল করতে পারবে না। মেসেজ আগের মতোই চলবে।')),
                     ),
                   ],
                   onChanged: _setWhoCanCall,
@@ -2212,32 +2213,32 @@ class _SettingsScreenState extends State<SettingsScreen>
                 _buildChoiceRow(
                   icon: Icons.groups_outlined,
                   label: _t('settings_follow_list_visibility',
-                      'ফলোয়ার তালিকা কে দেখবে'),
+                      tr('ফলোয়ার তালিকা কে দেখবে')),
                   value: followListVisibility,
                   choices: [
                     _PrivacyChoice(
                       value: 'everyone',
                       label: _t('settings_reach_everyone', 'সবাই'),
                       description: _t('settings_follow_list_everyone_desc',
-                          'যে কেউ আপনার ফলোয়ার ও ফলোইং তালিকা দেখতে পাবে।'),
+                          tr('যে কেউ আপনার ফলোয়ার ও ফলোইং তালিকা দেখতে পাবে।')),
                     ),
                     _PrivacyChoice(
                       value: 'followers',
                       label: _t('settings_reach_followers', 'যারা ফলো করে'),
                       description: _t('settings_follow_list_followers_desc',
-                          'শুধু আপনাকে ফলো করা ব্যবহারকারীরাই তালিকা দেখতে পাবে।'),
+                          tr('শুধু আপনাকে ফলো করা ব্যবহারকারীরাই তালিকা দেখতে পাবে।')),
                     ),
                     _PrivacyChoice(
                       value: 'following',
                       label: _t('settings_reach_following', 'যাদের ফলো করি'),
                       description: _t('settings_follow_list_following_desc',
-                          'শুধু আপনি যাদের ফলো করেন তারাই তালিকা দেখতে পাবে।'),
+                          tr('শুধু আপনি যাদের ফলো করেন তারাই তালিকা দেখতে পাবে।')),
                     ),
                     _PrivacyChoice(
                       value: 'only_me',
                       label: _t('settings_follow_list_only_me', 'শুধু আমি'),
                       description: _t('settings_follow_list_only_me_desc',
-                          'আপনি ছাড়া কেউ এই তালিকা দেখতে পাবে না। সংখ্যা সবাই দেখতে পাবে।'),
+                          tr('আপনি ছাড়া কেউ এই তালিকা দেখতে পাবে না। সংখ্যা সবাই দেখতে পাবে।')),
                     ),
                   ],
                   onChanged: _setFollowListVisibility,
@@ -2249,9 +2250,9 @@ class _SettingsScreenState extends State<SettingsScreen>
           const SizedBox(height: 10),
           _buildSectionCard(
             title: _t(
-                'settings_contact_visibility', 'যেভাবে যোগাযোগের তথ্য দেখাবেন'),
+                'settings_contact_visibility', tr('যেভাবে যোগাযোগের তথ্য দেখাবেন')),
             subtitle: _t('settings_contact_visibility_sub',
-                'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার যোগাযোগের তথ্য কীভাবে দেখাবে ঠিক করুন।'),
+                tr('বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার যোগাযোগের তথ্য কীভাবে দেখাবে ঠিক করুন।')),
             icon: Icons.visibility_outlined,
             child: Column(
               children: [
@@ -2259,7 +2260,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.alternate_email_rounded,
                   title: _t('settings_show_email', 'ইমেইল দেখান'),
                   description: _t('settings_show_email_desc',
-                      'বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার পুরো ইমেইল সবাইকে দেখতে দিন।'),
+                      tr('বিজনেস নেটওয়ার্ক প্রোফাইলে আপনার পুরো ইমেইল সবাইকে দেখতে দিন।')),
                   previewLabel: _maskEmail(profile.email, emailPublic),
                   value: emailPublic,
                   onChanged: (value) {
@@ -2273,7 +2274,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.phone_outlined,
                   title: _t('settings_show_phone', 'ফোন নম্বর দেখান'),
                   description: _t('settings_show_phone_desc',
-                      'প্রোফাইলে আসা মানুষ আর সম্ভাব্য কাস্টমারদের আপনার নম্বর দেখান।'),
+                      tr('প্রোফাইলে আসা মানুষ আর সম্ভাব্য কাস্টমারদের আপনার নম্বর দেখান।')),
                   previewLabel: phonePreview.isEmpty
                       ? _t('settings_no_phone', 'এখনও ফোন নম্বর দেওয়া হয়নি')
                       : phonePreview,
@@ -2291,7 +2292,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           _buildSectionCard(
             title: _t('settings_professional_fields', 'পেশাগত প্রোফাইল ফিল্ড'),
             subtitle: _t('settings_professional_fields_sub',
-                'প্রতিটি বিজনেস তথ্যের দৃশ্যমানতা আলাদা করে ঠিক করুন।'),
+                tr('প্রতিটি বিজনেস তথ্যের দৃশ্যমানতা আলাদা করে ঠিক করুন।')),
             icon: Icons.work_outline_rounded,
             child: Column(
               children: [
@@ -2299,7 +2300,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.badge_outlined,
                   title: _t('settings_show_profession', 'পেশা দেখান'),
                   description: _t('settings_show_profession_desc',
-                      'নামের নিচে আপনার পেশা বা পদ দেখান।'),
+                      tr('নামের নিচে আপনার পেশা বা পদ দেখান।')),
                   previewLabel: _visibilityPreview(
                     profile.profession,
                     professionPublic,
@@ -2320,7 +2321,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   title:
                       _t('settings_show_company', 'কোম্পানি / ব্র্যান্ড দেখান'),
                   description: _t('settings_show_company_desc',
-                      'প্রোফাইল সামারিতে আপনার কোম্পানি বা ব্র্যান্ড দেখান।'),
+                      tr('প্রোফাইল সামারিতে আপনার কোম্পানি বা ব্র্যান্ড দেখান।')),
                   previewLabel: _visibilityPreview(
                     profile.company,
                     companyPublic,
@@ -2340,12 +2341,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.language_rounded,
                   title: _t('settings_show_website', 'ওয়েবসাইট দেখান'),
                   description: _t('settings_show_website_desc',
-                      'প্রোফাইল থেকেই সরাসরি আপনার বিজনেস ওয়েবসাইট খুলতে দিন।'),
+                      tr('প্রোফাইল থেকেই সরাসরি আপনার বিজনেস ওয়েবসাইট খুলতে দিন।')),
                   previewLabel: _visibilityPreview(
                     profile.website,
                     websitePublic,
                     emptyLabel: _t(
-                        'settings_no_website', 'এখনও ওয়েবসাইট দেওয়া হয়নি'),
+                        'settings_no_website', tr('এখনও ওয়েবসাইট দেওয়া হয়নি')),
                   ),
                   value: websitePublic,
                   onChanged: (value) {
@@ -2360,12 +2361,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.facebook_rounded,
                   title: _t('settings_show_facebook', 'ফেসবুক লিংক দেখান'),
                   description: _t('settings_show_facebook_desc',
-                      'আপনার ফেসবুক পেজ বা প্রোফাইলের লিংক সবাইকে দেখান।'),
+                      tr('আপনার ফেসবুক পেজ বা প্রোফাইলের লিংক সবাইকে দেখান।')),
                   previewLabel: _visibilityPreview(
                     profile.faceLink,
                     facebookPublic,
                     emptyLabel: _t('settings_no_facebook',
-                        'এখনও ফেসবুক লিংক দেওয়া হয়নি'),
+                        tr('এখনও ফেসবুক লিংক দেওয়া হয়নি')),
                   ),
                   value: facebookPublic,
                   onChanged: (value) {
@@ -2381,12 +2382,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                   title:
                       _t('settings_show_instagram', 'ইনস্টাগ্রাম লিংক দেখান'),
                   description: _t('settings_show_instagram_desc',
-                      'যোগাযোগ অংশে আপনার ইনস্টাগ্রাম প্রোফাইলের লিংক দেখান।'),
+                      tr('যোগাযোগ অংশে আপনার ইনস্টাগ্রাম প্রোফাইলের লিংক দেখান।')),
                   previewLabel: _visibilityPreview(
                     profile.instagramLink,
                     instagramPublic,
                     emptyLabel: _t('settings_no_instagram',
-                        'এখনও ইনস্টাগ্রাম লিংক দেওয়া হয়নি'),
+                        tr('এখনও ইনস্টাগ্রাম লিংক দেওয়া হয়নি')),
                   ),
                   value: instagramPublic,
                   onChanged: (value) {
@@ -2402,12 +2403,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                   title:
                       _t('settings_show_whatsapp', 'হোয়াটসঅ্যাপ লিংক দেখান'),
                   description: _t('settings_show_whatsapp_desc',
-                      'বিজনেস নেটওয়ার্ক প্রোফাইল থেকে সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করতে দিন।'),
+                      tr('বিজনেস নেটওয়ার্ক প্রোফাইল থেকে সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করতে দিন।')),
                   previewLabel: _visibilityPreview(
                     profile.whatsappLink,
                     whatsappPublic,
                     emptyLabel: _t('settings_no_whatsapp',
-                        'এখনও হোয়াটসঅ্যাপ দেওয়া হয়নি'),
+                        tr('এখনও হোয়াটসঅ্যাপ দেওয়া হয়নি')),
                   ),
                   value: whatsappPublic,
                   onChanged: (value) {
@@ -2422,7 +2423,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   icon: Icons.subject_rounded,
                   title: _t('settings_show_bio', 'বায়ো / পরিচিতি দেখান'),
                   description: _t('settings_show_bio_desc',
-                      'আপনার প্রোফাইল সামারি আর বিজনেস পরিচিতি দেখাবে কিনা ঠিক করুন।'),
+                      tr('আপনার প্রোফাইল সামারি আর বিজনেস পরিচিতি দেখাবে কিনা ঠিক করুন।')),
                   previewLabel: _visibilityPreview(
                     profile.about,
                     aboutPublic,
@@ -2798,7 +2799,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     label:
                         _t('settings_current_password', 'বর্তমান পাসওয়ার্ড'),
                     hintText: _t('settings_current_password_input',
-                        'বর্তমান পাসওয়ার্ড দিন'),
+                        tr('বর্তমান পাসওয়ার্ড দিন')),
                     icon: Icons.lock_outline_rounded,
                     isPassword: true,
                     isVisible: _showOldPassword,
@@ -2806,7 +2807,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         setState(() => _showOldPassword = !_showOldPassword),
                     validator: (value) => _normalized(value).isEmpty
                         ? _t('settings_current_password_required',
-                            'বর্তমান পাসওয়ার্ড দিতে হবে')
+                            tr('বর্তমান পাসওয়ার্ড দিতে হবে'))
                         : null,
                   ),
                   const SizedBox(height: 10),
@@ -2815,7 +2816,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       controller: _newPasswordController,
                       label: _t('settings_new_password', 'নতুন পাসওয়ার্ড'),
                       hintText: _t('settings_new_password_hint',
-                          'একটা শক্ত পাসওয়ার্ড দিন'),
+                          tr('একটা শক্ত পাসওয়ার্ড দিন')),
                       icon: Icons.lock_reset_rounded,
                       isPassword: true,
                       isVisible: _showNewPassword,
@@ -2824,11 +2825,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
                           return _t('settings_new_password_required',
-                              'নতুন পাসওয়ার্ড দিতে হবে');
+                              tr('নতুন পাসওয়ার্ড দিতে হবে'));
                         }
                         if ((value ?? '').length < 8) {
                           return _t(
-                              'settings_min_8_chars', 'অন্তত ৮ অক্ষর দিতে হবে');
+                              'settings_min_8_chars', tr('অন্তত ৮ অক্ষর দিতে হবে'));
                         }
                         return null;
                       },
@@ -2836,9 +2837,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     right: _buildTextField(
                       controller: _confirmPasswordController,
                       label: _t('settings_confirm_password',
-                          'পাসওয়ার্ড নিশ্চিত করুন'),
+                          tr('পাসওয়ার্ড নিশ্চিত করুন')),
                       hintText: _t('settings_confirm_password_hint',
-                          'নতুন পাসওয়ার্ডটা আবার দিন'),
+                          tr('নতুন পাসওয়ার্ডটা আবার দিন')),
                       icon: Icons.verified_user_outlined,
                       isPassword: true,
                       isVisible: _showConfirmPassword,
@@ -2847,11 +2848,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
                           return _t('settings_confirm_password_required',
-                              'পাসওয়ার্ডটা নিশ্চিত করুন');
+                              tr('পাসওয়ার্ডটা নিশ্চিত করুন'));
                         }
                         if ((value ?? '') != _newPasswordController.text) {
                           return _t('settings_passwords_no_match',
-                              'পাসওয়ার্ড মিলছে না');
+                              tr('পাসওয়ার্ড মিলছে না'));
                         }
                         return null;
                       },
@@ -2918,7 +2919,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         const SizedBox(height: 4),
                         Text(
                           _t('settings_delete_account_desc',
-                              'আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।'),
+                              tr('আপনার অ্যাকাউন্ট আর সব ডেটা একদম মুছে যাবে। এটা আর ফেরানো যাবে না।')),
                           style: AppFonts.roboto(
                               fontSize: 13, color: _bodyTextColor, height: 1.4),
                         ),
@@ -2940,7 +2941,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               _isDeletingAccount
                                   ? _t('settings_deleting', 'ডিলিট হচ্ছে...')
                                   : _t('settings_delete_my_account',
-                                      'আমার অ্যাকাউন্ট ডিলিট করুন'),
+                                      tr('আমার অ্যাকাউন্ট ডিলিট করুন')),
                               style: AppFonts.roboto(
                                   fontSize: 14, fontWeight: FontWeight.w600),
                             ),

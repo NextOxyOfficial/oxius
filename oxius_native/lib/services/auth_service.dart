@@ -10,6 +10,7 @@ import 'fcm_service.dart';
 import '../screens/suspended_account_screen.dart';
 import '../utils/device_name.dart';
 import 'package:flutter/foundation.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class User {
   final String id; // Changed from int to String to handle UUID
@@ -430,7 +431,7 @@ class AuthService {
       return SocialAuthOutcome(
         provider: provider,
         errorMessage:
-            msg.isNotEmpty ? msg : 'সাইন ইন করা যায়নি। আবার চেষ্টা করুন।',
+            msg.isNotEmpty ? msg : tr('সাইন ইন করা যায়নি। আবার চেষ্টা করুন।'),
       );
     } catch (e) {
       await SocialAuthService.signOut();

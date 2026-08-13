@@ -16,6 +16,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
 import '../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -451,7 +452,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              _isEditMode ? 'পোস্ট এডিট করুন' : 'পোস্ট করুন',
+              _isEditMode ? tr('পোস্ট এডিট করুন') : tr('পোস্ট করুন'),
               style: AppFonts.roboto(
                 color: _slate800,
                 fontSize: 16,
@@ -522,7 +523,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isEditMode ? 'Update Your Post' : 'নতুন আমার সেবা পোস্ট',
+                  _isEditMode ? 'Update Your Post' : tr('নতুন আমার সেবা পোস্ট'),
                   style: AppFonts.roboto(
                     fontSize: isMobile ? 15 : 16,
                     fontWeight: FontWeight.w700,
@@ -531,7 +532,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'পরিষ্কার বিবরণ, দাম, লোকেশন আর ছবি দিন — সঠিক ক্রেতা দ্রুত খুঁজে পাবেন',
+                  tr('পরিষ্কার বিবরণ, দাম, লোকেশন আর ছবি দিন — সঠিক ক্রেতা দ্রুত খুঁজে পাবেন'),
                   style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -567,7 +568,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         child: Column(
           children: [
             _buildSectionCard(
-              title: 'মূল তথ্য',
+              title: tr('মূল তথ্য'),
               icon: Icons.description_outlined,
               child: Column(
                 children: [
@@ -575,16 +576,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _titleController,
-                    label: 'পোস্টের টাইটেল',
-                    hint: 'বর্ণনামূলক একটা টাইটেল লিখুন',
+                    label: tr('পোস্টের টাইটেল'),
+                    hint: tr('বর্ণনামূলক একটা টাইটেল লিখুন'),
                     required: true,
                     maxLength: 100,
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
                     controller: _instructionsController,
-                    label: 'বিবরণ',
-                    hint: 'বিস্তারিত তথ্য লিখুন',
+                    label: tr('বিবরণ'),
+                    hint: tr('বিস্তারিত তথ্য লিখুন'),
                     maxLines: 5,
                     maxLength: 5000,
                   ),
@@ -592,17 +593,17 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               ),
             ),
             _buildSectionCard(
-              title: 'মূল্য',
+              title: tr('মূল্য'),
               icon: Icons.sell_outlined,
               child: _buildPriceSection(),
             ),
             _buildSectionCard(
-              title: 'লোকেশন',
+              title: tr('লোকেশন'),
               icon: Icons.location_on_outlined,
               child: _buildLocationSelector(),
             ),
             _buildSectionCard(
-              title: 'ছবি',
+              title: tr('ছবি'),
               icon: Icons.photo_library_outlined,
               child: _buildImageUploadSection(),
             ),
@@ -681,7 +682,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       children: [
         RichText(
           text: TextSpan(
-            text: 'ক্যাটাগরি',
+            text: tr('ক্যাটাগরি'),
             style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -715,7 +716,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
             filled: true,
             fillColor: _slate50,
-            hintText: 'ক্যাটাগরি সিলেক্ট করুন',
+            hintText: tr('ক্যাটাগরি সিলেক্ট করুন'),
             hintStyle: AppFonts.roboto(fontSize: 13, color: _slate400),
             prefixIcon:
                 const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
@@ -830,7 +831,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'নির্দিষ্ট দাম দিন, অথবা দাম আলোচনা সাপেক্ষ হিসেবে রাখুন।',
+          tr('নির্দিষ্ট দাম দিন, অথবা দাম আলোচনা সাপেক্ষ হিসেবে রাখুন।'),
           style: AppFonts.roboto(
             fontSize: 12,
             color: _slate500,
@@ -868,7 +869,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'দাম আলোচনা সাপেক্ষ',
+                  tr('দাম আলোচনা সাপেক্ষ'),
                   style: AppFonts.roboto(
                     fontSize: 13,
                     color: _slate700,
@@ -890,7 +891,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             style: AppFonts.roboto(
                 fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
-              hintText: 'দাম লিখুন',
+              hintText: tr('দাম লিখুন'),
               prefixText: '৳ ',
               prefixStyle: AppFonts.roboto(
                 color: _slate800,
@@ -936,7 +937,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       children: [
         RichText(
           text: TextSpan(
-            text: 'আপনার লোকেশন সিলেক্ট করুন',
+            text: tr('আপনার লোকেশন সিলেক্ট করুন'),
             style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -972,9 +973,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 Expanded(
                   child: Text(
                     _location == null
-                        ? 'আপনার লোকেশন সিলেক্ট করুন'
+                        ? tr('আপনার লোকেশন সিলেক্ট করুন')
                         : _location!.allOverBangladesh
-                            ? 'সারা বাংলাদেশ'
+                            ? tr('সারা বাংলাদেশ')
                             : [
                                 _location!.upazila,
                                 _location!.city,

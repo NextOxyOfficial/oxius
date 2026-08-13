@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/google_play_billing_service.dart';
 import 'common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// A professional bottom sheet that lets the user pay for a digital good with
 /// either their wallet BALANCE or GOOGLE PLAY. The balance path returns
@@ -118,7 +119,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
         return 'Gold Sponsor';
       default:
         final d = it?.diamonds ?? widget.diamondsWanted ?? 0;
-        return '$d ডায়মন্ড';
+        return tr('$d ${tr('ডায়মন্ড')}');
     }
   }
 
@@ -126,20 +127,20 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
     switch (widget.kind) {
       case 'pro':
       case 'gold':
-        return 'মাসিক • অটো-রিনিউ';
+        return tr('মাসিক • অটো-রিনিউ');
       default:
-        return 'আপনার ওয়ালেটে যোগ হবে';
+        return tr('আপনার ওয়ালেটে যোগ হবে');
     }
   }
 
   String _successFor(IapCatalogItem item) {
     switch (widget.kind) {
       case 'pro':
-        return 'AdsyClub Pro চালু হয়েছে!';
+        return tr('AdsyClub Pro চালু হয়েছে!');
       case 'gold':
-        return 'Gold Sponsor চালু হয়েছে!';
+        return tr('Gold Sponsor চালু হয়েছে!');
       default:
-        return '${item.diamonds} ডায়মন্ড যোগ হয়েছে!';
+        return '${item.diamonds} ${tr('ডায়মন্ড যোগ হয়েছে!')}';
     }
   }
 
@@ -167,18 +168,18 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       await _showConflictDialog(conflict);
       return;
     }
-    AdsyToast.error(context, 'পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।');
+    AdsyToast.error(context, tr('পেমেন্ট সম্পন্ন হয়নি। আবার চেষ্টা করুন।'));
   }
 
   Future<void> _showConflictDialog(IapOwnershipConflict conflict) async {
     final owner =
-        conflict.ownerHint.isNotEmpty ? conflict.ownerHint : 'অন্য একটি';
+        conflict.ownerHint.isNotEmpty ? conflict.ownerHint : tr('অন্য একটি');
     String? cooldownNote;
     if (!conflict.canTransfer && conflict.reason.startsWith('cooldown_')) {
       final days =
           conflict.reason.replaceAll(RegExp(r'[^0-9]'), '');
-      cooldownNote = 'সাবস্ক্রিপশনটি সম্প্রতি সরানো হয়েছে — আরও $days দিন পরে '
-          'আবার সরানো যাবে।';
+      cooldownNote = tr('${tr('সাবস্ক্রিপশনটি সম্প্রতি সরানো হয়েছে — আরও')} $days ${tr('দিন পরে')} ') +
+          tr('আবার সরানো যাবে।');
     }
 
     final doTransfer = await showDialog<bool>(
@@ -186,30 +187,30 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       builder: (ctx) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'প্রিমিয়াম সাবস্ক্রিপশনটি অন্য অ্যাকাউন্টে আছে',
+        title: Text(
+          tr('প্রিমিয়াম সাবস্ক্রিপশনটি অন্য অ্যাকাউন্টে আছে'),
           style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'আপনার Google অ্যাকাউন্টের এই প্রিমিয়াম সাবস্ক্রিপশনটি $owner AdsyClub '
-          'অ্যাকাউন্টের সাথে যুক্ত। Google Play একই প্রিমিয়াম সাবস্ক্রিপশন দুবার কিনতে '
-          'দেয় না।\n\n${conflict.canTransfer ? 'চাইলে সাবস্ক্রিপশনটি এই '
-              'অ্যাকাউন্টে নিয়ে আসতে পারেন — আগের অ্যাকাউন্ট থেকে প্রিমিয়াম সুবিধাটি '
-              'সরে যাবে।' : cooldownNote ?? 'ঐ অ্যাকাউন্টে লগইন করে '
-              'প্রিমিয়াম সাবস্ক্রিপশনটি ব্যবহার করুন।'}',
+          tr('${tr('আপনার')} Google ${tr('অ্যাকাউন্টের এই প্রিমিয়াম সাবস্ক্রিপশনটি')} $owner AdsyClub ') +
+          tr('অ্যাকাউন্টের সাথে যুক্ত। Google Play একই প্রিমিয়াম সাবস্ক্রিপশন দুবার কিনতে ') +
+          'দেয় না।\n\n${conflict.canTransfer ? 'চাইলে সাবস্ক্রিপশনটি এই ' +
+              tr('অ্যাকাউন্টে নিয়ে আসতে পারেন — আগের অ্যাকাউন্ট থেকে প্রিমিয়াম সুবিধাটি ') +
+              'সরে যাবে।' : cooldownNote ?? tr('ঐ অ্যাকাউন্টে লগইন করে ') +
+              tr('প্রিমিয়াম সাবস্ক্রিপশনটি ব্যবহার করুন।')}',
           style: const TextStyle(fontSize: 13.5, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('ঠিক আছে'),
+            child: Text(tr('ঠিক আছে')),
           ),
           if (conflict.canTransfer)
             FilledButton(
               onPressed: () => Navigator.of(ctx).pop(true),
               style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB)),
-              child: const Text('এই অ্যাকাউন্টে নিয়ে আসুন'),
+              child: Text(tr('এই অ্যাকাউন্টে নিয়ে আসুন')),
             ),
         ],
       ),
@@ -224,12 +225,12 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
     if (ok) {
       setState(() {
         _success = true;
-        _successMessage = 'প্রিমিয়াম সাবস্ক্রিপশন এই অ্যাকাউন্টে চলে এসেছে!';
+        _successMessage = tr('প্রিমিয়াম সাবস্ক্রিপশন এই অ্যাকাউন্টে চলে এসেছে!');
       });
       await Future.delayed(const Duration(milliseconds: 1400));
       if (mounted) Navigator.of(context).pop('google');
     } else {
-      AdsyToast.error(context, 'প্রিমিয়াম সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।');
+      AdsyToast.error(context, tr('প্রিমিয়াম সাবস্ক্রিপশন সরানো যায়নি। পরে আবার চেষ্টা করুন।'));
     }
   }
 
@@ -269,8 +270,8 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                 size: 44, color: Color(0xFF16A34A)),
           ),
           const SizedBox(height: 18),
-          const Text(
-            'পেমেন্ট সফল',
+          Text(
+            tr('পেমেন্ট সফল'),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -368,8 +369,8 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
           ),
 
           const SizedBox(height: 18),
-          const Text(
-            'পেমেন্ট মাধ্যম সিলেক্ট করুন',
+          Text(
+            tr('পেমেন্ট মাধ্যম সিলেক্ট করুন'),
             style: TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
@@ -385,8 +386,8 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
               iconWidget: const Icon(Icons.account_balance_wallet_rounded,
                   size: 22, color: Color(0xFF059669)),
               iconBg: const Color(0xFFECFDF5),
-              title: 'Adsy Pay ব্যালেন্স',
-              subtitle: 'ইনস্ট্যান্ট রিচার্জ • কোনো অতিরিক্ত ফি নেই',
+              title: tr('Adsy Pay ব্যালেন্স'),
+              subtitle: tr('ইনস্ট্যান্ট রিচার্জ • কোনো অতিরিক্ত ফি নেই'),
               onTap: _buying ? null : () => Navigator.of(context).pop('balance'),
             ),
             const SizedBox(height: 10),
@@ -399,10 +400,10 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
               iconBg: const Color(0xFFEFF6FF),
               title: 'Google Play',
               subtitle: _loadingCatalog
-                  ? 'লোড হচ্ছে…'
+                  ? tr('লোড হচ্ছে…')
                   : googleAvailable
                       ? '${_defaultItem?.price ?? ''}  •  ১৫% Google ফি সহ'
-                      : 'আনএভেইলেবল',
+                      : tr('আনএভেইলেবল'),
               trailing: _buying
                   ? const SizedBox(
                       width: 20,
@@ -428,8 +429,8 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
                     iconWidget: const Icon(Icons.diamond_rounded,
                         size: 20, color: Color(0xFF9333EA)),
                     iconBg: const Color(0xFFF5F3FF),
-                    title: '${it.diamonds} ডায়মন্ড',
-                    subtitle: '${it.price}  •  ১৫% Google ফি সহ',
+                    title: '${it.diamonds} ${tr('ডায়মন্ড')}',
+                    subtitle: '${it.price}  •  ১৫% Google ${tr('ফি সহ')}',
                     onTap: _buying ? null : () => _buyGoogle(it),
                   ),
                 )),
@@ -442,7 +443,7 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
               const Icon(Icons.lock_rounded, size: 12, color: Color(0xFF94A3B8)),
               const SizedBox(width: 5),
               Text(
-                'নিরাপদ পেমেন্ট • Google দ্বারা সুরক্ষিত',
+                tr('নিরাপদ পেমেন্ট • Google দ্বারা সুরক্ষিত'),
                 style: TextStyle(
                     fontSize: 11, color: Colors.grey.shade600),
               ),
@@ -458,8 +459,8 @@ class _PurchaseMethodSheetState extends State<_PurchaseMethodSheet> {
       children: [
         _googlePlayGlyph(size: 18),
         const SizedBox(width: 8),
-        const Text(
-          'Google Play প্যাক সিলেক্ট করুন',
+        Text(
+          tr('Google Play প্যাক সিলেক্ট করুন'),
           style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,

@@ -19,6 +19,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -213,7 +214,7 @@ class _ClassifiedPostDetailsScreenState
         url: shareUrl,
         imageUrl: shareImageUrl,
         subject: post.title,
-        eyebrow: 'আমার সেবা',
+        eyebrow: tr('আমার সেবা'),
       ),
     );
   }
@@ -778,8 +779,8 @@ class _ClassifiedPostDetailsScreenState
                 size: 18,
               ),
               const SizedBox(width: 8),
-              const Text(
-                'নিরাপত্তা পরামর্শ',
+              Text(
+                tr('নিরাপত্তা পরামর্শ'),
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -790,13 +791,13 @@ class _ClassifiedPostDetailsScreenState
             ],
           ),
           const SizedBox(height: 10),
-          _buildSafetyTip('পরিচিত ও জনবহুল স্থানে দেখা করুন'),
-          _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
-          _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা দেবেন না'),
-          _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
+          _buildSafetyTip(tr('পরিচিত ও জনবহুল স্থানে দেখা করুন')),
+          _buildSafetyTip(tr('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন')),
+          _buildSafetyTip(tr('পণ্য হাতে পাওয়ার আগে টাকা দেবেন না')),
+          _buildSafetyTip(tr('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন')),
           _buildSafetyTip(
-              'অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন'),
-          _buildSafetyTip('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'),
+              tr('অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন')),
+          _buildSafetyTip(tr('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান')),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -806,13 +807,13 @@ class _ClassifiedPostDetailsScreenState
               border: Border.all(color: const Color(0xFFFCA5A5)),
             ),
             child: Row(
-              children: const [
+              children: [
                 Icon(Icons.phone_in_talk_rounded,
                     size: 15, color: Color(0xFFDC2626)),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'জরুরি সহায়তার জন্য ৯৯৯ নম্বরে কল করুন',
+                    tr('জরুরি সহায়তার জন্য ৯৯৯ নম্বরে কল করুন'),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

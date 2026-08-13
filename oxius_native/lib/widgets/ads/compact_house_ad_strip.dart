@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/house_ads_service.dart';
 import 'house_ad_strip_view.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The sponsored strip slot shown under a post's media (above the caption) on
 /// a subset of feed posts, and in the sale / classified / food-zone lists.
@@ -119,9 +120,9 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
           ),
           child: Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+                  tr('দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।'),
                   style: TextStyle(fontSize: 12, color: Color(0xFF3D4759)),
                 ),
               ),
@@ -134,8 +135,8 @@ class _CompactHouseAdStripState extends State<CompactHouseAdStrip>
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   foregroundColor: const Color(0xFF1D4ED8),
                 ),
-                child: const Text(
-                  'আনডু',
+                child: Text(
+                  tr('আনডু'),
                   style: TextStyle(
                       fontSize: 12.5, fontWeight: FontWeight.w700),
                 ),

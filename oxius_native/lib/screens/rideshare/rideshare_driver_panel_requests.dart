@@ -377,7 +377,7 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                                     child: AdsyLoadingIndicator(
                                         strokeWidth: 2, color: Colors.white)),
                                 const SizedBox(width: 8),
-                                Text('নেওয়া হচ্ছে...',
+                                Text(tr('নেওয়া হচ্ছে...'),
                                     style: AppFonts.roboto(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
@@ -395,9 +395,9 @@ extension _RsDriverRequestsSection on _RideshareDriverPanelState {
                                 Text(
                                   isExpired
                                       ? t('rideshare_expired',
-                                          fallback: 'মেয়াদ শেষ')
+                                          fallback: tr('মেয়াদ শেষ'))
                                       : t('rideshare_accept_ride',
-                                          fallback: 'রাইড নিন'),
+                                          fallback: tr('রাইড নিন')),
                                   style: AppFonts.roboto(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,

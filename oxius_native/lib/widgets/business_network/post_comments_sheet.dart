@@ -6,6 +6,7 @@ import '../../services/business_network_service.dart';
 import '../../config/app_config.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import '../common/adsy_loading.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Comments for a BN post in a bottom sheet.
 ///
@@ -142,8 +143,8 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
               children: [
                 Text(
                   _comments.isEmpty
-                      ? 'মন্তব্য'
-                      : 'মন্তব্য (${_comments.length})',
+                      ? tr('মন্তব্য')
+                      : '${tr('মন্তব্য (')}${_comments.length})',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -171,10 +172,10 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                     child: AdsyLoadingIndicator(),
                   )
                 : _comments.isEmpty
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.symmetric(vertical: 36),
                         child: Text(
-                          'এখনো কোনো মন্তব্য নেই — প্রথম মন্তব্যটি করুন',
+                          tr('এখনো কোনো মন্তব্য নেই — প্রথম মন্তব্যটি করুন'),
                           style: TextStyle(
                             fontSize: 13,
                             color: Color(0xFF7B8798),
@@ -202,7 +203,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                     textInputAction: TextInputAction.send,
                     onSubmitted: (_) => _send(),
                     decoration: InputDecoration(
-                      hintText: 'মন্তব্য লিখুন…',
+                      hintText: tr('মন্তব্য লিখুন…'),
                       hintStyle: TextStyle(
                         fontSize: 13.5,
                         color: Colors.grey.shade600,

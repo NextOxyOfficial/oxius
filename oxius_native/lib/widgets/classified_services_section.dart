@@ -8,6 +8,7 @@ import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ClassifiedServicesSection extends StatefulWidget {
   const ClassifiedServicesSection({super.key});
@@ -540,8 +541,8 @@ class ClassifiedServicesPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF155E75)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'আমার সেবা',
+        title: Text(
+          tr('আমার সেবা'),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,

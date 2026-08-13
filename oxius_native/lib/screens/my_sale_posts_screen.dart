@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// My Sale Posts — manage the user's পুরোনো কেনাবেচা ads.
 /// Shop-manager style: filter chips + flat stripe list with hairline dividers.
@@ -233,7 +234,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
       AdsyToast.info(
           context,
           _t('sale_pending_note',
-              'বিজ্ঞাপনটা এখনো রিভিউতে আছে — অ্যাপ্রুভ হলেই লাইভ হবে'));
+              tr('বিজ্ঞাপনটা এখনো রিভিউতে আছে — অ্যাপ্রুভ হলেই লাইভ হবে')));
       return;
     }
 
@@ -339,12 +340,12 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
     );
   }
 
-  static const List<(String, String)> _conditionOptions = [
-    ('brand-new', 'একদম নতুন'),
-    ('like-new', 'নতুনের মতো'),
-    ('good', 'ভালো'),
-    ('fair', 'মোটামুটি'),
-    ('for-parts', 'পার্টসের জন্য'),
+  static List<(String, String)> _conditionOptions = [
+    ('brand-new', tr('একদম নতুন')),
+    ('like-new', tr('নতুনের মতো')),
+    ('good', tr('ভালো')),
+    ('fair', tr('মোটামুটি')),
+    ('for-parts', tr('পার্টসের জন্য')),
   ];
 
   String _conditionLabel(String value) {
@@ -503,7 +504,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                                   AdsyToast.error(
                                       context,
                                       _t('sale_title_required',
-                                          'টাইটেল দিতে হবে'));
+                                          tr('টাইটেল দিতে হবে')));
                                   return;
                                 }
                                 saving.value = true;
@@ -534,14 +535,14 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
                                     AdsyToast.success(
                                         context,
                                         _t('sale_post_updated',
-                                            'বিজ্ঞাপন আপডেট হয়ে গেছে'));
+                                            tr('বিজ্ঞাপন আপডেট হয়ে গেছে')));
                                     _fetchMyPosts(refresh: true);
                                   }
                                 } else {
                                   AdsyToast.error(
                                       context,
                                       _t('sale_update_failed',
-                                          'আপডেট করা গেল না'));
+                                          tr('আপডেট করা গেল না')));
                                 }
                               },
                         style: ElevatedButton.styleFrom(
@@ -640,7 +641,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
         ),
         content: Text(
           _t('sale_delete_confirm',
-              'বিজ্ঞাপনটা ডিলিট করতে চান? এটা আর ফেরত আনা যাবে না।'),
+              tr('বিজ্ঞাপনটা ডিলিট করতে চান? এটা আর ফেরত আনা যাবে না।')),
           style: const TextStyle(fontSize: 13, height: 1.4),
         ),
         actions: [
@@ -872,7 +873,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen> {
           const SizedBox(height: 6),
           Text(
             _t('sale_no_posts_hint',
-                'পুরোনো জিনিস বেচতে প্রথম বিজ্ঞাপনটা দিয়ে ফেলুন'),
+                tr('পুরোনো জিনিস বেচতে প্রথম বিজ্ঞাপনটা দিয়ে ফেলুন')),
             style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
             textAlign: TextAlign.center,
           ),

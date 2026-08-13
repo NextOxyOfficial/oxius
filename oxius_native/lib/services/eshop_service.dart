@@ -3,11 +3,12 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class StoreSubscriptionExpiredException implements Exception {
   final String message;
 
-  const StoreSubscriptionExpiredException(this.message);
+  StoreSubscriptionExpiredException(this.message);
 
   @override
   String toString() => message;
@@ -18,8 +19,8 @@ class EshopService {
   static String get _originBase => ApiService.baseUrl.replaceFirst('/api', '');
   static const String storeSubscriptionExpiredCode =
       'STORE_SUBSCRIPTION_EXPIRED';
-  static const String defaultStoreSubscriptionExpiredMessage =
-      'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন রিনিউ করলে স্টোরটি আবার দেখা যাবে।';
+  static String get defaultStoreSubscriptionExpiredMessage =>
+      tr('এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন রিনিউ করলে স্টোরটি আবার দেখা যাবে।');
 
   static Future<Map<String, String>> _jsonHeaders() async {
     final headers = await ApiService.getHeaders();

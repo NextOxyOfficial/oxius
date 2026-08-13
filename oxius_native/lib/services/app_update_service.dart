@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
 import 'fcm_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class AppUpdateInfo {
   final bool updateAvailable;
@@ -217,7 +218,7 @@ class AppUpdateService {
                       child: ElevatedButton.icon(
                         onPressed: () => _openStore(info.storeUrl),
                         icon: const Icon(Icons.download_rounded, size: 20),
-                        label: const Text('এখনই আপডেট করুন'),
+                        label: Text(tr('এখনই আপডেট করুন')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _accent,
                           foregroundColor: Colors.white,
@@ -240,8 +241,8 @@ class AppUpdateService {
                               Navigator.of(sheetContext).pop();
                             }
                           },
-                          child: const Text(
-                            'পরে',
+                          child: Text(
+                            tr('পরে'),
                             style: TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w600,

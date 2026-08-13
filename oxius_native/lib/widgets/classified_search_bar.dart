@@ -12,6 +12,7 @@ import '../services/translation_service.dart';
 import 'classified_categories_grid.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ClassifiedSearchBar extends StatefulWidget {
   final ValueChanged<String> onSearch;
@@ -62,11 +63,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   List<Map<String, dynamic>> _searchedPosts = [];
 
   // Typing-hint fallback while the backend list hasn't loaded (or is empty).
-  static const List<String> _fallbackHintSuggestions = [
-    'সেলুন ও বিউটি সার্ভিস',
-    'এসি ও ফ্রিজ সার্ভিসিং',
-    'ইলেকট্রিক কাজ',
-    'ঘর পরিষ্কার সার্ভিস',
+  static List<String> get _fallbackHintSuggestions => [
+    tr('সেলুন ও বিউটি সার্ভিস'),
+    tr('এসি ও ফ্রিজ সার্ভিসিং'),
+    tr('ইলেকট্রিক কাজ'),
+    tr('ঘর পরিষ্কার সার্ভিস'),
   ];
   // Admin-managed suggestions from /popular-searches/ — the ONLY source for
   // the "জনপ্রিয় খোঁজ" chips in the search sheet.
@@ -922,8 +923,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                         padding: const EdgeInsets.fromLTRB(20, 12, 10, 6),
                         child: Row(
                           children: [
-                            const Text(
-                              'সেবা খুঁজুন',
+                            Text(
+                              tr('সেবা খুঁজুন'),
                               style: TextStyle(
                                 fontSize: 16.5,
                                 fontWeight: FontWeight.w800,
@@ -964,7 +965,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                               color: const Color(0xFF111827)),
                           decoration: InputDecoration(
                             hintText: _ts.t('classified_search_placeholder',
-                                fallback: 'সেবা বা ক্যাটাগরি খুঁজুন...'),
+                                fallback: tr('সেবা বা ক্যাটাগরি খুঁজুন...')),
                             hintStyle: AppFonts.inter(
                                 fontSize: 14, color: const Color(0xFF94A3B8)),
                             prefixIcon: const Icon(Icons.search_rounded,
@@ -1026,7 +1027,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                           if (cats.isNotEmpty) ...[
                                             _sheetSectionLabel(_ts.t(
                                                 'categories',
-                                                fallback: 'ক্যাটাগরি')),
+                                                fallback: tr('ক্যাটাগরি'))),
                                             ...cats.map((c) => ListTile(
                                                   leading: const Icon(
                                                       Icons.category_rounded,
@@ -1049,7 +1050,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                           ],
                                           if (posts.isNotEmpty) ...[
                                             _sheetSectionLabel(_ts.t('posts',
-                                                fallback: 'পোস্ট')),
+                                                fallback: tr('পোস্ট'))),
                                             ...posts.map((p) => ListTile(
                                                   leading: const Icon(
                                                       Icons.article_outlined,

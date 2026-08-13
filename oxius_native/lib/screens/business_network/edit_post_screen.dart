@@ -15,6 +15,7 @@ import '../../services/business_network_service.dart';
 import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class EditPostScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -212,7 +213,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         if (withVideo != null) {
           updated = withVideo;
         } else {
-          _showSnack('একটি ভিডিও আপলোড করা যায়নি', isError: true);
+          _showSnack(tr('একটি ভিডিও আপলোড করা যায়নি'), isError: true);
         }
       }
       if (!mounted) return;
@@ -660,8 +661,8 @@ class _EditPostScreenState extends State<EditPostScreen> {
                     borderRadius: BorderRadius.circular(18),
                   ),
                 ),
-                child: const Text(
-                  'যোগ করুন',
+                child: Text(
+                  tr('যোগ করুন'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -746,7 +747,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
   Future<void> _pickImage() async {
     try {
       if (_effectivePhotoCount >= _maxPhotos) {
-        AdsyToast.warning(context, 'সর্বোচ্চ $_maxPhotos টি ছবি দেওয়া যাবে');
+        AdsyToast.warning(context, tr('${tr('সর্বোচ্চ')} $_maxPhotos ${tr('টি ছবি দেওয়া যাবে')}'));
         return;
       }
       final images = await ImagePicker().pickMultiImage();
@@ -756,7 +757,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
       final toAdd = images.take(remaining).toList();
       if (images.length > remaining && mounted) {
         AdsyToast.warning(
-            context, 'শুধু $remaining টি ছবি যোগ হলো ($_maxPhotos সর্বোচ্চ)');
+            context, tr('${tr('শুধু')} $remaining ${tr('টি ছবি যোগ হলো (')}$_maxPhotos ${tr('সর্বোচ্চ)')}'));
       }
 
       setState(() => _isCompressing = true);
@@ -775,7 +776,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _isCompressing = false);
-        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ছবি সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -790,7 +791,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
 
   Future<void> _pickNewVideo() async {
     if (_effectiveVideoCount >= _maxVideos) {
-      AdsyToast.warning(context, 'সর্বোচ্চ $_maxVideos টি ভিডিও দেওয়া যাবে');
+      AdsyToast.warning(context, tr('${tr('সর্বোচ্চ')} $_maxVideos ${tr('টি ভিডিও দেওয়া যাবে')}'));
       return;
     }
     try {
@@ -808,11 +809,11 @@ class _EditPostScreenState extends State<EditPostScreen> {
       if (!mounted || withinLimit) return;
       setState(() => _newVideoPaths.remove(path));
       AdsyToast.warning(
-          context, 'ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে');
+          context, tr('ভিডিওটি খুব বড় — সর্বোচ্চ ১০ মিনিটের ভিডিও দেওয়া যাবে'));
     } catch (_) {
       if (mounted) {
         setState(() => _isCompressing = false);
-        AdsyToast.error(context, 'ভিডিও সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ভিডিও সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -978,7 +979,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               child: _mediaActionButton(
                 icon: Icons.photo_library_outlined,
                 iconColor: const Color(0xFF16A34A),
-                label: 'ছবি',
+                label: tr('ছবি'),
                 onTap: _isCompressing ? () {} : _pickImage,
               ),
             ),
@@ -987,7 +988,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
               child: _mediaActionButton(
                 icon: Icons.videocam_outlined,
                 iconColor: const Color(0xFFDC2626),
-                label: 'ভিডিও',
+                label: tr('ভিডিও'),
                 onTap: _pickNewVideo,
               ),
             ),
@@ -996,7 +997,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         const SizedBox(height: 8),
         // Same limits line as the create screen.
         Text(
-          'প্রতি পোস্টে সর্বোচ্চ $_maxPhotos টি ছবি এবং $_maxVideos টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে',
+          tr('${tr('প্রতি পোস্টে সর্বোচ্চ')} $_maxPhotos ${tr('টি ছবি এবং')} $_maxVideos ${tr('টি ভিডিও দেওয়া যাবে, এবং প্রতি ভিডিও সর্বোচ্চ ১০ মিনিটের মধ্যে হতে হবে')}'),
           style: TextStyle(
             fontSize: 11.5,
             color: Colors.grey.shade600,

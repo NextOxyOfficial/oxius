@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'auth_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Eligibility snapshot for the free Pro trial, as decided by the server.
 ///
@@ -96,15 +97,15 @@ class ProTrialService {
       final ok = res.statusCode >= 200 && res.statusCode < 300;
       return ProTrialActivation(
         ok,
-        (body['detail'] ?? (ok ? 'ট্রায়াল চালু হয়েছে।' : 'ট্রায়াল চালু করা যায়নি।'))
+        (body['detail'] ?? (ok ? tr('ট্রায়াল চালু হয়েছে।') : tr('ট্রায়াল চালু করা যায়নি।')))
             .toString(),
         ProTrialStatus.fromJson(body),
       );
     } catch (e) {
       debugPrint('pro trial activate failed: $e');
-      return const ProTrialActivation(
+      return ProTrialActivation(
         false,
-        'সংযোগ সমস্যা। আবার চেষ্টা করুন।',
+        tr('সংযোগ সমস্যা। আবার চেষ্টা করুন।'),
         null,
       );
     }

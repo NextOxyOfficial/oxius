@@ -12,6 +12,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/profile_completion_sheet.dart';
 import '../screens/suspended_account_screen.dart';
 import '../widgets/social_login_buttons.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class LoginPageRedesigned extends StatefulWidget {
   const LoginPageRedesigned({super.key});
@@ -108,7 +109,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           // Authentication error (wrong credentials, etc.)
           setState(() {
             _errorMessage = _t(
-                'login_invalid_credentials', 'ইমেইল বা পাসওয়ার্ড ঠিক নেই');
+                'login_invalid_credentials', tr('ইমেইল বা পাসওয়ার্ড ঠিক নেই'));
           });
         }
       }
@@ -200,7 +201,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           _errorMessage = NetworkErrorHandler.isNetworkError(e)
               ? NetworkErrorHandler.getErrorMessage(e)
               : _t('login_social_failed',
-                      '{provider} দিয়ে লগইন করা গেল না। আবার চেষ্টা করুন।')
+                      tr('{provider} দিয়ে লগইন করা গেল না। আবার চেষ্টা করুন।'))
                   .replaceFirst('{provider}', provider);
         });
       }
@@ -252,8 +253,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                         color: _primaryColor, size: 30),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'নতুন অ্যাকাউন্ট খুলবেন?',
+                  Text(
+                    tr('নতুন অ্যাকাউন্ট খুলবেন?'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18.5,
@@ -262,9 +263,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     ),
                   ),
                   const SizedBox(height: 9),
-                  const Text(
-                    'এই জিমেইল দিয়ে এখনো কোনো অ্যাকাউন্ট খোলা হয়নি। '
-                    'নতুন একটি অ্যাকাউন্ট খুলে শুরু করতে চান?',
+                  Text(
+                    tr('এই জিমেইল দিয়ে এখনো কোনো অ্যাকাউন্ট খোলা হয়নি। ') +
+                    tr('নতুন একটি অ্যাকাউন্ট খুলে শুরু করতে চান?'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 14, height: 1.55, color: Color(0xFF3D4759)),
@@ -277,7 +278,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
-                      hintText: 'রেফারেল কোড (ঐচ্ছিক)',
+                      hintText: tr('রেফারেল কোড (ঐচ্ছিক)'),
                       hintStyle: const TextStyle(
                           fontSize: 13.5,
                           color: Color(0xFF7B8798),
@@ -340,7 +341,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                             children: [
                               GestureDetector(
                                 onTap: toggle,
-                                child: const Text('আমি AdsyClub-এর ',
+                                child: Text(tr('আমি AdsyClub-এর '),
                                     style: labelStyle),
                               ),
                               GestureDetector(
@@ -350,11 +351,11 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                                         const TermsAndConditionsScreen(),
                                   ),
                                 ),
-                                child: Text('শর্তাবলী', style: linkStyle),
+                                child: Text(tr('শর্তাবলী'), style: linkStyle),
                               ),
                               GestureDetector(
                                 onTap: toggle,
-                                child: const Text(' ও ', style: labelStyle),
+                                child: Text(tr(' ও '), style: labelStyle),
                               ),
                               GestureDetector(
                                 onTap: () => Navigator.of(ctx).push(
@@ -363,11 +364,11 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                                   ),
                                 ),
                                 child:
-                                    Text('গোপনীয়তা নীতি', style: linkStyle),
+                                    Text(tr('গোপনীয়তা নীতি'), style: linkStyle),
                               ),
                               GestureDetector(
                                 onTap: toggle,
-                                child: const Text(' পড়েছি এবং সম্মত আছি।',
+                                child: Text(tr(' পড়েছি এবং সম্মত আছি।'),
                                     style: labelStyle),
                               ),
                             ],
@@ -388,7 +389,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('বাতিল',
+                          child: Text(tr('বাতিল'),
                               style: TextStyle(
                                   fontSize: 14.5, fontWeight: FontWeight.w600)),
                         ),
@@ -408,7 +409,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
                           ),
-                          child: const Text('অ্যাকাউন্ট খুলুন',
+                          child: Text(tr('অ্যাকাউন্ট খুলুন'),
                               style: TextStyle(
                                   fontSize: 14.5, fontWeight: FontWeight.w700)),
                         ),
@@ -619,7 +620,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         const SizedBox(height: 5),
         Text(
           _t('login_subtitle',
-              'আপনার AdsyClub অ্যাকাউন্টে লগইন করুন'),
+              tr('আপনার AdsyClub অ্যাকাউন্টে লগইন করুন')),
           style: AppFonts.roboto(
             fontSize: 13.5,
             color: _bodyTextColor,
@@ -810,7 +811,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
             (digits.length == 13 && digits.startsWith('8801'));
         if (!isEmail && !isPhone) {
           return _t('login_identifier_invalid',
-              'ঠিকঠাক ইমেইল বা ফোন নম্বর দিন');
+              tr('ঠিকঠাক ইমেইল বা ফোন নম্বর দিন'));
         }
         return null;
       },

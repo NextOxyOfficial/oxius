@@ -6,6 +6,7 @@ import '../services/sale_service.dart';
 import '../services/category_icon_mapping.dart';
 import '../services/auth_service.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class SaleCategory extends StatefulWidget {
   final EdgeInsetsGeometry margin;
@@ -326,7 +327,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   children: [
                     Text(
                       _translationService.t('sale_marketplace_title',
-                          fallback: 'পুরোনো কেনাবেচা মার্কেটপ্লেস'),
+                          fallback: tr('পুরোনো কেনাবেচা মার্কেটপ্লেস')),
                       style: AppText.sectionTitle(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -334,7 +335,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     SizedBox(height: 2),
                     Text(
                       _translationService.t('sale_marketplace_subtitle',
-                          fallback: 'পুরোনো জিনিস সহজে কেনাবেচা করুন'),
+                          fallback: tr('পুরোনো জিনিস সহজে কেনাবেচা করুন')),
                       style: AppText.sectionSubtitle(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

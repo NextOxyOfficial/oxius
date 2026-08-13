@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class CreateStoreScreen extends StatefulWidget {
   final VoidCallback onStoreCreated;
@@ -156,7 +157,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                 const SizedBox(height: 12),
                 Text(
                   _t('eshop_store_created_detail',
-                      'আপনার "$storeName" স্টোরটা তৈরি হয়ে গেছে। এখন প্রোডাক্ট অ্যাড করা শুরু করতে পারেন।'),
+                      tr('${tr('আপনার')} "$storeName" ${tr('স্টোরটা তৈরি হয়ে গেছে')}। ${tr('এখন প্রোডাক্ট অ্যাড করা শুরু করতে পারেন')}।')),
                   style: const TextStyle(
                     fontSize: 13,
                     color: Color(0xFF5A6273),
@@ -242,7 +243,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                     const SizedBox(height: 8),
                     Text(
                       _t('eshop_create_store_subtitle',
-                          'আপনার অনলাইন স্টোর সেট করুন আর প্রোডাক্ট বিক্রি করা শুরু করুন'),
+                          tr('আপনার অনলাইন স্টোর সেট করুন আর প্রোডাক্ট বিক্রি করা শুরু করুন')),
                       style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF5A6273),
@@ -293,7 +294,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         controller: _storeNameController,
                         decoration: InputDecoration(
                           hintText: _t('eshop_store_name_hint',
-                              'আপনার ব্যবসার নাম লিখুন'),
+                              tr('আপনার ব্যবসার নাম লিখুন')),
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade500,
@@ -325,7 +326,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return _t('eshop_store_name_required',
-                                'স্টোরের নাম লাগবে');
+                                tr('স্টোরের নাম লাগবে'));
                           }
                           return null;
                         },
@@ -346,7 +347,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         controller: _storeUsernameController,
                         decoration: InputDecoration(
                           hintText: _t('eshop_store_username_hint',
-                              'আপনার স্টোরের ইউজারনেম লিখুন'),
+                              tr('আপনার স্টোরের ইউজারনেম লিখুন')),
                           hintStyle: TextStyle(
                             fontSize: 13,
                             color: Colors.grey.shade500,
@@ -406,11 +407,11 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return _t('eshop_store_username_required',
-                                'স্টোরের ইউজারনেম লাগবে');
+                                tr('স্টোরের ইউজারনেম লাগবে'));
                           }
                           if (value.length < 3) {
                             return _t('eshop_username_min_length',
-                                'ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে');
+                                tr('ইউজারনেম কমপক্ষে ৩ অক্ষরের হতে হবে'));
                           }
                           if (_usernameError != null) {
                             return _usernameError;
@@ -447,9 +448,9 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                 child: Text(
                                   _usernameAvailable
                                       ? _t('eshop_username_available',
-                                          'ইউজারনেমটা খালি আছে!')
+                                          tr('ইউজারনেমটা খালি আছে!'))
                                       : _t('eshop_username_taken',
-                                          'এই ইউজারনেম আগেই নেওয়া হয়ে গেছে'),
+                                          tr('এই ইউজারনেম আগেই নেওয়া হয়ে গেছে')),
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w500,
@@ -468,7 +469,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _t('eshop_try_these_instead',
-                              'এগুলোর একটা ট্রাই করে দেখুন:'),
+                              tr('এগুলোর একটা ট্রাই করে দেখুন:')),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey.shade700,
@@ -522,7 +523,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           children: [
                             Text(
                               _t('eshop_store_url_will_be',
-                                  'আপনার স্টোরের URL হবে:'),
+                                  tr('আপনার স্টোরের URL হবে:')),
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade700,
@@ -584,7 +585,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                 )
                               : Text(
                                   _t('eshop_create_store_button',
-                                      'স্টোর তৈরি করুন'),
+                                      tr('স্টোর তৈরি করুন')),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,

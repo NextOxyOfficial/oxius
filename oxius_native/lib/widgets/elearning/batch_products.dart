@@ -5,6 +5,7 @@ import '../../models/cart_item.dart';
 import '../product_card.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class BatchProducts extends StatefulWidget {
   final String? selectedBatch;
@@ -318,7 +319,7 @@ class _BatchProductsState extends State<BatchProducts> {
         },
       );
     } catch (e) {
-      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
+      AdsyToast.error(context, tr('চেকআউটে যাওয়া যায়নি'));
     }
   }
 

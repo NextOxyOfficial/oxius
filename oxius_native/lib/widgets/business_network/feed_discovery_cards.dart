@@ -22,6 +22,7 @@ import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
 import 'news_comments_sheet.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// One tile inside a discovery row.
 class FeedDiscoveryItem {
@@ -114,7 +115,7 @@ class FeedDiscoveryCard extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
                       children: [
-                        Text('সব দেখুন',
+                        Text(tr('সব দেখুন'),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -447,9 +448,9 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                       const Icon(Icons.bolt_rounded, size: 15, color: _accent),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'টাস্ক কমপ্লিট করে ইনকাম করুন',
+                    tr('টাস্ক কমপ্লিট করে ইনকাম করুন'),
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
@@ -463,11 +464,11 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                       context,
                       MaterialPageRoute(
                           builder: (_) => const MicroGigsScreen())),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
                       children: [
-                        Text('সব দেখুন',
+                        Text(tr('সব দেখুন'),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -533,8 +534,8 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                                 color: _accent,
                               ),
                             ),
-                            const Text(
-                              '  •  কাজ প্রতি',
+                            Text(
+                              tr('  •  কাজ প্রতি'),
                               style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
@@ -551,7 +552,7 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                '${gig.remainingSlots} স্লট বাকি',
+                                '${gig.remainingSlots} ${tr('স্লট বাকি')}',
                                 style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w600,
@@ -583,14 +584,14 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: const Color(0xFFA7F3D0)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.check_circle_rounded,
                               size: 16, color: Color(0xFF059669)),
                           SizedBox(width: 6),
                           Text(
-                            'টাস্ক কমপ্লিট হয়েছে',
+                            tr('টাস্ক কমপ্লিট হয়েছে'),
                             style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
@@ -608,8 +609,8 @@ class _FeedMicroGigsCardState extends State<FeedMicroGigsCard> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999)),
                       ),
-                      child: const Text(
-                        'ইনকাম করুন',
+                      child: Text(
+                        tr('ইনকাম করুন'),
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w700),
                       ),
@@ -701,9 +702,9 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                       size: 15, color: _accent),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'এডজি নিউজ',
+                    tr('এডজি নিউজ'),
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
@@ -714,11 +715,11 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/adsy-news'),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
                       children: [
-                        Text('সব খবর',
+                        Text(tr('সব খবর'),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -772,11 +773,11 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
               children: [
                 GestureDetector(
                   onTap: openStory,
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'আরো পড়ুন',
+                        tr('আরো পড়ুন'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -857,12 +858,12 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
       data: AdsyShareData(
         title: post.title,
         url: '${AppConfig.mediaBaseUrl}/adsy-news/${post.slug}',
-        eyebrow: 'এডজি নিউজ',
-        repostHint: 'এই খবর নিয়ে কিছু বলুন...',
+        eyebrow: tr('এডজি নিউজ'),
+        repostHint: tr('এই খবর নিয়ে কিছু বলুন...'),
         onRepost: (caption) async {
           if (!AuthService.isAuthenticated) {
             if (mounted) {
-              LoginPromptDialog.show(context, action: 'খবর শেয়ার করতে');
+              LoginPromptDialog.show(context, action: tr('খবর শেয়ার করতে'));
             }
             return false;
           }
@@ -873,7 +874,7 @@ class _FeedNewsCardState extends State<FeedNewsCard> {
           if (created == null) return false;
           if (mounted) {
             setState(() => _shareCount = (_shareCount ?? post.shareCount) + 1);
-            AdsyToast.success(context, 'খবরটি আপনার ফিডে শেয়ার হয়েছে');
+            AdsyToast.success(context, tr('খবরটি আপনার ফিডে শেয়ার হয়েছে'));
           }
           return true;
         },
@@ -917,7 +918,7 @@ class _FeedWorkspaceGigsCardState extends State<FeedWorkspaceGigsCard> {
     return FeedDiscoveryCard(
       icon: Icons.work_outline_rounded,
       accent: const Color(0xFF059669),
-      title: 'ওয়ার্কস্পেস গিগস',
+      title: tr('ওয়ার্কস্পেস গিগস'),
       listStyle: true,
       onSeeAll: () => Navigator.push(
           context, MaterialPageRoute(builder: (_) => const WorkspaceScreen())),
@@ -990,7 +991,7 @@ class _FeedSaleCardState extends State<FeedSaleCard> {
     return FeedDiscoveryCard(
       icon: Icons.sync_alt_rounded,
       accent: const Color(0xFF0D9488),
-      title: 'পুরাতন কেনাবেচা',
+      title: tr('পুরাতন কেনাবেচা'),
       onSeeAll: () => Navigator.pushNamed(context, '/sale'),
       items: _posts.map((p) {
         final price = (p['price'] ?? '0').toString();

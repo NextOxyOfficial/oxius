@@ -10,6 +10,7 @@ import '../widgets/common/adsy_loading.dart';
 import '../widgets/common/adsy_pro_badge.dart';
 import '../widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Create a new AdsyConnect group.
 ///
@@ -149,25 +150,25 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       // Universal flow: source sheet → crop (square, confirm) → compress.
       final picked = await AdsyImageUpload.pick(
         context,
-        title: 'গ্রুপ ছবি ঠিক করুন',
+        title: tr('গ্রুপ ছবি ঠিক করুন'),
         compress: false, // preview needs a real file path; upload compresses
       );
       if (picked != null && mounted) {
         setState(() => _imagePath = picked.path);
       }
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ছবি নেওয়া যায়নি');
+      if (mounted) AdsyToast.error(context, tr('ছবি নেওয়া যায়নি'));
     }
   }
 
   Future<void> _create() async {
     final name = _name.text.trim();
     if (name.isEmpty) {
-      AdsyToast.warning(context, 'গ্রুপের নাম দিন');
+      AdsyToast.warning(context, tr('গ্রুপের নাম দিন'));
       return;
     }
     if (_selected.isEmpty) {
-      AdsyToast.warning(context, 'অন্তত একজন মেম্বার সিলেক্ট  করুন');
+      AdsyToast.warning(context, tr('অন্তত একজন মেম্বার সিলেক্ট  করুন'));
       return;
     }
     setState(() => _creating = true);
@@ -179,10 +180,10 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     if (!mounted) return;
     setState(() => _creating = false);
     if (group != null) {
-      AdsyToast.success(context, 'গ্রুপ তৈরি হয়েছে');
+      AdsyToast.success(context, tr('গ্রুপ তৈরি হয়েছে'));
       Navigator.of(context).pop(group);
     } else {
-      AdsyToast.error(context, 'গ্রুপ তৈরি করা যায়নি');
+      AdsyToast.error(context, tr('গ্রুপ তৈরি করা যায়নি'));
     }
   }
 
@@ -199,7 +200,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         centerTitle: true,
-        title: const Text('নতুন গ্রুপ',
+        title: Text(tr('নতুন গ্রুপ'),
             style: TextStyle(
                 color: Color(0xFF1E293B),
                 fontSize: 17,
@@ -222,8 +223,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 6, 8, 0),
                     child: Row(
                       children: [
-                        const Text(
-                          'মেম্বার',
+                        Text(
+                          tr('মেম্বার'),
                           style: TextStyle(
                             fontSize: 15.5,
                             fontWeight: FontWeight.w800,
@@ -263,7 +264,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                                         textAlignVertical:
                                             TextAlignVertical.center,
                                         decoration: InputDecoration(
-                                          hintText: 'মেম্বার সার্চ করুন',
+                                          hintText: tr('মেম্বার সার্চ করুন'),
                                           hintStyle: TextStyle(
                                               color: Colors.grey.shade600,
                                               fontSize: 13),
@@ -305,8 +306,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     padding: const EdgeInsets.fromLTRB(22, 6, 22, 4),
                     child: Text(
                       _search.text.trim().isEmpty
-                          ? 'আপনার রিসেন্ট চ্যাট একটিভিটি থেকে'
-                          : 'সার্চ রেজাল্ট',
+                          ? tr('আপনার রিসেন্ট চ্যাট একটিভিটি থেকে')
+                          : tr('সার্চ রেজাল্ট'),
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -330,7 +331,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                       child: Center(
                         child: _loadingChats
                             ? const AdsyLoadingIndicator()
-                            : Text('কেউ পাওয়া যায়নি',
+                            : Text(tr('কেউ পাওয়া যায়নি'),
                                 style: TextStyle(
                                     fontSize: 13, color: Colors.grey.shade700)),
                       ),
@@ -425,7 +426,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 setState(() => _editingName = false);
               },
               decoration: InputDecoration(
-                hintText: 'গ্রুপের নাম দিন',
+                hintText: tr('গ্রুপের নাম দিন'),
                 hintStyle: TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 13.5,
@@ -455,7 +456,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        typedName.isEmpty ? 'গ্রুপের নাম দিন' : typedName,
+                        typedName.isEmpty ? tr('গ্রুপের নাম দিন') : typedName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -596,8 +597,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                         valueColor: AlwaysStoppedAnimation(Colors.white)))
                 : Text(
                     _selected.isEmpty
-                        ? 'গ্রুপ তৈরি করুন'
-                        : 'গ্রুপ তৈরি করুন · ${_selected.length} জন',
+                        ? tr('গ্রুপ তৈরি করুন')
+                        : '${tr('গ্রুপ তৈরি করুন')} · ${_selected.length} ${tr('জন')}',
                     style: const TextStyle(
                         fontSize: 15.5, fontWeight: FontWeight.w700)),
           ),

@@ -16,6 +16,7 @@ import 'create_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class EshopManagerScreen extends StatefulWidget {
   const EshopManagerScreen({super.key});
@@ -340,13 +341,13 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         Icons.inventory_2_rounded,
         t('eshop_benefit_products', fallback: 'প্রোডাক্ট লিস্টিং'),
         t('eshop_benefit_products_sub',
-            fallback: 'ছবি, দাম, স্টক সহ প্রোডাক্ট যোগ করুন')
+            fallback: tr('ছবি, দাম, স্টক সহ প্রোডাক্ট যোগ করুন'))
       ),
       (
         Icons.shopping_bag_rounded,
         t('eshop_benefit_orders', fallback: 'অর্ডার ম্যানেজমেন্ট'),
         t('eshop_benefit_orders_sub',
-            fallback: 'অর্ডার গ্রহণ, স্ট্যাটাস আপডেট আর এডিট')
+            fallback: tr('অর্ডার গ্রহণ, স্ট্যাটাস আপডেট আর এডিট'))
       ),
       (
         Icons.reviews_rounded,
@@ -357,7 +358,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
         Icons.insights_rounded,
         t('eshop_benefit_dashboard', fallback: 'সেলস ড্যাশবোর্ড'),
         t('eshop_benefit_dashboard_sub',
-            fallback: 'বিক্রি আর ইনকামের হিসাব একনজরে')
+            fallback: tr('বিক্রি আর ইনকামের হিসাব একনজরে'))
       ),
       (
         Icons.verified_rounded,
@@ -430,7 +431,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             ? t('eshop_unavailable_badge',
                                 fallback: 'UNAVAILABLE')
                             : t('eshop_premium_access_badge',
-                                fallback: 'প্রিমিয়াম অ্যাক্সেস'),
+                                fallback: tr('প্রিমিয়াম অ্যাক্সেস')),
                         style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
@@ -445,7 +446,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                           ? t('eshop_manager_unavailable_title',
                               fallback: 'Shop Manager Unavailable')
                           : t('eshop_premium_hero_title',
-                              fallback: 'প্রো সেলার হয়ে বিক্রি শুরু করুন'),
+                              fallback: tr('প্রো সেলার হয়ে বিক্রি শুরু করুন')),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18.5,
@@ -463,7 +464,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                                   'The Shop Manager is not available in this version of the app.')
                           : t('eshop_premium_hero_sub',
                               fallback:
-                                  'শপ ম্যানেজার আনলক করে নিজের প্রোডাক্ট বিক্রি করুন'),
+                                  tr('শপ ম্যানেজার আনলক করে নিজের প্রোডাক্ট বিক্রি করুন')),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12.5,
@@ -485,7 +486,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                     if (!isIOSPlatform) ...[
                       Text(
                         t('eshop_premium_whats_included',
-                            fallback: 'প্রো-তে যা যা পাবেন'),
+                            fallback: tr('প্রো-তে যা যা পাবেন')),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
@@ -514,7 +515,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             children: [
                               Text(
                                 t('eshop_upgrade_to_pro',
-                                    fallback: 'প্রো-তে আপগ্রেড করুন'),
+                                    fallback: tr('প্রো-তে আপগ্রেড করুন')),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
@@ -537,7 +538,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             Text(
                               t('eshop_premium_trust',
                                   fallback:
-                                      'সিকিউর পেমেন্ট • যেকোনো সময় রিনিউ'),
+                                      tr('সিকিউর পেমেন্ট • যেকোনো সময় রিনিউ')),
                               style: const TextStyle(
                                   fontSize: 11, color: Color(0xFF7B8798)),
                             ),
@@ -753,7 +754,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                         Expanded(
                           child: _statCard(
                               t('eshop_total_products',
-                                  fallback: 'টোটাল প্রোডাক্ট'),
+                                  fallback: tr('টোটাল প্রোডাক্ট')),
                               '$totalProducts',
                               const Color(0xFF6366F1),
                               onTap: () => _selectSection(1)),
@@ -776,7 +777,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                         Expanded(
                           child: _statCard(
                               t('eshop_pending_orders',
-                                  fallback: 'পেন্ডিং অর্ডার'),
+                                  fallback: tr('পেন্ডিং অর্ডার')),
                               '$pendingOrders',
                               const Color(0xFFD97706),
                               onTap: () => _selectSection(2)),
@@ -928,7 +929,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                               uname.isNotEmpty
                                   ? '@$uname'
                                   : t('eshop_pro_seller',
-                                      fallback: 'প্রো সেলার'),
+                                      fallback: tr('প্রো সেলার')),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -951,7 +952,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                                   active
                                       ? t('eshop_active', fallback: 'অ্যাক্টিভ')
                                       : t('eshop_inactive',
-                                          fallback: 'ইনঅ্যাক্টিভ'),
+                                          fallback: tr('ইনঅ্যাক্টিভ')),
                                   style: TextStyle(
                                       color: active ? green : slate,
                                       fontSize: 11.5,
@@ -1084,7 +1085,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> {
                             AdsyToast.success(
                                 context,
                                 t('eshop_link_copied',
-                                    fallback: 'স্টোর লিংক কপি হয়েছে'));
+                                    fallback: tr('স্টোর লিংক কপি হয়েছে')));
                           },
                           child: const Padding(
                             padding: EdgeInsets.all(4),

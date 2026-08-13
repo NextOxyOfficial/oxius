@@ -15,6 +15,7 @@ import '../../utils/url_launcher_utils.dart';
 import '../../widgets/chat_video_player.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/linkify_text.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 // ---------------------------------------------------------------------------
 // Helper
@@ -397,7 +398,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'পাঠানো হচ্ছে…',
+                                  tr('পাঠানো হচ্ছে…'),
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.grey.shade600,
@@ -796,7 +797,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final title = shared.displayName.isEmpty ? 'Post' : shared.displayName;
     final subtitle = shared.caption.trim().isNotEmpty
         ? shared.caption.trim()
-        : 'Business Network পোস্ট';
+        : tr('Business Network পোস্ট');
     // The card HUGS its content: short titles/captions get a narrow card,
     // and the old full width (~320) is now the MAXIMUM, not the default.
     //

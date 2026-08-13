@@ -24,6 +24,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 part 'rideshare_driver_panel_profile.dart';
 part 'rideshare_driver_panel_requests.dart';
@@ -497,7 +498,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'লোকেশন সেটআপ কমপ্লিট করুন',
+                tr('লোকেশন সেটআপ কমপ্লিট করুন'),
                 style: AppFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -506,7 +507,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               ),
               const SizedBox(height: 8),
               Text(
-                'অ্যাপ ব্যাকগ্রাউন্ডে থাকলেও অনলাইনে থাকতে এবং রাইড রিকোয়েস্ট পেতে অ্যাপ সেটিংস থেকে সবসময় লোকেশন অনুমতি দিন।',
+                tr('অ্যাপ ব্যাকগ্রাউন্ডে থাকলেও অনলাইনে থাকতে এবং রাইড রিকোয়েস্ট পেতে অ্যাপ সেটিংস থেকে সবসময় লোকেশন অনুমতি দিন।'),
                 style: AppFonts.roboto(
                   fontSize: 13,
                   color: _slate500,
@@ -525,7 +526,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'দ্রুত ধাপ',
+                      tr('দ্রুত ধাপ'),
                       style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -534,7 +535,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '১. অ্যাপ সেটিংস খুলুন\n২. Permissions> Location এ চাপুন\n৩. Allow All the Time নির্বাচন করুন\n৪. আবার এখানে ফিরে আসুন',
+                      tr('১. অ্যাপ সেটিংস খুলুন\n২. Permissions> Location এ চাপুন\n৩. Allow All the Time নির্বাচন করুন\n৪. আবার এখানে ফিরে আসুন'),
                       style: AppFonts.roboto(
                         fontSize: 12,
                         color: _slate600,
@@ -558,7 +559,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         ),
                       ),
                       child: Text(
-                        'এখন নয়',
+                        tr('এখন নয়'),
                         style: AppFonts.roboto(
                           fontWeight: FontWeight.w700,
                           color: _slate600,
@@ -579,8 +580,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ),
                       child: Text(
                         goOnlineAfterSetup
-                            ? 'সেটিংস খুলুন'
-                            : 'সেটআপ কমপ্লিট করুন',
+                            ? tr('সেটিংস খুলুন')
+                            : tr('সেটআপ কমপ্লিট করুন'),
                         style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -645,7 +646,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         final consented =
             await LocationDisclosure.ensure(context, background: true);
         if (!consented) {
-          _showError('ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।');
+          _showError(tr('ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।'));
           return false;
         }
         permission = await Geolocator.requestPermission();
@@ -1016,7 +1017,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       final loading = _loadAvailableRequests();
       unawaited(_playIncomingRideAlert(rideId: event['ride_id']?.toString()));
       await loading;
-      _showSuccess('নতুন রাইড রিকোয়েস্ট এসেছে!');
+      _showSuccess(tr('নতুন রাইড রিকোয়েস্ট এসেছে!'));
       return;
     }
 
@@ -1252,7 +1253,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         });
         _showSuccess(isNewApplication
             ? t('rideshare_application_submitted',
-                fallback: 'আবেদন জমা হয়েছে! অ্যাডমিনের এপ্রুভের অপেক্ষা করুন।')
+                fallback: tr('আবেদন জমা হয়েছে! অ্যাডমিনের এপ্রুভের অপেক্ষা করুন।'))
             : t('rideshare_profile_saved', fallback: 'প্রোফাইল সেভ হয়েছে'));
       } else {
         _showError(result.message);
@@ -1264,7 +1265,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final remainingSlots = 10 - _additionalDocuments.length;
     if (remainingSlots <= 0) {
       _showError(t('rideshare_doc_limit',
-          fallback: 'সর্বোচ্চ ১০টি ডকুমেন্ট দেওয়া যাবে।'));
+          fallback: tr('সর্বোচ্চ ১০টি ডকুমেন্ট দেওয়া যাবে।')));
       return;
     }
 
@@ -1306,7 +1307,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       });
     } catch (_) {
       _showError(t('rideshare_doc_pick_failed',
-          fallback: 'এখন ডকুমেন্ট নেওয়া যাচ্ছে না।'));
+          fallback: tr('এখন ডকুমেন্ট নেওয়া যাচ্ছে না।')));
     }
   }
 
@@ -1391,11 +1392,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     final issues = <String>[
       if (!readiness.notificationsGranted)
-        'নোটিফিকেশন অনুমতি — রাইড রিকোয়েস্ট দেখানোর জন্য আবশ্যক।',
+        tr('নোটিফিকেশন অনুমতি — রাইড রিকোয়েস্ট দেখানোর জন্য আবশ্যক।'),
       if (!readiness.batteryOptimizationIgnored)
-        'ব্যাটারি অপটিমাইজেশন বন্ধ — ফোন লক থাকলেও রিকোয়েস্ট পেতে দরকার।',
+        tr('ব্যাটারি অপটিমাইজেশন বন্ধ — ফোন লক থাকলেও রিকোয়েস্ট পেতে দরকার।'),
       if (!readiness.fullScreenIntentGranted)
-        'ফুল-স্ক্রিন অ্যালার্ট — কল-এর মতো স্ক্রিন জাগিয়ে দেখানোর জন্য।',
+        tr('ফুল-স্ক্রিন অ্যালার্ট — কল-এর মতো স্ক্রিন জাগিয়ে দেখানোর জন্য।'),
     ];
     if (issues.isEmpty) return;
 
@@ -1413,7 +1414,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'রাইড অ্যালার্ট সেটআপ কমপ্লিট করুন',
+                tr('রাইড অ্যালার্ট সেটআপ কমপ্লিট করুন'),
                 style: AppFonts.roboto(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -1422,7 +1423,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               ),
               const SizedBox(height: 8),
               Text(
-                'ফোন লক বা পকেটে থাকা অবস্থায় রাইড রিকোয়েস্ট মিস না করতে নিচের অনুমতিগুলো চালু রাখুন:',
+                tr('ফোন লক বা পকেটে থাকা অবস্থায় রাইড রিকোয়েস্ট মিস না করতে নিচের অনুমতিগুলো চালু রাখুন:'),
                 style: AppFonts.roboto(
                   fontSize: 13,
                   color: _slate500,
@@ -1469,7 +1470,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         ),
                       ),
                       child: Text(
-                        'পরে',
+                        tr('পরে'),
                         style: AppFonts.roboto(
                           fontWeight: FontWeight.w700,
                           color: _slate600,
@@ -1495,7 +1496,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         ),
                       ),
                       child: Text(
-                        'অনুমতি দিন',
+                        tr('অনুমতি দিন'),
                         style: AppFonts.roboto(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -1559,7 +1560,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _availableRequests.removeWhere((request) => request.id == ride.id);
       });
       _showError(t('rideshare_request_expired_msg',
-          fallback: 'রিকোয়েস্টটির মেয়াদ শেষ।'));
+          fallback: tr('রিকোয়েস্টটির মেয়াদ শেষ।')));
       return;
     }
 
@@ -1936,7 +1937,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   String _resolveDriverErrorMessage(String message) {
     final raw = message.trim();
     if (raw.isEmpty) {
-      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      return tr('কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     }
 
     final lower = raw.toLowerCase();
@@ -1974,66 +1975,66 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   String _localizeDriverMessage(String message) {
     final raw = message.trim();
     if (raw.isEmpty) {
-      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      return tr('কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     }
 
     final lower = raw.toLowerCase();
 
-    const exactMessages = {
+    final exactMessages = {
       'connection error. please check your internet connection.':
-          'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
+          tr('ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।'),
       'unable to process response. please try again.':
-          'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
+          tr('রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।'),
       'connection timeout. please try again.':
-          'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+          tr('সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।'),
       'network connection issue. please check your internet.':
-          'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+          tr('নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।'),
       'request timed out. please try again.':
-          'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+          tr('রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।'),
       'session expired. please log in again.':
-          'সেশন শেষ হয়েছে। আবার লগইন করুন।',
+          tr('সেশন শেষ হয়েছে। আবার লগইন করুন।'),
       "you don't have permission to perform this action.":
-          'এই কাজটি করার অনুমতি আপনার নেই।',
-      'requested resource not found.': 'চাওয়া তথ্য পাওয়া যায়নি।',
+          tr('এই কাজটি করার অনুমতি আপনার নেই।'),
+      'requested resource not found.': tr('চাওয়া তথ্য পাওয়া যায়নি।'),
       'server error. please try again later.':
-          'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+          tr('সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।'),
       'service temporarily unavailable. please try again later.':
-          'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
+          tr('সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।'),
       'something went wrong. please try again.':
-          'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+          tr('কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।'),
       'location service is off. please enable gps before going online.':
-          'অনলাইনে যেতে আগে জিপিএস চালু করুন।',
+          tr('অনলাইনে যেতে আগে জিপিএস চালু করুন।'),
       'location permission is required to use driver mode.':
-          'ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।',
+          tr('ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।'),
       'location permission permanently denied. please enable it in app settings.':
-          'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
-      'new ride request received.': 'নতুন রাইড রিকোয়েস্ট এসেছে।',
-      'unable to open chat': 'চ্যাট খোলা যাচ্ছে না।',
+          tr('লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।'),
+      'new ride request received.': tr('নতুন রাইড রিকোয়েস্ট এসেছে।'),
+      'unable to open chat': tr('চ্যাট খোলা যাচ্ছে না।'),
       'passenger chat is unavailable':
-          'যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
-      'ride completed!': 'রাইড কমপ্লিট হয়েছে!',
-      'ride cancelled': 'রাইড বাতিল হয়েছে।',
+          tr('যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।'),
+      'ride completed!': tr('রাইড কমপ্লিট হয়েছে!'),
+      'ride cancelled': tr('রাইড বাতিল হয়েছে।'),
       'application submitted! wait for admin approval.':
-          'আবেদন জমা হয়েছে। এখন অ্যাডমিন এপ্রুভের জন্য অপেক্ষা করুন।',
-      'profile saved': 'প্রোফাইল সেভ করা হয়েছে।',
-      'you are now online': 'আপনি এখন অনলাইনে আছেন।',
-      'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
-      'done!': 'কমপ্লিট হয়েছে!',
-      'this ride request has expired.': 'এই রাইড রিকোয়েস্টের সময় শেষ হয়েছে।',
-      'ride accepted!': 'রাইড গ্রহণ করা হয়েছে!',
-      'ride skipped.': 'রাইডটি স্কিপ করা হয়েছে।',
+          tr('আবেদন জমা হয়েছে। এখন অ্যাডমিন এপ্রুভের জন্য অপেক্ষা করুন।'),
+      'profile saved': tr('প্রোফাইল সেভ করা হয়েছে।'),
+      'you are now online': tr('আপনি এখন অনলাইনে আছেন।'),
+      'you are now offline': tr('আপনি এখন অফলাইনে আছেন।'),
+      'done!': tr('কমপ্লিট হয়েছে!'),
+      'this ride request has expired.': tr('এই রাইড রিকোয়েস্টের সময় শেষ হয়েছে।'),
+      'ride accepted!': tr('রাইড গ্রহণ করা হয়েছে!'),
+      'ride skipped.': tr('রাইডটি স্কিপ করা হয়েছে।'),
       'passenger confirmation requested for early completion.':
-          'আগাম কমপ্লিটের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
+          tr('আগাম কমপ্লিটের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।'),
       'could not pick documents right now.':
-          'এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।',
+          tr('এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।'),
       'you can upload up to 10 additional documents.':
-          'সর্বোচ্চ ১০টি অতিরিক্ত ডকুমেন্ট আপলোড করা যাবে।',
-      'ride is no longer available.': 'রাইডটি আর উপলভ্য নেই।',
+          tr('সর্বোচ্চ ১০টি অতিরিক্ত ডকুমেন্ট আপলোড করা যাবে।'),
+      'ride is no longer available.': tr('রাইডটি আর উপলভ্য নেই।'),
       'this ride is currently assigned to another driver.':
-          'এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।',
+          tr('এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।'),
       'you already have an active ride. complete it before accepting a new one.':
-          'আপনার ইতোমধ্যে একটি একটিভ রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
-      'ride accepted successfully.': 'রাইড সফলভাবে গ্রহণ করা হয়েছে।',
+          tr('আপনার ইতোমধ্যে একটি একটিভ রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।'),
+      'ride accepted successfully.': tr('রাইড সফলভাবে গ্রহণ করা হয়েছে।'),
     };
 
     final exact = exactMessages[lower];
@@ -2042,7 +2043,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
 
     if (lower.startsWith('failed to enable location')) {
-      return 'লোকেশন চালু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+      return tr('লোকেশন চালু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
     }
 
     return raw;
@@ -2051,7 +2052,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Future<void> _openPassengerChat(Ride ride) async {
     if (ride.riderId.isEmpty) {
       _showError(t('rideshare_passenger_chat_unavailable',
-          fallback: 'যাত্রীর চ্যাট এখন সম্ভব নয়'));
+          fallback: tr('যাত্রীর চ্যাট এখন সম্ভব নয়')));
       return;
     }
 
@@ -2102,7 +2103,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final riderPhone = ride.riderPhone?.trim() ?? '';
     if (riderPhone.isEmpty) {
       _showError(t('rideshare_passenger_call_unavailable',
-          fallback: 'যাত্রীকে কল এখন সম্ভব নয়'));
+          fallback: tr('যাত্রীকে কল এখন সম্ভব নয়')));
       return;
     }
 
@@ -2113,7 +2114,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
 
     _showError(t('rideshare_passenger_call_unavailable',
-        fallback: 'যাত্রীকে কল এখন সম্ভব নয়'));
+        fallback: tr('যাত্রীকে কল এখন সম্ভব নয়')));
   }
 
   // ── BUILD ──────────────────────────────────────────────────────────────────
@@ -2198,7 +2199,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             const SizedBox(height: 6),
             Text(
                 t('rideshare_login_required_subtitle',
-                    fallback: 'ড্রাইভার ফিচার ব্যবহারে লগইন করুন।'),
+                    fallback: tr('ড্রাইভার ফিচার ব্যবহারে লগইন করুন।')),
                 textAlign: TextAlign.center,
                 style: AppFonts.roboto(fontSize: 13, color: _slate500)),
             const SizedBox(height: 20),

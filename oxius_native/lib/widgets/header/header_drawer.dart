@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Mobile Drawer Menu
 class HeaderDrawer extends StatelessWidget {
@@ -71,7 +72,7 @@ class HeaderDrawer extends StatelessWidget {
                       _buildDrawerItem(
                         context,
                         icon: Icons.list_alt,
-                        label: 'আমার সেবা',
+                        label: tr('আমার সেবা'),
                         route: '/#classified-services',
                         color: const Color(0xFF10B981),
                       ),

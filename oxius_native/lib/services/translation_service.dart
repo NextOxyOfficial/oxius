@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import '../l10n/tr.dart';
 
 class TranslationService extends ChangeNotifier {
   static final TranslationService _instance = TranslationService._internal();
@@ -241,6 +242,18 @@ class TranslationService extends ChangeNotifier {
   bool _initialized = false;
 
   String get currentLanguage => _currentLanguage;
+
+  /// Select a language without touching the network or SharedPreferences.
+  ///
+  /// `changeLanguage` fetches the server payload, which a unit test cannot do.
+  /// The App Store rejection was about what `translate()` returns when every
+  /// table misses, so a test has to be able to reach that path directly.
+  @visibleForTesting
+  void debugSetLanguage(String code, {Map<String, dynamic>? translations}) {
+    _currentLanguage = code;
+    _translations = translations ?? {};
+    setTrLanguage(code);
+  }
   List<Map<String, dynamic>> get availableLanguages => _availableLanguages;
   bool get isLoading => _isLoading;
   bool get initialized => _initialized;
@@ -260,10 +273,12 @@ class TranslationService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _currentLanguage = prefs.getString('selected_language') ?? 'bn';
+      setTrLanguage(_currentLanguage);
     } catch (e) {
       debugPrint('Error loading saved language: $e');
       _currentLanguage = 'bn';
     }
+    setTrLanguage(_currentLanguage);
   }
 
   /// Save language preference to SharedPreferences
@@ -315,7 +330,7 @@ class TranslationService extends ChangeNotifier {
       final cachedTranslations = await _loadCachedTranslations(languageCode);
       if (cachedTranslations != null) {
         _translations = cachedTranslations;
-        _currentLanguage = languageCode;
+        _applyLanguage(languageCode);
         _isLoading = false;
         notifyListeners();
         return true;
@@ -330,25 +345,45 @@ class TranslationService extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _translations = Map<String, dynamic>.from(data['translations']);
-        _currentLanguage = languageCode;
-        
+        _applyLanguage(languageCode);
+
         // Cache the translations
         await _cacheTranslations(languageCode, _translations);
-        await _saveLanguage(languageCode);
-        
+
         _isLoading = false;
         notifyListeners();
         return true;
       } else {
+        // The server payload is an ENHANCEMENT, not a prerequisite. The
+        // Bengali->English dictionary ships in the binary, so the language
+        // must still change — otherwise picking English on a bad connection
+        // silently does nothing, which is indistinguishable from the bug this
+        // release fixes.
         debugPrint('Error loading translations: ${response.statusCode}');
+        _translations = {};
+        _applyLanguage(languageCode);
         _isLoading = false;
-        return false;
+        notifyListeners();
+        return true;
       }
     } catch (e) {
       debugPrint('Error loading translations: $e');
+      _translations = {};
+      _applyLanguage(languageCode);
+      notifyListeners();
       _isLoading = false;
-      return false;
+      return true;
     }
+  }
+
+  /// Select [code] everywhere at once: our own field, the mirror tr.dart reads,
+  /// and the saved preference. Keeping these three in step is the whole job --
+  /// the cache path used to set only the first, so a language change served
+  /// from cache left every tr() call still returning Bengali.
+  void _applyLanguage(String code) {
+    _currentLanguage = code;
+    setTrLanguage(code);
+    _saveLanguage(code);
   }
 
   /// Cache translations to SharedPreferences
@@ -405,7 +440,18 @@ class TranslationService extends ChangeNotifier {
       return localFallback;
     }
 
-    return fallback ?? key;
+    final fb = fallback ?? key;
+
+    // Every table missed. Throughout this app the call site's fallback is the
+    // BENGALI string — `_t('login_sign_in', 'লগইন করুন')` — so returning it
+    // unchanged is precisely what renders Bengali to someone who selected
+    // English, and 1,090 of the 1,381 keys the app asks for had no English
+    // anywhere. Route the Bengali through the Bengali-keyed dictionary instead.
+    // Bengali mode is untouched: it wants the fallback verbatim.
+    if (!_currentLanguage.startsWith('bn')) {
+      return trBn(fb);
+    }
+    return fb;
   }
 
   bool _shouldPreferFallback(String key, String translatedValue) {
@@ -460,7 +506,9 @@ class TranslationService extends ChangeNotifier {
     if (_currentLanguage == languageCode) return true;
     
     final ok = await loadTranslations(languageCode);
-    if (ok) notifyListeners();
+    // Notify either way: the language itself has changed even when the server
+    // payload could not be fetched.
+    notifyListeners();
     return ok;
   }
 

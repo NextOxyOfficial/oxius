@@ -14,6 +14,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import '../widgets/app_network_image.dart';
 import '../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 // Clean marketplace palette — matches the vendor store page.
 const _green = Color(0xFF22C55E);
@@ -626,7 +627,7 @@ class _EshopScreenState extends State<EshopScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSearching = false);
-        AdsyToast.error(context, 'সার্চে সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('সার্চে সমস্যা হয়েছে'));
       }
     }
   }
@@ -836,7 +837,7 @@ class _EshopScreenState extends State<EshopScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${_allCategories.length}টি ক্যাটাগরি থেকে বেছে নিন',
+                          '${_allCategories.length}${tr('টি ক্যাটাগরি থেকে বেছে নিন')}',
                           style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: _slate500,
@@ -869,7 +870,7 @@ class _EshopScreenState extends State<EshopScreen> {
                     size: 18, color: _greenDark),
               ),
               title: 'All Products',
-              subtitle: 'সব পণ্য একসাথে দেখুন',
+              subtitle: tr('সব পণ্য একসাথে দেখুন'),
               onTap: () {
                 Navigator.pop(context);
                 if (_selectedCategoryId != null) _clearCategoryFilter();

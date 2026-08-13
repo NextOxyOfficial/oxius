@@ -9,6 +9,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class OrdersReceivedTab extends StatefulWidget {
   const OrdersReceivedTab({super.key});
@@ -102,7 +103,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             break;
           case 'reject':
             msg = _t(
-                'workspace_order_declined', 'অর্ডার প্রত্যাখ্যান করা হয়েছে');
+                'workspace_order_declined', tr('অর্ডার প্রত্যাখ্যান করা হয়েছে'));
             break;
           case 'deliver':
             msg = _t('workspace_order_delivered', 'অর্ডার ডেলিভারি হয়েছে');
@@ -169,7 +170,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   const SizedBox(height: 4),
                   Text(
                     _t('workspace_dispute_select_reason',
-                        'একটি কারণ বেছে নিয়ে বিস্তারিত লিখুন।'),
+                        tr('একটি কারণ বেছে নিয়ে বিস্তারিত লিখুন।')),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 14),
@@ -208,7 +209,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                       labelText: _t('workspace_description', 'বিবরণ'),
                       labelStyle: const TextStyle(fontSize: 13),
                       hintText: _t('workspace_dispute_hint',
-                          'সমস্যাটি লিখুন (অন্তত ২০ অক্ষর)'),
+                          tr('সমস্যাটি লিখুন (অন্তত ২০ অক্ষর)')),
                       hintStyle:
                           TextStyle(fontSize: 12, color: Colors.grey[400]),
                       border: OutlineInputBorder(
@@ -243,14 +244,14 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                               AdsyToast.warning(
                                   context,
                                   _t('workspace_select_reason',
-                                      'একটি কারণ বেছে নিন'));
+                                      tr('একটি কারণ বেছে নিন')));
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
                               AdsyToast.info(
                                   context,
                                   _t('workspace_desc_min_chars',
-                                      'বিবরণ অন্তত ২০ অক্ষরের হতে হবে'));
+                                      tr('বিবরণ অন্তত ২০ অক্ষরের হতে হবে')));
                               return;
                             }
                             Navigator.pop(context, true);
@@ -804,7 +805,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
           const SizedBox(height: 8),
           Text(
             _t('workspace_buyer_orders_appear',
-                'বায়ারদের অর্ডার এখানে দেখা যাবে'),
+                tr('বায়ারদের অর্ডার এখানে দেখা যাবে')),
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],

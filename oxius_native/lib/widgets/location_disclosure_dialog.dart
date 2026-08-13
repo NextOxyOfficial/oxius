@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Google Play "Prominent Disclosure & Consent" for location.
 ///
@@ -79,9 +80,9 @@ class _DisclosureDialog extends StatelessWidget {
                       color: _brand, size: 24),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'AdsyClub লোকেশন ব্যবহার করবে',
+                    tr('AdsyClub লোকেশন ব্যবহার করবে'),
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -95,12 +96,12 @@ class _DisclosureDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               background
-                  ? 'রাইড শেয়ারে ড্রাইভার হিসেবে অনলাইন থাকলে AdsyClub আপনার '
-                      'ডিভাইসের লোকেশন সংগ্রহ করে — কাছাকাছি যাত্রীদের সাথে '
-                      'আপনাকে ম্যাচ করতে এবং যাত্রীকে আপনার লাইভ অবস্থান দেখাতে।'
-                  : 'রাইড খোঁজা ও চলমান রাইড ট্র্যাক করার জন্য AdsyClub আপনার '
-                      'ডিভাইসের লোকেশন সংগ্রহ করে — কাছের ড্রাইভার খুঁজে দিতে '
-                      'এবং আপনাকে নিরাপদে গন্তব্যে পৌঁছাতে।',
+                  ? tr('রাইড শেয়ারে ড্রাইভার হিসেবে অনলাইন থাকলে AdsyClub আপনার ') +
+                      tr('ডিভাইসের লোকেশন সংগ্রহ করে — কাছাকাছি যাত্রীদের সাথে ') +
+                      tr('আপনাকে ম্যাচ করতে এবং যাত্রীকে আপনার লাইভ অবস্থান দেখাতে।')
+                  : tr('রাইড খোঁজা ও চলমান রাইড ট্র্যাক করার জন্য AdsyClub আপনার ') +
+                      tr('ডিভাইসের লোকেশন সংগ্রহ করে — কাছের ড্রাইভার খুঁজে দিতে ') +
+                      tr('এবং আপনাকে নিরাপদে গন্তব্যে পৌঁছাতে।'),
               style: const TextStyle(
                 fontSize: 14.5,
                 color: _muted,
@@ -116,10 +117,10 @@ class _DisclosureDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: const Color(0xFFFDE68A)),
                 ),
-                child: const Text(
-                  'গুরুত্বপূর্ণ: ড্রাইভার মোড চালু থাকলে অ্যাপ ব্যাকগ্রাউন্ডে '
-                  'বা বন্ধ থাকলেও (app closed or not in use) আপনার লোকেশন '
-                  'সংগ্রহ করা হতে পারে। ড্রাইভার মোড বন্ধ করলেই তা থেমে যায়।',
+                child: Text(
+                  tr('গুরুত্বপূর্ণ: ড্রাইভার মোড চালু থাকলে অ্যাপ ব্যাকগ্রাউন্ডে ') +
+                  tr('বা বন্ধ থাকলেও (app closed or not in use) আপনার লোকেশন ') +
+                  tr('সংগ্রহ করা হতে পারে। ড্রাইভার মোড বন্ধ করলেই তা থেমে যায়।'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -131,8 +132,8 @@ class _DisclosureDialog extends StatelessWidget {
             ],
             const SizedBox(height: 12),
             _bullet(
-                'আপনার লোকেশন শুধু এই সেবা চালু থাকা অবস্থায় ব্যবহৃত হয়।'),
-            _bullet('আমরা এই ডেটা বিজ্ঞাপনের জন্য বিক্রি করি না।'),
+                tr('আপনার লোকেশন শুধু এই সেবা চালু থাকা অবস্থায় ব্যবহৃত হয়।')),
+            _bullet(tr('আমরা এই ডেটা বিজ্ঞাপনের জন্য বিক্রি করি না।')),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -146,8 +147,8 @@ class _DisclosureDialog extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text(
-                  'সম্মত আছি, চালিয়ে যান',
+                child: Text(
+                  tr('সম্মত আছি, চালিয়ে যান'),
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -158,8 +159,8 @@ class _DisclosureDialog extends StatelessWidget {
               height: 44,
               child: TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'এখন নয়',
+                child: Text(
+                  tr('এখন নয়'),
                   style: TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w600,

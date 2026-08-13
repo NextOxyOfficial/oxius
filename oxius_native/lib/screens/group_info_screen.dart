@@ -9,6 +9,7 @@ import '../widgets/chat/member_picker_sheet.dart';
 import '../widgets/common/adsy_toast.dart';
 import 'business_network/profile_screen.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Group settings / management. What each side can do:
 ///
@@ -63,19 +64,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('গ্রুপের নাম বদলান'),
+        title: Text(tr('গ্রুপের নাম বদলান')),
         content: TextField(
           controller: controller,
           maxLength: 80,
           autofocus: true,
-          decoration: const InputDecoration(hintText: 'নতুন নাম'),
+          decoration: InputDecoration(hintText: tr('নতুন নাম')),
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('বাতিল')),
+              onPressed: () => Navigator.pop(ctx), child: Text(tr('বাতিল'))),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-              child: const Text('সেভ করুন')),
+              child: Text(tr('সেভ করুন'))),
         ],
       ),
     );
@@ -84,9 +85,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     if (!mounted) return;
     if (res != null) {
       setState(() => _group = res);
-      AdsyToast.success(context, 'নাম বদলানো হয়েছে');
+      AdsyToast.success(context, tr('নাম বদলানো হয়েছে'));
     } else {
-      AdsyToast.error(context, 'নাম বদলানো যায়নি');
+      AdsyToast.error(context, tr('নাম বদলানো যায়নি'));
     }
   }
 
@@ -100,12 +101,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       if (!mounted) return;
       if (res != null) {
         setState(() => _group = res);
-        AdsyToast.success(context, 'গ্রুপের ছবি বদলানো হয়েছে');
+        AdsyToast.success(context, tr('গ্রুপের ছবি বদলানো হয়েছে'));
       } else {
-        AdsyToast.error(context, 'ছবি বদলানো যায়নি');
+        AdsyToast.error(context, tr('ছবি বদলানো যায়নি'));
       }
     } catch (_) {
-      if (mounted) AdsyToast.error(context, 'ছবি নেওয়া যায়নি');
+      if (mounted) AdsyToast.error(context, tr('ছবি নেওয়া যায়নি'));
     }
   }
 
@@ -122,10 +123,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     final ok = await AdsyConnectService.addGroupMembers(_groupId, selected);
     if (!mounted) return;
     if (ok) {
-      AdsyToast.success(context, 'মেম্বার যোগ হয়েছে');
+      AdsyToast.success(context, tr('মেম্বার যোগ হয়েছে'));
       _refresh();
     } else {
-      AdsyToast.error(context, 'মেম্বার যোগ করা যায়নি');
+      AdsyToast.error(context, tr('মেম্বার যোগ করা যায়নি'));
     }
   }
 
@@ -135,14 +136,14 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     if (!mounted) return;
     if (ok) {
       setState(() => _muted = next);
-      AdsyToast.info(context, next ? 'গ্রুপ মিউট হয়েছে' : 'আনমিউট হয়েছে');
+      AdsyToast.info(context, next ? tr('গ্রুপ মিউট হয়েছে') : tr('আনমিউট হয়েছে'));
     } else {
-      AdsyToast.error(context, 'করা যায়নি');
+      AdsyToast.error(context, tr('করা যায়নি'));
     }
   }
 
   Future<void> _leave() async {
-    final confirm = await _confirm('গ্রুপ ছাড়বেন?',
+    final confirm = await _confirm(tr('গ্রুপ ছাড়বেন?'),
         '"${_group['name']}" থেকে বেরিয়ে যাবেন।', 'গ্রুপ ছাড়ুন');
     if (confirm != true || !mounted) return;
     final ok = await AdsyConnectService.leaveGroup(_groupId);
@@ -150,22 +151,22 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     if (ok) {
       Navigator.of(context).pop('left');
     } else {
-      AdsyToast.error(context, 'গ্রুপ ছাড়া যায়নি');
+      AdsyToast.error(context, tr('গ্রুপ ছাড়া যায়নি'));
     }
   }
 
   Future<void> _deleteGroup() async {
     final confirm = await _confirm(
-        'গ্রুপ ডিলিট করবেন?',
-        'সব মেসেজসহ গ্রুপটি স্থায়ীভাবে মুছে যাবে। এটা আর ফেরানো যাবে না।',
-        'ডিলিট করুন');
+        tr('গ্রুপ ডিলিট করবেন?'),
+        tr('সব মেসেজসহ গ্রুপটি স্থায়ীভাবে মুছে যাবে। এটা আর ফেরানো যাবে না।'),
+        tr('ডিলিট করুন'));
     if (confirm != true || !mounted) return;
     final ok = await AdsyConnectService.deleteGroup(_groupId);
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pop('deleted');
     } else {
-      AdsyToast.error(context, 'ডিলিট করা যায়নি');
+      AdsyToast.error(context, tr('ডিলিট করা যায়নি'));
     }
   }
 
@@ -175,7 +176,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       title: title,
       message: body,
       confirmLabel: action,
-      cancelLabel: 'বাতিল',
+      cancelLabel: tr('বাতিল'),
       destructive: true,
     );
   }
@@ -202,8 +203,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ListTile(
                 leading: const Icon(Icons.admin_panel_settings_outlined,
                     color: Color(0xFF334155)),
-                title: const Text('কো-অ্যাডমিন বানান'),
-                subtitle: const Text('গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন',
+                title: Text(tr('কো-অ্যাডমিন বানান')),
+                subtitle: Text(tr('গ্রুপ ম্যানেজমেন্টের সব ক্ষমতা পাবেন'),
                     style: TextStyle(fontSize: 11.5)),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -211,10 +212,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       await AdsyConnectService.promoteGroupAdmin(_groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.success(context, 'কো-অ্যাডমিন বানানো হয়েছে');
+                    AdsyToast.success(context, tr('কো-অ্যাডমিন বানানো হয়েছে'));
                     _refresh();
                   } else {
-                    AdsyToast.error(context, 'করা যায়নি');
+                    AdsyToast.error(context, tr('করা যায়নি'));
                   }
                 },
               ),
@@ -222,17 +223,17 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ListTile(
                 leading: const Icon(Icons.remove_moderator_outlined,
                     color: Color(0xFFD97706)),
-                title: const Text('কো-অ্যাডমিন থেকে সরান'),
+                title: Text(tr('কো-অ্যাডমিন থেকে সরান')),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final ok =
                       await AdsyConnectService.demoteGroupAdmin(_groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.info(context, 'কো-অ্যাডমিন থেকে সরানো হয়েছে');
+                    AdsyToast.info(context, tr('কো-অ্যাডমিন থেকে সরানো হয়েছে'));
                     _refresh();
                   } else {
-                    AdsyToast.error(context, 'করা যায়নি');
+                    AdsyToast.error(context, tr('করা যায়নি'));
                   }
                 },
               ),
@@ -242,7 +243,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               ListTile(
                 leading: const Icon(Icons.person_remove_outlined,
                     color: Color(0xFFDC2626)),
-                title: const Text('গ্রুপ থেকে remove করুন',
+                title: Text(tr('গ্রুপ থেকে remove করুন'),
                     style: TextStyle(color: Color(0xFFDC2626))),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -250,10 +251,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       await AdsyConnectService.removeGroupMember(_groupId, uid);
                   if (!mounted) return;
                   if (ok) {
-                    AdsyToast.info(context, 'Remove করা হয়েছে');
+                    AdsyToast.info(context, tr('Remove করা হয়েছে'));
                     _refresh();
                   } else {
-                    AdsyToast.error(context, 'Remove করা যায়নি');
+                    AdsyToast.error(context, tr('Remove করা যায়নি'));
                   }
                 },
               ),
@@ -279,7 +280,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF334155)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('গ্রুপ ইনফো',
+        title: Text(tr('গ্রুপ ইনফো'),
             style: TextStyle(
                 color: Color(0xFF1E293B),
                 fontSize: 17,
@@ -357,7 +358,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text('${members.length} জন মেম্বার',
+                Text('${members.length} ${tr('জন মেম্বার')}',
                     style:
                         TextStyle(fontSize: 12, color: Colors.grey.shade600)),
               ],
@@ -371,17 +372,17 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               children: [
                 if (_isAdmin)
                   _actionTile(Icons.person_add_alt_1_outlined,
-                      'মেম্বার যোগ করুন', _addMembers),
+                      tr('মেম্বার যোগ করুন'), _addMembers),
                 _actionTile(
                     _muted
                         ? Icons.notifications_active_outlined
                         : Icons.notifications_off_outlined,
-                    _muted ? 'আনমিউট করুন' : 'মিউট করুন',
+                    _muted ? tr('আনমিউট করুন') : tr('মিউট করুন'),
                     _toggleMute),
-                _actionTile(Icons.logout_rounded, 'গ্রুপ ছাড়ুন', _leave,
+                _actionTile(Icons.logout_rounded, tr('গ্রুপ ছাড়ুন'), _leave,
                     danger: true),
                 if (_isAdmin)
-                  _actionTile(Icons.delete_forever_outlined, 'গ্রুপ ডিলিট করুন',
+                  _actionTile(Icons.delete_forever_outlined, tr('গ্রুপ ডিলিট করুন'),
                       _deleteGroup,
                       danger: true),
               ],
@@ -397,7 +398,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
-                  child: Text('মেম্বার · ${members.length}',
+                  child: Text('${tr('মেম্বার')} · ${members.length}',
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -412,7 +413,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                         setState(() => _memberQuery = v.trim().toLowerCase()),
                     style: const TextStyle(fontSize: 13.5),
                     decoration: InputDecoration(
-                      hintText: 'মেম্বার খুঁজুন',
+                      hintText: tr('মেম্বার খুঁজুন'),
                       hintStyle:
                           TextStyle(color: Colors.grey.shade600, fontSize: 13),
                       prefixIcon: Icon(Icons.search_rounded,
@@ -422,7 +423,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       isDense: true,
                       filled: true,
                       fillColor: const Color(0xFFF1F5F9),
-                      contentPadding: const EdgeInsets.symmetric(
+                      contentPadding: EdgeInsets.symmetric(
                           horizontal: 10, vertical: 9),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -459,19 +460,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     ];
   }
 
-  static const _bnMonths = [
-    'জানুয়ারি',
-    'ফেব্রুয়ারি',
-    'মার্চ',
-    'এপ্রিল',
-    'মে',
-    'জুন',
-    'জুলাই',
-    'আগস্ট',
-    'সেপ্টেম্বর',
-    'অক্টোবর',
-    'নভেম্বর',
-    'ডিসেম্বর',
+  static List<String> get _bnMonths => [
+    tr('জানুয়ারি'),
+    tr('ফেব্রুয়ারি'),
+    tr('মার্চ'),
+    tr('এপ্রিল'),
+    tr('মে'),
+    tr('জুন'),
+    tr('জুলাই'),
+    tr('আগস্ট'),
+    tr('সেপ্টেম্বর'),
+    tr('অক্টোবর'),
+    tr('নভেম্বর'),
+    tr('ডিসেম্বর'),
   ];
 
   String _formatJoined(dynamic raw) {
@@ -563,7 +564,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(isMe ? '$display (আপনি)' : display,
+                  Text(isMe ? tr('$display (${tr('আপনি)')}') : display,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -580,7 +581,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                               color: Color(0xFF22C55E), shape: BoxShape.circle),
                         ),
                         const SizedBox(width: 4),
-                        const Text('অনলাইন',
+                        Text(tr('অনলাইন'),
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -592,7 +593,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                       ],
                       if (joined.isNotEmpty)
                         Flexible(
-                          child: Text('যোগ দিয়েছেন $joined',
+                          child: Text(tr('${tr('যোগ দিয়েছেন')} $joined'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -618,7 +619,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                         : const Color(0xFFEEF2FF),
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Text(isCreatorRow ? 'অ্যাডমিন' : 'কো-অ্যাডমিন',
+                  child: Text(isCreatorRow ? tr('অ্যাডমিন') : tr('কো-অ্যাডমিন'),
                       style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,

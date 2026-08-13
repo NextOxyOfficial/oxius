@@ -7,6 +7,7 @@ import '../../config/app_config.dart';
 import '../../utils/media_headers.dart';
 import '../common/adsy_loading.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// One item a chat can open full screen.
 class ChatMediaItem {
@@ -251,8 +252,8 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
                       contentPadding: const EdgeInsets.symmetric(vertical: 11),
                       border: InputBorder.none,
                       hintText: _current.isVideo
-                          ? 'ভিডিওটিতে রিপ্লাই দিন…'
-                          : 'ছবিটিতে রিপ্লাই দিন…',
+                          ? tr('ভিডিওটিতে রিপ্লাই দিন…')
+                          : tr('ছবিটিতে রিপ্লাই দিন…'),
                       hintStyle: TextStyle(
                         color: Colors.white.withValues(alpha: 0.6),
                         fontSize: 15,
@@ -310,8 +311,8 @@ class _ChatMediaViewerState extends State<ChatMediaViewer> {
               color: Colors.black.withValues(alpha: 0.72),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: const Text(
-              'রিপ্লাই পাঠানো হয়েছে',
+            child: Text(
+              tr('রিপ্লাই পাঠানো হয়েছে'),
               style: TextStyle(color: Colors.white, fontSize: 12.5),
             ),
           ),
@@ -586,13 +587,13 @@ class _Broken extends StatelessWidget {
   const _Broken();
 
   @override
-  Widget build(BuildContext context) => const Center(
+  Widget build(BuildContext context) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.broken_image_outlined, color: Colors.white54, size: 44),
             SizedBox(height: 10),
-            Text('মিডিয়াটি লোড করা যায়নি',
+            Text(tr('মিডিয়াটি লোড করা যায়নি'),
                 style: TextStyle(color: Colors.white70, fontSize: 13)),
           ],
         ),

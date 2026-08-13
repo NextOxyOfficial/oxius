@@ -10,6 +10,7 @@ import 'api_cache.dart';
 import '../utils/api_error.dart';
 import 'auth_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
@@ -1072,7 +1073,7 @@ class BusinessNetworkService {
         if (detail is String && detail.trim().isNotEmpty) return detail.trim();
       }
     } catch (_) {}
-    return 'এই তালিকাটি ব্যবহারকারী গোপন রেখেছেন।';
+    return tr('এই তালিকাটি ব্যবহারকারী গোপন রেখেছেন।');
   }
 
   /// Get user profile data

@@ -19,6 +19,7 @@ import 'classified_post_details_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ClassifiedCategoryListScreen extends StatefulWidget {
   final String categoryId;
@@ -598,7 +599,7 @@ class _ClassifiedCategoryListScreenState
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
-          _categoryDetails?.title ?? 'আমার সেবা',
+          _categoryDetails?.title ?? tr('আমার সেবা'),
           style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -1384,8 +1385,8 @@ class _ClassifiedCategoryListScreenState
             ),
 
             // Message
-            const Text(
-              'আমি AdsyAI Bot 🤖\nআমি কি আপনার জন্য বিভিন্ন ওয়েবসাইট থেকে তথ্য খুঁজে বের করবো?',
+            Text(
+              tr('আমি AdsyAI Bot 🤖\nআমি কি আপনার জন্য বিভিন্ন ওয়েবসাইট থেকে তথ্য খুঁজে বের করবো?'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -1405,8 +1406,8 @@ class _ClassifiedCategoryListScreenState
                 ElevatedButton.icon(
                   onPressed: _startAISearch,
                   icon: const Icon(Icons.check_circle, size: 20),
-                  label: const Text(
-                    'হা',
+                  label: Text(
+                    tr('হা'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1432,8 +1433,8 @@ class _ClassifiedCategoryListScreenState
                 OutlinedButton.icon(
                   onPressed: _declineAISearch,
                   icon: const Icon(Icons.cancel, size: 20),
-                  label: const Text(
-                    'না',
+                  label: Text(
+                    tr('না'),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -1476,8 +1477,8 @@ class _ClassifiedCategoryListScreenState
               ),
             ),
 
-            const Text(
-              'আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা করুন...',
+            Text(
+              tr('আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা করুন...'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -1512,8 +1513,8 @@ class _ClassifiedCategoryListScreenState
               color: Color(0xFF5A6273),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'আমি AdsyAI Bot 🤖\nঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।',
+            Text(
+              tr('আমি AdsyAI Bot 🤖\nঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -1542,8 +1543,8 @@ class _ClassifiedCategoryListScreenState
 
           // Results
           if (_aiResults.isNotEmpty) ...[
-            const Text(
-              'আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেট থেকে নিচের এই তথ্য গুলো খুঁজে বের করতে সক্ষম হয়েছি:',
+            Text(
+              tr('আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেট থেকে নিচের এই তথ্য গুলো খুঁজে বের করতে সক্ষম হয়েছি:'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -1659,8 +1660,8 @@ class _ClassifiedCategoryListScreenState
               !_aiSearching &&
               !_aiSearchDeclined &&
               _aiResults.isEmpty) ...[
-            const Text(
-              'আমি AdsyAI Bot 🤖\nদুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।',
+            Text(
+              tr('আমি AdsyAI Bot 🤖\nদুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,

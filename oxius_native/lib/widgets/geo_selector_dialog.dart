@@ -4,6 +4,7 @@ import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class GeoSelectorDialog extends StatefulWidget {
   final GeoLocation? initialLocation;
@@ -73,7 +74,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        AdsyToast.error(context, 'বিভাগ লোড করা যায়নি');
+        AdsyToast.error(context, tr('বিভাগ লোড করা যায়নি'));
       }
     }
   }
@@ -101,7 +102,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        AdsyToast.error(context, 'জেলা লোড করা যায়নি');
+        AdsyToast.error(context, tr('জেলা লোড করা যায়নি'));
       }
     }
   }
@@ -124,7 +125,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        AdsyToast.error(context, 'এলাকা লোড করা যায়নি');
+        AdsyToast.error(context, tr('এলাকা লোড করা যায়নি'));
       }
     }
   }

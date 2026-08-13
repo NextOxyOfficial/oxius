@@ -5,6 +5,7 @@ import '../../services/adsyconnect_service.dart';
 import '../../services/user_search_service.dart';
 import '../common/adsy_loading.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Search-and-select users bottom sheet; pops the selected user-id list.
 /// Used for adding members to an existing group.
@@ -118,7 +119,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                     borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 10),
-              const Text('মেম্বার সিলেক্ট  করুন',
+              Text(tr('মেম্বার সিলেক্ট  করুন'),
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
@@ -127,7 +128,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search_rounded,
                         color: Colors.grey.shade500, size: 20),
-                    hintText: 'নাম দিয়ে সার্চ করুন',
+                    hintText: tr('নাম দিয়ে সার্চ করুন'),
                     isDense: true,
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
@@ -154,8 +155,8 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                       padding: const EdgeInsets.all(22),
                       child: Text(
                           searchMode
-                              ? 'কেউ পাওয়া যায়নি'
-                              : 'নাম লিখে সার্চ করুন',
+                              ? tr('কেউ পাওয়া যায়নি')
+                              : tr('নাম লিখে সার্চ করুন'),
                           style: TextStyle(
                               fontSize: 13, color: Colors.grey.shade700)),
                     );
@@ -165,9 +166,9 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                     itemCount: list.length + (searchMode ? 0 : 1),
                     itemBuilder: (_, index) {
                       if (!searchMode && index == 0) {
-                        return const Padding(
+                        return Padding(
                           padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
-                          child: Text('আপনার পরিচিতরা',
+                          child: Text(tr('আপনার পরিচিতরা'),
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -232,7 +233,7 @@ class _MemberPickerSheetState extends State<MemberPickerSheet> {
                         : () => Navigator.pop(context, _selected.keys.toList()),
                     style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB)),
-                    child: Text('যোগ করুন (${_selected.length})'),
+                    child: Text('${tr('যোগ করুন (')}${_selected.length})'),
                   ),
                 ),
               ),

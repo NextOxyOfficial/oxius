@@ -126,7 +126,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           // Drop input
           _buildSearchInput(
             controller: _dropController,
-            hint: 'গন্তব্য লোকেশন...',
+            hint: tr('গন্তব্য লোকেশন...'),
             icon: Icons.location_on_rounded,
             iconColor: const Color(0xFFEF4444),
             onChanged: (v) {
@@ -155,7 +155,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             _buildQuickDestinationRow(
               icon: Icons.star_rounded,
               label: t('rideshare_saved_place',
-                  fallback: 'সেভ করা জায়গা বেছে নিন'),
+                  fallback: tr('সেভ করা জায়গা বেছে নিন')),
               onTap: _showCustomLocationSheet,
             ),
             const Divider(height: 1, color: Color(0xFFF1F5F9)),
@@ -183,7 +183,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'পরবর্তী',
+                        tr('পরবর্তী'),
                         style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -226,7 +226,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'পিকআপ লোকেশন?',
+            tr('পিকআপ লোকেশন?'),
             style: AppFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -235,7 +235,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           ),
           const SizedBox(height: 4),
           Text(
-            'কোথা থেকে উঠবেন?',
+            tr('কোথা থেকে উঠবেন?'),
             style: AppFonts.roboto(fontSize: 13, color: _kSlate),
           ),
           const SizedBox(height: 16),
@@ -243,7 +243,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
           // Pickup input
           _buildSearchInput(
             controller: _pickupController,
-            hint: 'পিকআপ লোকেশন...',
+            hint: tr('পিকআপ লোকেশন...'),
             icon: Icons.trip_origin_rounded,
             iconColor: _kPurple,
             onChanged: _onPickupSearch,
@@ -291,7 +291,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'পরবর্তী',
+                        tr('পরবর্তী'),
                         style: AppFonts.roboto(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -578,7 +578,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 const SizedBox(height: 14),
                 Text(
                   t('rideshare_location_required_title',
-                      fallback: 'লোকেশন অনুমতি লাগবে'),
+                      fallback: tr('লোকেশন অনুমতি লাগবে')),
                   style: AppFonts.roboto(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -611,7 +611,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       _isLoadingLocation
                           ? t('rideshare_enabling', fallback: 'চালু হচ্ছে...')
                           : t('rideshare_enable_location',
-                              fallback: 'লোকেশন চালু করুন'),
+                              fallback: tr('লোকেশন চালু করুন')),
                       style: AppFonts.roboto(
                           fontSize: 14, fontWeight: FontWeight.w700),
                     ),
@@ -784,14 +784,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                       const SizedBox(height: 4),
                       Text(
                         t('rideshare_pay_driver_directly',
-                            fallback: 'ড্রাইভারকে সরাসরি দিন'),
+                            fallback: tr('ড্রাইভারকে সরাসরি দিন')),
                         style: AppFonts.roboto(
                             fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         t('rideshare_no_wallet_needed',
-                            fallback: 'ওয়ালেট লাগবে না'),
+                            fallback: tr('ওয়ালেট লাগবে না')),
                         style: AppFonts.roboto(
                             fontSize: 10, color: const Color(0xFFCBD5E1)),
                       ),
@@ -873,9 +873,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   _buildLocationInput(
                     controller: _pickupController,
                     label: t('rideshare_pickup_location',
-                        fallback: 'পিকআপ লোকেশন'),
+                        fallback: tr('পিকআপ লোকেশন')),
                     hint: t('rideshare_search_pickup',
-                            fallback: 'পিকআপ খুঁজুন...')
+                            fallback: tr('পিকআপ খুঁজুন...'))
                         .toString(),
                     isActive: _activeInput == 'pickup',
                     onTap: () => _rebuild(() => _activeInput = 'pickup'),
@@ -1190,7 +1190,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Text(
-            '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
+            tr('+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন'),
             style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w800,
@@ -1273,7 +1273,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  vehicle.capacity,
+                  tr(vehicle.capacity),
                   style: AppFonts.roboto(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
@@ -1652,9 +1652,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     Text(
                       canBook
                           ? t('rideshare_book_ride_now',
-                              fallback: 'রাইড কনফার্ম করুন')
+                              fallback: tr('রাইড কনফার্ম করুন'))
                           : t('rideshare_enter_locations',
-                              fallback: 'লোকেশন দিন'),
+                              fallback: tr('লোকেশন দিন')),
                       style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,

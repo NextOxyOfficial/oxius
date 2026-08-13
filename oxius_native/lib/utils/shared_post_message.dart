@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// A compact, self-contained encoding for a "post shared into a chat".
 ///
@@ -91,7 +92,7 @@ class SharedPostMessage {
     final cap = caption.trim();
     if (who.isNotEmpty && cap.isNotEmpty) return '$who — $cap';
     if (cap.isNotEmpty) return cap;
-    return who.isNotEmpty ? who : 'পোস্ট';
+    return who.isNotEmpty ? who : tr('পোস্ট');
   }
 
   /// One-line chat-list preview, or null when [content] isn't a share.
@@ -102,7 +103,7 @@ class SharedPostMessage {
     final shared = tryDecode(content);
     if (shared == null) return null;
     final own = shared.text.trim();
-    return own.isEmpty ? '📎 একটি পোস্ট' : '📎 $own';
+    return own.isEmpty ? tr('📎 একটি পোস্ট') : '📎 $own';
   }
 
   /// Returns null when [content] isn't a shared-post message.
@@ -155,13 +156,13 @@ class SharedPostMessage {
           orElse: () => urls.last,
         );
         return SharedPostMessage(
-          ownerName: 'পোস্ট',
+          ownerName: tr('পোস্ট'),
           thumbUrl: thumb,
           postUrl: post,
         );
       }
-      return const SharedPostMessage(
-          ownerName: 'পোস্ট', thumbUrl: '', postUrl: '');
+      return SharedPostMessage(
+          ownerName: tr('পোস্ট'), thumbUrl: '', postUrl: '');
     }
 
     return _tryDecodeLegacy(content);

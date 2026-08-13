@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/pro_trial_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Free-Pro-trial offer card, shown on the Pro upgrade and store-create
 /// screens. Renders nothing unless the server says this account can still
@@ -85,7 +86,7 @@ class _ProTrialCardState extends State<ProTrialCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${s.days} দিন ফ্রি ব্যবহার করে দেখুন',
+                  '${s.days} ${tr('দিন ফ্রি ব্যবহার করে দেখুন')}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -95,8 +96,8 @@ class _ProTrialCardState extends State<ProTrialCard> {
                 const SizedBox(height: 2),
                 Text(
                   s.requiresKyc && !s.kycVerified
-                      ? 'KYC ভেরিফাই থাকলে ফ্রি ট্রায়াল নিতে পারবেন।'
-                      : 'কোনো পেমেন্ট লাগবে না, অটো-চার্জও হবে না।',
+                      ? tr('KYC ভেরিফাই থাকলে ফ্রি ট্রায়াল নিতে পারবেন।')
+                      : tr('কোনো পেমেন্ট লাগবে না, অটো-চার্জও হবে না।'),
                   style: const TextStyle(
                     fontSize: 12.5,
                     height: 1.4,
@@ -116,8 +117,8 @@ class _ProTrialCardState extends State<ProTrialCard> {
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: const Color(0xFF4F46E5)),
               ),
-              child: const Text(
-                'শুরু করুন',
+              child: Text(
+                tr('শুরু করুন'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -200,7 +201,7 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
             ),
           ),
           Text(
-            '${s.days} দিনের ফ্রি প্রো ট্রায়াল',
+            '${s.days} ${tr('দিনের ফ্রি প্রো ট্রায়াল')}',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -208,34 +209,34 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'প্রো-এর সব সুবিধা ব্যবহার করে দেখুন — কোনো পেমেন্ট ছাড়াই।',
+          Text(
+            tr('প্রো-এর সব সুবিধা ব্যবহার করে দেখুন — কোনো পেমেন্ট ছাড়াই।'),
             style: TextStyle(fontSize: 12.5, height: 1.4, color: Color(0xFF556278)),
           ),
           const SizedBox(height: 18),
 
           _step(
             index: 1,
-            title: 'KYC ভেরিফিকেশন',
+            title: tr('KYC ভেরিফিকেশন'),
             subtitle: kycOk
-                ? 'আপনার অ্যাকাউন্ট ভেরিফাইড ✓'
+                ? tr('আপনার অ্যাকাউন্ট ভেরিফাইড ✓')
                 : (s.kycPending
-                    ? 'আপনার KYC রিভিউতে আছে — এপ্রুভ হওয়ার পর ট্রায়াল নিতে পারবেন।'
-                    : 'ট্রায়াল নিতে আগে KYC সম্পন্ন করতে হবে।'),
+                    ? tr('আপনার KYC রিভিউতে আছে — এপ্রুভ হওয়ার পর ট্রায়াল নিতে পারবেন।')
+                    : tr('ট্রায়াল নিতে আগে KYC সম্পন্ন করতে হবে।')),
             done: kycOk,
           ),
           _step(
             index: 2,
-            title: 'ট্রায়াল চালু করুন',
-            subtitle: 'এক ট্যাপেই ${s.days} দিনের প্রো চালু হয়ে যাবে।',
+            title: tr('ট্রায়াল চালু করুন'),
+            subtitle: '${tr('এক ট্যাপেই')} ${s.days} ${tr('দিনের প্রো চালু হয়ে যাবে')}।',
             done: false,
           ),
           _step(
             index: 3,
-            title: 'মেয়াদ শেষে',
+            title: tr('মেয়াদ শেষে'),
             subtitle:
-                'ট্রায়াল শেষ হলে অ্যাকাউন্ট নিজে থেকেই সাধারণ প্ল্যানে ফিরে যাবে — '
-                'অটো-চার্জ হবে না।',
+                tr('ট্রায়াল শেষ হলে অ্যাকাউন্ট নিজে থেকেই সাধারণ প্ল্যানে ফিরে যাবে — ') +
+                tr('অটো-চার্জ হবে না।'),
             done: false,
             last: true,
           ),
@@ -247,14 +248,14 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
               color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.info_outline_rounded,
                     size: 15, color: Color(0xFF64748B)),
                 SizedBox(width: 7),
                 Expanded(
                   child: Text(
-                    'প্রতি অ্যাকাউন্টে ফ্রি ট্রায়াল একবারই নেওয়া যায়।',
+                    tr('প্রতি অ্যাকাউন্টে ফ্রি ট্রায়াল একবারই নেওয়া যায়।'),
                     style: TextStyle(fontSize: 11.5, color: Color(0xFF556278)),
                   ),
                 ),
@@ -304,8 +305,8 @@ class _ProTrialSheetState extends State<_ProTrialSheet> {
                     )
                   : Text(
                       kycOk
-                          ? 'ফ্রি ট্রায়াল চালু করুন'
-                          : 'আগে KYC সম্পন্ন করুন',
+                          ? tr('ফ্রি ট্রায়াল চালু করুন')
+                          : tr('আগে KYC সম্পন্ন করুন'),
                       style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w800,

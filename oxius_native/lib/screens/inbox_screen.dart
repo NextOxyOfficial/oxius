@@ -17,6 +17,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class InboxScreen extends StatefulWidget {
   final int initialTab;
@@ -1898,7 +1899,7 @@ class _NewChatModalState extends State<NewChatModal> {
         // anything else gets a generic line — never raw backend output.
         final message = e is AdsyChatException
             ? e.message
-            : 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
+            : tr('চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।');
         AdsyToast.error(context, message);
       }
     }

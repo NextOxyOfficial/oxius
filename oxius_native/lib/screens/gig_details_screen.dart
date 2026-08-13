@@ -19,6 +19,7 @@ import 'privacy_policy_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class GigDetailsScreen extends StatefulWidget {
   final String gigSlug;
@@ -147,11 +148,11 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     if (user == null || !user.isVerified) {
       final goVerify = await AdsyDialog.confirm(
         context,
-        title: 'KYC ভেরিফিকেশন প্রয়োজন',
+        title: tr('KYC ভেরিফিকেশন প্রয়োজন'),
         message:
-            'মাইক্রো গিগ টাস্ক জমা দিতে হলে আগে আপনার KYC এপ্রুভড হতে হবে। ভেরিফিকেশন সম্পন্ন করে আবার চেষ্টা করুন।',
-        confirmLabel: 'ভেরিফাই করুন',
-        cancelLabel: 'পরে করব',
+            tr('মাইক্রো গিগ টাস্ক জমা দিতে হলে আগে আপনার KYC এপ্রুভড হতে হবে। ভেরিফিকেশন সম্পন্ন করে আবার চেষ্টা করুন।'),
+        confirmLabel: tr('ভেরিফাই করুন'),
+        cancelLabel: tr('পরে করব'),
         icon: Icons.verified_user_outlined,
       );
       if (goVerify == true && mounted) {
@@ -305,7 +306,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   size: 36, color: Color(0xFF94A3B8)),
               const SizedBox(height: 12),
               Text(
-                'টাস্কটা লোড করা গেল না',
+                tr('টাস্কটা লোড করা গেল না'),
                 style: AppFonts.roboto(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,
@@ -314,7 +315,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।',
+                tr('ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন।'),
                 textAlign: TextAlign.center,
                 style: AppFonts.roboto(
                   fontSize: 12.5,
@@ -325,7 +326,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               TextButton.icon(
                 onPressed: _loadGigDetails,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('আবার চেষ্টা করুন'),
+                label: Text(tr('আবার চেষ্টা করুন')),
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF059669),
                 ),

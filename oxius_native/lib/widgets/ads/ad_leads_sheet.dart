@@ -7,6 +7,7 @@ import '../../utils/media_headers.dart';
 import '../../utils/time_utils.dart';
 import '../common/adsy_toast.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The people who messaged an advertiser from one of their ads.
 ///
@@ -74,7 +75,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
     if (!mounted) return;
     setState(() => _openingFor = null);
     if (roomId.isEmpty) {
-      AdsyToast.error(context, 'চ্যাট খোলা যায়নি, একটু পরে চেষ্টা করুন।');
+      AdsyToast.error(context, tr('চ্যাট খোলা যায়নি, একটু পরে চেষ্টা করুন।'));
       return;
     }
     Navigator.pop(context);
@@ -123,8 +124,8 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'বিজ্ঞাপনের লিড',
+                      Text(
+                        tr('বিজ্ঞাপনের লিড'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -135,7 +136,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                       Text(
                         widget.adTitle.isNotEmpty
                             ? widget.adTitle
-                            : 'যারা আপনার বিজ্ঞাপন থেকে মেসেজ করেছেন',
+                            : tr('যারা আপনার বিজ্ঞাপন থেকে মেসেজ করেছেন'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -190,8 +191,8 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
             const Icon(Icons.forum_outlined,
                 size: 34, color: Color(0xFF94A3B8)),
             const SizedBox(height: 12),
-            const Text(
-              'এখনো কোনো লিড আসেনি',
+            Text(
+              tr('এখনো কোনো লিড আসেনি'),
               style: TextStyle(
                 fontSize: 14.5,
                 fontWeight: FontWeight.w700,
@@ -199,10 +200,10 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'কেউ আপনার বিজ্ঞাপনের "মেসেজ করুন" বাটন থেকে লিখলে তাকে '
-              'এখানে পাবেন — মেসেজের সাথে কোন বিজ্ঞাপন থেকে এসেছে সেটিও '
-              'দেখা যাবে।',
+            Text(
+              tr('কেউ আপনার বিজ্ঞাপনের "মেসেজ করুন" বাটন থেকে লিখলে তাকে ') +
+              tr('এখানে পাবেন — মেসেজের সাথে কোন বিজ্ঞাপন থেকে এসেছে সেটিও ') +
+              tr('দেখা যাবে।'),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.5,
@@ -246,7 +247,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                     children: [
                       Flexible(
                         child: Text(
-                          lead.userName.isEmpty ? 'ব্যবহারকারী' : lead.userName,
+                          lead.userName.isEmpty ? tr('ব্যবহারকারী') : lead.userName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -285,7 +286,7 @@ class _AdLeadsSheetState extends State<AdLeadsSheet> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    message.isEmpty ? 'মেসেজ করেছেন' : message,
+                    message.isEmpty ? tr('মেসেজ করেছেন') : message,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

@@ -141,7 +141,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 ),
                               ),
                               const SizedBox(height: 14),
-                              _buildSectionLabel('গাড়ির ধরন'),
+                              _buildSectionLabel(tr('গাড়ির ধরন')),
                               const SizedBox(height: 6),
                               DropdownButtonFormField<String>(
                                 initialValue: selectedType,
@@ -172,7 +172,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 },
                               ),
                               const SizedBox(height: 12),
-                              _buildSectionLabel('ব্র্যান্ড'),
+                              _buildSectionLabel(tr('ব্র্যান্ড')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: brandController,
@@ -182,7 +182,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
-                              _buildSectionLabel('মডেল'),
+                              _buildSectionLabel(tr('মডেল')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: modelController,
@@ -192,7 +192,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
-                              _buildSectionLabel('রং'),
+                              _buildSectionLabel(tr('রং')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: colorController,
@@ -202,7 +202,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                     fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
-                              _buildSectionLabel('রেজিস্ট্রেশন নম্বর'),
+                              _buildSectionLabel(tr('রেজিস্ট্রেশন নম্বর')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: regController,
@@ -220,7 +220,7 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                                 },
                               ),
                               const SizedBox(height: 12),
-                              _buildSectionLabel('সিট সংখ্যা'),
+                              _buildSectionLabel(tr('সিট সংখ্যা')),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: seatController,
@@ -239,9 +239,9 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                               ),
                               const SizedBox(height: 12),
                               _buildToggleTile(
-                                title: 'ডিফল্ট গাড়ি করুন',
+                                title: tr('ডিফল্ট গাড়ি করুন'),
                                 subtitle:
-                                    'রাইড ম্যাচিংয়ে এই গাড়িটি আগে ব্যবহার হবে।',
+                                    tr('রাইড ম্যাচিংয়ে এই গাড়িটি আগে ব্যবহার হবে।'),
                                 value: isDefault,
                                 onChanged: (value) {
                                   setSheetState(() => isDefault = value);
@@ -250,9 +250,9 @@ extension _RsVehicleFormSection on _RideshareVehiclesScreenState {
                               if (vehicle != null) ...[
                                 const SizedBox(height: 10),
                                 _buildToggleTile(
-                                  title: 'গাড়ি সক্রিয়',
+                                  title: tr('গাড়ি সক্রিয়'),
                                   subtitle:
-                                      'নিষ্ক্রিয় গাড়ি ডিসপ্যাচ থেকে লুকানো থাকবে।',
+                                      tr('নিষ্ক্রিয় গাড়ি ডিসপ্যাচ থেকে লুকানো থাকবে।'),
                                   value: isActive,
                                   onChanged: (value) {
                                     setSheetState(() => isActive = value);

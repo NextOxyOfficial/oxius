@@ -8,6 +8,7 @@ import '../../utils/time_utils.dart';
 import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Comments on an Adsy News story, styled to match Business Network comments.
 ///
@@ -84,7 +85,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
     if (text.isEmpty || _sending) return;
 
     if (!AuthService.isAuthenticated) {
-      LoginPromptDialog.show(context, action: 'কমেন্ট করতে');
+      LoginPromptDialog.show(context, action: tr('কমেন্ট করতে'));
       return;
     }
 
@@ -101,7 +102,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
       widget.onCountChanged?.call(_comments.length);
     } else {
       setState(() => _sending = false);
-      AdsyToast.error(context, 'কমেন্ট পোস্ট করা যায়নি');
+      AdsyToast.error(context, tr('কমেন্ট পোস্ট করা যায়নি'));
     }
   }
 
@@ -187,13 +188,13 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
   }
 
   Widget _buildEmpty() => ListView(
-        children: const [
+        children: [
           SizedBox(height: 48),
           Icon(Icons.mode_comment_outlined, size: 34, color: Color(0xFFCBD5E1)),
           SizedBox(height: 10),
           Center(
             child: Text(
-              'এখনো কোনো কমেন্ট নেই',
+              tr('এখনো কোনো কমেন্ট নেই'),
               style: TextStyle(fontSize: 13.5, color: Color(0xFF7B8798)),
             ),
           ),
@@ -247,7 +248,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                             child: Text(
                               (c.userName ?? '').isNotEmpty
                                   ? c.userName!
-                                  : 'ব্যবহারকারী',
+                                  : tr('ব্যবহারকারী'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -309,7 +310,7 @@ class _NewsCommentsSheetState extends State<NewsCommentsSheet> {
                 textCapitalization: TextCapitalization.sentences,
                 style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'কমেন্ট লিখুন...',
+                  hintText: tr('কমেন্ট লিখুন...'),
                   hintStyle:
                       const TextStyle(fontSize: 16, color: Color(0xFF7B8798)),
                   filled: true,

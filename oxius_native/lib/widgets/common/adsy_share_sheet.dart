@@ -12,6 +12,7 @@ import 'adsy_loading.dart';
 import 'adsy_toast.dart';
 import 'adsy_chat_icon.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class AdsyShareData {
   final String title;
@@ -316,10 +317,10 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     });
     if (ok > 0) {
       data.onShared?.call();
-      AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
+      AdsyToast.success(context, tr('$ok ${tr('জনকে পাঠানো হয়েছে')}'));
       Navigator.of(context).pop(); // close the share sheet after sending
     } else {
-      AdsyToast.error(context, 'পাঠানো যায়নি');
+      AdsyToast.error(context, tr('পাঠানো যায়নি'));
     }
   }
 
@@ -337,9 +338,9 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     setState(() => _reposting = false);
     if (ok) {
       Navigator.pop(context);
-      AdsyToast.success(context, 'আপনার প্রোফাইলে শেয়ার হয়েছে');
+      AdsyToast.success(context, tr('আপনার প্রোফাইলে শেয়ার হয়েছে'));
     } else {
-      AdsyToast.error(context, 'শেয়ার করা যায়নি। আবার চেষ্টা করুন।');
+      AdsyToast.error(context, tr('শেয়ার করা যায়নি। আবার চেষ্টা করুন।'));
     }
   }
 
@@ -348,11 +349,11 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
+          children: [
             Icon(Icons.repeat_rounded, size: 17, color: Color(0xFF111827)),
             SizedBox(width: 7),
             Text(
-              'আপনার প্রোফাইলে শেয়ার করুন',
+              tr('আপনার প্রোফাইলে শেয়ার করুন'),
               style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
@@ -367,7 +368,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
           minLines: 3,
           style: const TextStyle(fontSize: 14.5, height: 1.4),
           decoration: InputDecoration(
-            hintText: data.repostHint ?? 'এই পোস্ট সম্পর্কে কিছু লিখুন…',
+            hintText: data.repostHint ?? tr('এই পোস্ট সম্পর্কে কিছু লিখুন…'),
             hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
             isDense: true,
             contentPadding: const EdgeInsets.all(12),
@@ -407,7 +408,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation(Colors.white)))
                 : const Icon(Icons.repeat_rounded, size: 17),
-            label: Text(_reposting ? 'পোস্ট হচ্ছে…' : 'প্রোফাইলে শেয়ার করুন',
+            label: Text(_reposting ? tr('পোস্ট হচ্ছে…') : tr('প্রোফাইলে শেয়ার করুন'),
                 style: const TextStyle(
                     fontWeight: FontWeight.w700, fontSize: 14)),
           ),
@@ -426,10 +427,10 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
+          children: [
             AdsyChatIcon(size: 17),
             SizedBox(width: 7),
-            Text('চ্যাটে শেয়ার করুন',
+            Text(tr('চ্যাটে শেয়ার করুন'),
                 style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w800,
@@ -478,8 +479,8 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   : const Icon(Icons.send_rounded, size: 17),
               label: Text(
                   _sendingBatch
-                      ? 'পাঠানো হচ্ছে…'
-                      : 'পাঠান (${_selectedRoomIds.length})',
+                      ? tr('পাঠানো হচ্ছে…')
+                      : '${tr('পাঠান (')}${_selectedRoomIds.length})',
                   style: const TextStyle(
                       fontWeight: FontWeight.w700, fontSize: 14)),
             ),
@@ -512,7 +513,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                   color: Color(0xFF2563EB), size: 24),
             ),
             const SizedBox(height: 5),
-            const Text('সার্চ',
+            Text(tr('সার্চ'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -1128,10 +1129,10 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
     });
     if (ok > 0) {
       widget.onShared?.call();
-      AdsyToast.success(context, '$ok জনকে পাঠানো হয়েছে');
+      AdsyToast.success(context, tr('$ok ${tr('জনকে পাঠানো হয়েছে')}'));
       Navigator.of(context).pop(); // close the picker after sending
     } else {
-      AdsyToast.error(context, 'পাঠানো যায়নি');
+      AdsyToast.error(context, tr('পাঠানো যায়নি'));
     }
   }
 
@@ -1166,8 +1167,8 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                   children: [
                     const AdsyChatIcon(size: 19),
                     const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text('চ্যাটে পাঠান',
+                    Expanded(
+                      child: Text(tr('চ্যাটে পাঠান'),
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -1194,7 +1195,7 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.search_rounded,
                           color: Colors.grey.shade500, size: 20),
-                      hintText: 'সার্চ করুন',
+                      hintText: tr('সার্চ করুন'),
                       hintStyle:
                           TextStyle(color: Colors.grey.shade600, fontSize: 14),
                       border: InputBorder.none,
@@ -1220,8 +1221,8 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                             padding: const EdgeInsets.all(28),
                             child: Text(
                                 _query.isEmpty
-                                    ? 'কোনো চ্যাট নেই'
-                                    : 'কোনো ব্যবহারকারী পাওয়া যায়নি',
+                                    ? tr('কোনো চ্যাট নেই')
+                                    : tr('কোনো ব্যবহারকারী পাওয়া যায়নি'),
                                 style: TextStyle(color: Colors.grey.shade700)),
                           )
                         : ListView.builder(
@@ -1257,8 +1258,8 @@ class _ChatPickerSheetState extends State<_ChatPickerSheet> {
                           : const Icon(Icons.send_rounded, size: 18),
                       label: Text(
                           _sendingBatch
-                              ? 'পাঠানো হচ্ছে…'
-                              : 'পাঠান (${_selected.length})',
+                              ? tr('পাঠানো হচ্ছে…')
+                              : '${tr('পাঠান (')}${_selected.length})',
                           style: const TextStyle(
                               fontWeight: FontWeight.w700, fontSize: 14.5)),
                     ),

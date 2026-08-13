@@ -266,7 +266,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             const SizedBox(width: 8),
                             Text(
                               t('rideshare_payment_method',
-                                  fallback: 'পেমেন্ট মেথড'),
+                                  fallback: tr('পেমেন্ট মেথড')),
                               style: AppFonts.roboto(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -298,7 +298,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         // "<Driver> is on their way" — the reference's line,
                         // and the one thing a waiting rider wants confirmed.
                         Text(
-                          '${ride.assignedDriver!.userName} আসছেন',
+                          '${ride.assignedDriver!.userName} ${tr('আসছেন')}',
                           style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -331,7 +331,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 ),
                                 child: Text(
                                   t('rideshare_continue_ride',
-                                      fallback: 'রাইড চালিয়ে যান'),
+                                      fallback: tr('রাইড চালিয়ে যান')),
                                   style: AppFonts.roboto(
                                       fontWeight: FontWeight.w600),
                                 ),
@@ -351,7 +351,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 ),
                                 child: Text(
                                   t('rideshare_confirm_payment',
-                                      fallback: 'পেমেন্ট নিশ্চিত করুন'),
+                                      fallback: tr('পেমেন্ট নিশ্চিত করুন')),
                                   style: AppFonts.roboto(
                                       fontWeight: FontWeight.w700),
                                 ),
@@ -380,9 +380,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                   ? 'Cancelling...'
                                   : (ride.isSearching
                                       ? t('rideshare_cancel_request',
-                                          fallback: 'রিকোয়েস্ট বাতিল')
+                                          fallback: tr('রিকোয়েস্ট বাতিল'))
                                       : t('rideshare_cancel_ride',
-                                          fallback: 'রাইড বাতিল')),
+                                          fallback: tr('রাইড বাতিল'))),
                               style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -419,9 +419,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             label: Text(
                               _isReportingCancellation
                                   ? t('rideshare_submitting',
-                                      fallback: 'পাঠানো হচ্ছে...')
+                                      fallback: tr('পাঠানো হচ্ছে...'))
                                   : t('rideshare_report_driver_cancellation',
-                                      fallback: 'ড্রাইভার ক্যানসেলের রিপোর্ট'),
+                                      fallback: tr('ড্রাইভার ক্যানসেলের রিপোর্ট')),
                               style: AppFonts.roboto(
                                   fontWeight: FontWeight.w700),
                             ),
@@ -508,7 +508,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
   String _passengerStatusLabel(Ride ride) {
     if (ride.isSearching) {
       return t('rideshare_finding_driver_status',
-          fallback: 'ড্রাইভার খোঁজা হচ্ছে');
+          fallback: tr('ড্রাইভার খোঁজা হচ্ছে'));
     }
     if (ride.isAccepted) {
       return t('rideshare_driver_assigned', fallback: 'ড্রাইভার নিশ্চিত');
@@ -824,7 +824,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   ),
                 ),
                 Text(
-                  plate.isNotEmpty ? plate : vehicle.capacity,
+                  plate.isNotEmpty ? plate : tr(vehicle.capacity),
                   style: AppFonts.roboto(
                     fontSize: 11.5,
                     color: const Color(0xFF94A3B8),
@@ -870,7 +870,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               hasRatings
                   ? '${driver.ratingAverage.toStringAsFixed(2)} '
                       '(${driver.ratingCount})'
-                  : 'নতুন ড্রাইভার',
+                  : tr('নতুন ড্রাইভার'),
               style: AppFonts.roboto(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -936,7 +936,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'রাইড সম্পন্ন হয়েছে!',
+                  tr('রাইড সম্পন্ন হয়েছে!'),
                   style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -945,7 +945,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'আশা করি যাত্রাটি ভালো লেগেছে',
+                  tr('আশা করি যাত্রাটি ভালো লেগেছে'),
                   style: AppFonts.roboto(
                     fontSize: 13,
                     color: const Color(0xFF64748B),
@@ -961,9 +961,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                   ),
                   child: Column(
                     children: [
-                      _buildReceiptRow('কোথা থেকে', ride.pickupAddress),
+                      _buildReceiptRow(tr('কোথা থেকে'), ride.pickupAddress),
                       const SizedBox(height: 10),
-                      _buildReceiptRow('গন্তব্য', ride.dropAddress),
+                      _buildReceiptRow(tr('গন্তব্য'), ride.dropAddress),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 10),
                         child: Divider(height: 1, color: Color(0xFFE2E8F0)),
@@ -972,7 +972,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         children: [
                           Expanded(
                             child: _buildReceiptRow(
-                              'মোট ভাড়া',
+                              tr('মোট ভাড়া'),
                               '৳${fare.toStringAsFixed(0)}',
                               emphasize: true,
                             ),
@@ -980,7 +980,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                           if (driver != null)
                             Expanded(
                               child: _buildReceiptRow(
-                                'ড্রাইভার',
+                                tr('ড্রাইভার'),
                                 driver.userName,
                               ),
                             ),
@@ -993,7 +993,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 // Rate the driver — the receipt is where the verdict happens.
                 if (driver != null && !_rideRatingSubmitted) ...[
                   Text(
-                    'ড্রাইভারকে রেটিং দিন',
+                    tr('ড্রাইভারকে রেটিং দিন'),
                     style: AppFonts.roboto(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
@@ -1029,7 +1029,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                     style: AppFonts.roboto(
                         fontSize: 13.5, color: const Color(0xFF0F172A)),
                     decoration: InputDecoration(
-                      hintText: 'অভিজ্ঞতা লিখুন (ঐচ্ছিক)',
+                      hintText: tr('অভিজ্ঞতা লিখুন (ঐচ্ছিক)'),
                       hintStyle: AppFonts.roboto(
                           fontSize: 13, color: const Color(0xFF94A3B8)),
                       filled: true,
@@ -1070,7 +1070,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                               ),
                             )
                           : Text(
-                              'রেটিং জমা দিন',
+                              tr('রেটিং জমা দিন'),
                               style: AppFonts.roboto(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w700,
@@ -1086,7 +1086,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                           size: 18, color: Color(0xFF10B981)),
                       const SizedBox(width: 6),
                       Text(
-                        'রেটিংয়ের জন্য ধন্যবাদ!',
+                        tr('রেটিংয়ের জন্য ধন্যবাদ!'),
                         style: AppFonts.roboto(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w600,
@@ -1114,7 +1114,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 ),
               ),
               child: Text(
-                'নতুন রাইড খুঁজুন',
+                tr('নতুন রাইড খুঁজুন'),
                 style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -1170,7 +1170,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       if (result.success) _rideRatingSubmitted = true;
     });
     if (!result.success) {
-      AdsyToast.error(context, 'রেটিং জমা দেওয়া যায়নি — আবার চেষ্টা করুন');
+      AdsyToast.error(context, tr('রেটিং জমা দেওয়া যায়নি — আবার চেষ্টা করুন'));
     }
   }
 
@@ -1290,7 +1290,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                       ),
                     ),
                     Text(
-                      '${widget.driver.totalTrips}টি সম্পন্ন রাইড',
+                      '${widget.driver.totalTrips}${tr('টি সম্পন্ন রাইড')}',
                       style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF64748B),
@@ -1318,7 +1318,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                     ],
                   ),
                   Text(
-                    '$_countটি রিভিউ',
+                    tr('$_count${tr('টি রিভিউ')}'),
                     style: AppFonts.roboto(
                       fontSize: 11,
                       color: const Color(0xFF94A3B8),
@@ -1340,7 +1340,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 36),
                         child: Text(
-                          'এখনো কোনো রিভিউ নেই',
+                          tr('এখনো কোনো রিভিউ নেই'),
                           style: AppFonts.roboto(
                             fontSize: 13,
                             color: const Color(0xFF94A3B8),
@@ -1361,7 +1361,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                                     ? null
                                     : () => _load(more: true),
                                 child: Text(
-                                  _loadingMore ? 'লোড হচ্ছে…' : 'আরো দেখুন',
+                                  _loadingMore ? tr('লোড হচ্ছে…') : tr('আরো দেখুন'),
                                   style: AppFonts.roboto(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -1383,7 +1383,7 @@ class _DriverReviewsSheetState extends State<_DriverReviewsSheet> {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        r['rater_name']?.toString() ?? 'যাত্রী',
+                                        r['rater_name']?.toString() ?? tr('যাত্রী'),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: AppFonts.roboto(
@@ -1765,7 +1765,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                     children: [
                       if (isNoDriver) ...[
                         Text(
-                          'এলাকায় ড্রাইভার নেই',
+                          tr('এলাকায় ড্রাইভার নেই'),
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -1774,7 +1774,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
+                          tr('আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।'),
                           style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: _kRed,
@@ -1783,7 +1783,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         ),
                       ] else if (hasTargeted) ...[
                         Text(
-                          'ড্রাইভারকে অনুরোধ পাঠানো হয়েছে',
+                          tr('ড্রাইভারকে অনুরোধ পাঠানো হয়েছে'),
                           style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -1811,7 +1811,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'উত্তরের জন্য অপেক্ষা করুন...',
+                          tr('উত্তরের জন্য অপেক্ষা করুন...'),
                           style: AppFonts.roboto(
                             fontSize: 11,
                             color: const Color(0xFF92400E),
@@ -1819,7 +1819,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         ),
                       ] else ...[
                         Text(
-                          'ড্রাইভার খোঁজা হচ্ছে',
+                          tr('ড্রাইভার খোঁজা হচ্ছে'),
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -1828,7 +1828,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          'আশেপাশের ড্রাইভারদের সাথে সংযোগ স্থাপন করা হচ্ছে...',
+                          tr('আশেপাশের ড্রাইভারদের সাথে সংযোগ স্থাপন করা হচ্ছে...'),
                           style: AppFonts.roboto(
                             fontSize: 11.5,
                             color: const Color(0xFF92400E),
@@ -1838,7 +1838,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         if (widget.dispatchAttempt > 0) ...[
                           const SizedBox(height: 3),
                           Text(
-                            'ড্রাইভার অনুরোধ #${widget.dispatchAttempt}',
+                            '${tr('ড্রাইভার অনুরোধ')} #${widget.dispatchAttempt}',
                             style: AppFonts.roboto(
                               fontSize: 10.5,
                               color: const Color(0xFF92400E)

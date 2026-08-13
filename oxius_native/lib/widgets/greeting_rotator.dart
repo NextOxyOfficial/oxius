@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/tr.dart';
 import '../services/api_service.dart';
 
 /// The line under the "হাই, name" header. Cycles smoothly through a
@@ -34,11 +35,33 @@ class _GreetingRotatorState extends State<GreetingRotator> {
   static String _localGreeting() {
     // Mirrors the backend boundaries (বিকেল 4-7pm, সন্ধ্যা 7-8pm).
     final h = DateTime.now().hour;
-    if (h >= 5 && h < 12) return 'শুভ সকাল ☀️';
-    if (h >= 12 && h < 16) return 'শুভ দুপুর 🌤️';
-    if (h >= 16 && h < 19) return 'শুভ বিকেল 🌇';
-    if (h >= 19 && h < 20) return 'শুভ সন্ধ্যা 🌆';
-    return 'শুভ রাত্রি 🌙';
+    if (h >= 5 && h < 12) return tr('শুভ সকাল ☀️');
+    if (h >= 12 && h < 16) return tr('শুভ দুপুর 🌤️');
+    if (h >= 16 && h < 19) return tr('শুভ বিকেল 🌇');
+    if (h >= 19 && h < 20) return tr('শুভ সন্ধ্যা 🌆');
+    return tr('শুভ রাত্রি 🌙');
+  }
+
+  /// What may actually be shown for the current language.
+  ///
+  /// The backend sends this list in Bengali — a time-of-day wish, today's date
+  /// on the Bangla calendar, and whatever the admin typed — and the endpoint
+  /// takes no language parameter. Rendering it verbatim is why the very first
+  /// line of the home screen stayed Bengali with English selected, which is
+  /// what App Store review screenshotted.
+  ///
+  /// Known phrases translate through the dictionary. Anything still carrying
+  /// Bengali afterwards — a Bangla-calendar date, a new admin message — is
+  /// dropped rather than shown, and if that empties the list the local English
+  /// greeting stands in. Bengali mode keeps every item untouched.
+  List<String> get _visibleItems {
+    if (trIsBengali) return _items;
+    final out = <String>[];
+    for (final raw in _items) {
+      final t = trBn(raw);
+      if (!untranslatedBengali(t)) out.add(t);
+    }
+    return out.isEmpty ? [_localGreeting()] : out;
   }
 
   Future<void> _load() async {
@@ -69,10 +92,13 @@ class _GreetingRotatorState extends State<GreetingRotator> {
 
   void _startRotation() {
     _timer?.cancel();
-    if (_items.length < 2) return;
+    // Rotate over what is actually showable: in English mode the backend list
+    // can collapse to a single item once the Bengali-only ones are dropped,
+    // and a one-item rotation is just a flicker.
+    if (_visibleItems.length < 2) return;
     _timer = Timer.periodic(const Duration(milliseconds: 3600), (_) {
       if (!mounted) return;
-      setState(() => _index = (_index + 1) % _items.length);
+      setState(() => _index = (_index + 1) % _visibleItems.length);
     });
   }
 
@@ -84,7 +110,12 @@ class _GreetingRotatorState extends State<GreetingRotator> {
 
   @override
   Widget build(BuildContext context) {
-    final text = _items.isEmpty ? _localGreeting() : _items[_index];
+    final items = _visibleItems;
+    // _index is driven by a timer that may outlive a language change, so clamp
+    // rather than trusting it against a list that just got shorter.
+    final text = items.isEmpty
+        ? _localGreeting()
+        : items[_index % items.length];
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 420),
       switchInCurve: Curves.easeOutCubic,

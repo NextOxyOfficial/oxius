@@ -14,6 +14,7 @@ import 'mobile_banner.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -72,7 +73,7 @@ class _EshopSectionState extends State<EshopSection> {
         },
       );
     } catch (e) {
-      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
+      AdsyToast.error(context, tr('চেকআউটে যাওয়া যায়নি'));
     }
   }
 
@@ -300,7 +301,7 @@ class _EshopSectionState extends State<EshopSection> {
                     // case today — and the rest of this section already
                     // reads in Bangla around it.
                     _translationService.t('browse_eshop',
-                        fallback: 'শপে যান'),
+                        fallback: tr('শপে যান')),
                     style: AppText.button(color: const Color(0xFF7C3AED)),
                   ),
                 ],
@@ -338,7 +339,7 @@ class _EshopSectionState extends State<EshopSection> {
                 size: 16, color: Color(0xFF64748B)),
             label: Text(
               _translationService.t('reload_products',
-                  fallback: 'পণ্য লোড করুন'),
+                  fallback: tr('পণ্য লোড করুন')),
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,

@@ -10,6 +10,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class GigsOrderedTab extends StatefulWidget {
   const GigsOrderedTab({super.key});
@@ -105,7 +106,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
           context,
           e,
           customMessage: _t(
-              'workspace_order_complete_failed', 'অর্ডার সম্পন্ন করা যায়নি'),
+              'workspace_order_complete_failed', tr('অর্ডার সম্পন্ন করা যায়নি')),
         );
       }
     }
@@ -117,7 +118,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
       builder: (context) => AlertDialog(
         title: Text(_t('workspace_cancel_order', 'অর্ডার বাতিল করবেন?')),
         content: Text(_t('workspace_cancel_order_confirm',
-            'আপনি কি সত্যিই এই অর্ডারটি বাতিল করতে চান?')),
+            tr('আপনি কি সত্যিই এই অর্ডারটি বাতিল করতে চান?'))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -150,7 +151,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
       builder: (context) => AlertDialog(
         title: Text(_t('workspace_request_revision', 'রিভিশন চাইবেন?')),
         content: Text(_t('workspace_request_revision_confirm',
-            'এই অর্ডারের জন্য রিভিশন চাইতে চান? সেলারকে জানানো হবে।')),
+            tr('এই অর্ডারের জন্য রিভিশন চাইতে চান? সেলারকে জানানো হবে।'))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -238,7 +239,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                   const SizedBox(height: 4),
                   Text(
                     _t('workspace_dispute_select_reason',
-                        'একটি কারণ বেছে নিয়ে বিস্তারিত লিখুন।'),
+                        tr('একটি কারণ বেছে নিয়ে বিস্তারিত লিখুন।')),
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 14),
@@ -277,7 +278,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                       labelText: _t('workspace_description', 'বিবরণ'),
                       labelStyle: const TextStyle(fontSize: 13),
                       hintText: _t('workspace_dispute_hint',
-                          'সমস্যাটি লিখুন (অন্তত ২০ অক্ষর)'),
+                          tr('সমস্যাটি লিখুন (অন্তত ২০ অক্ষর)')),
                       hintStyle:
                           TextStyle(fontSize: 12, color: Colors.grey[400]),
                       border: OutlineInputBorder(
@@ -312,14 +313,14 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                               AdsyToast.warning(
                                   context,
                                   _t('workspace_select_reason',
-                                      'একটি কারণ বেছে নিন'));
+                                      tr('একটি কারণ বেছে নিন')));
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
                               AdsyToast.info(
                                   context,
                                   _t('workspace_desc_min_chars',
-                                      'বিবরণ অন্তত ২০ অক্ষরের হতে হবে'));
+                                      tr('বিবরণ অন্তত ২০ অক্ষরের হতে হবে')));
                               return;
                             }
                             Navigator.pop(context, true);
@@ -890,7 +891,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
           const SizedBox(height: 8),
           Text(
             _t('workspace_ordered_gigs_appear',
-                'আপনার অর্ডার করা গিগ এখানে দেখা যাবে'),
+                tr('আপনার অর্ডার করা গিগ এখানে দেখা যাবে')),
             style: TextStyle(color: Colors.grey[500]),
           ),
         ],

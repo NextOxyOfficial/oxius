@@ -13,6 +13,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -105,7 +106,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     } catch (e) {
       _showSnackBar(
           _t('workspace_balance_refresh_failed',
-              'ব্যালেন্স রিফ্রেশ করা যায়নি'),
+              tr('ব্যালেন্স রিফ্রেশ করা যায়নি')),
           Colors.red);
     } finally {
       if (mounted) setState(() => _isRefreshingBalance = false);
@@ -333,7 +334,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     if (!AuthService.isAuthenticated) {
       _showSnackBar(
           _t('workspace_login_to_contact',
-              'সেলারের সাথে যোগাযোগ করতে লগইন করুন'),
+              tr('সেলারের সাথে যোগাযোগ করতে লগইন করুন')),
           Colors.orange);
       return;
     }
@@ -1063,7 +1064,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   Expanded(
                       child: Text(
                           _t('workspace_own_gig_notice',
-                              'এটি আপনার গিগ। আমার গিগ থেকে ম্যানেজ করুন।'),
+                              tr('এটি আপনার গিগ। আমার গিগ থেকে ম্যানেজ করুন।')),
                           style: const TextStyle(
                               fontSize: 12, color: Color(0xFF8B5CF6)))),
                 ],
@@ -1299,7 +1300,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     Expanded(
                       child: Text(
                           _t('workspace_insufficient_balance',
-                              'ব্যালেন্স যথেষ্ট নয়'),
+                              tr('ব্যালেন্স যথেষ্ট নয়')),
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Colors.red[800],
@@ -1358,7 +1359,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Expanded(
                 child: Text(
                     _t('workspace_escrow_notice',
-                        'কাজ শেষ না হওয়া পর্যন্ত টাকা এসক্রোতে রাখা থাকবে'),
+                        tr('কাজ শেষ না হওয়া পর্যন্ত টাকা এসক্রোতে রাখা থাকবে')),
                     style: TextStyle(fontSize: 10, color: Colors.grey[600]))),
           ],
         ),
@@ -1422,7 +1423,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         const SizedBox(height: 4),
         Text(
             _t('workspace_payment_success',
-                'পেমেন্ট সফল। সেলারকে জানানো হয়েছে।'),
+                tr('পেমেন্ট সফল। সেলারকে জানানো হয়েছে।')),
             style: TextStyle(color: Colors.grey[600], fontSize: 12)),
         const SizedBox(height: 12),
         Container(

@@ -8,6 +8,7 @@ import '../widgets/api_error_ui.dart';
 import '../utils/image_compressor.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class CreateSalePostScreen extends StatefulWidget {
   const CreateSalePostScreen({super.key});
@@ -299,7 +300,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             double.tryParse(_priceController.text) == null ||
             double.parse(_priceController.text) <= 0)) {
       _showErrorSnackBar(_t('sale_valid_price',
-          'ঠিকঠাক একটা দাম লিখুন, নাহলে দামাদামিতে টিক দিন'));
+          tr('ঠিকঠাক একটা দাম লিখুন, নাহলে দামাদামিতে টিক দিন')));
       return;
     }
 
@@ -315,7 +316,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
     // Validate delivery coverage
     if (!_deliverAllBd && _deliveryLocations.isEmpty) {
       _showErrorSnackBar(_t('sale_dl_required',
-          'ডেলিভারি লোকেশন যোগ করুন, নাহলে সারা বাংলাদেশ বেছে নিন'));
+          tr('ডেলিভারি লোকেশন যোগ করুন, নাহলে সারা বাংলাদেশ বেছে নিন')));
       return;
     }
 
@@ -490,7 +491,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               _buildSection(
                 title: _t('sale_basic_details', 'মূল তথ্য'),
                 subtitle: _t('sale_basic_details_sub',
-                    'ভালো টাইটেল দিলে ক্রেতা সহজে খুঁজে পাবে'),
+                    tr('ভালো টাইটেল দিলে ক্রেতা সহজে খুঁজে পাবে')),
                 icon: Icons.document_scanner_outlined,
                 children: [
                   _buildCategoryDropdown(),
@@ -509,7 +510,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               _buildSection(
                 title: _t('sale_pricing_condition', 'দাম ও কন্ডিশন'),
                 subtitle: _t('sale_pricing_sub',
-                    'ন্যায্য দাম দিন — দামাদামির অপশনও রাখতে পারেন'),
+                    tr('ন্যায্য দাম দিন — দামাদামির অপশনও রাখতে পারেন')),
                 icon: Icons.attach_money_rounded,
                 children: [
                   _buildConditionSelection(),
@@ -522,7 +523,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               _buildSection(
                 title: _t('sale_upload_photos', 'ছবি আপলোড করুন'),
                 subtitle: _t('sale_photos_sub',
-                    'পরিষ্কার ছবি দিলে বিক্রির সম্ভাবনা অনেক বাড়ে'),
+                    tr('পরিষ্কার ছবি দিলে বিক্রির সম্ভাবনা অনেক বাড়ে')),
                 icon: Icons.photo_camera_outlined,
                 children: [
                   _buildImageUpload(),
@@ -533,7 +534,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               _buildSection(
                 title: _t('sale_item_location', 'পণ্যটা কোথায় আছে'),
                 subtitle: _t('sale_item_location_sub',
-                    'ক্রেতা কাছাকাছি খোঁজে — সঠিক লোকেশন দিন'),
+                    tr('ক্রেতা কাছাকাছি খোঁজে — সঠিক লোকেশন দিন')),
                 icon: Icons.location_on_outlined,
                 children: [
                   _buildLocationFields(),
@@ -545,9 +546,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               // Delivery coverage Section
               _buildSection(
                 title: _t(
-                    'sale_delivery_coverage', 'কোথায় কোথায় ডেলিভারি দেবেন'),
+                    'sale_delivery_coverage', tr('কোথায় কোথায় ডেলিভারি দেবেন')),
                 subtitle: _t('sale_delivery_coverage_sub',
-                    'এক বা একাধিক বিভাগ/জেলা যোগ করতে পারবেন'),
+                    tr('এক বা একাধিক বিভাগ/জেলা যোগ করতে পারবেন')),
                 icon: Icons.local_shipping_outlined,
                 children: [
                   _buildDeliveryCoverage(),
@@ -558,7 +559,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               _buildSection(
                 title: _t('sale_contact_info', 'যোগাযোগের তথ্য'),
                 subtitle: _t('sale_contact_sub',
-                    'আগ্রহী ক্রেতা এই নাম্বারে যোগাযোগ করবে'),
+                    tr('আগ্রহী ক্রেতা এই নাম্বারে যোগাযোগ করবে')),
                 icon: Icons.phone_outlined,
                 children: [
                   _buildPhoneField(),
@@ -862,7 +863,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       children: [
         Text(
           _t('sale_add_photos_hint',
-              'জিনিসের ছবি দিন, ছবি ভালো হলে তাড়াতাড়ি বিক্রি হয় (সর্বোচ্চ ৮টা)'),
+              tr('জিনিসের ছবি দিন, ছবি ভালো হলে তাড়াতাড়ি বিক্রি হয় (সর্বোচ্চ ৮টা)')),
           style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
         ),
         const SizedBox(height: 10),
@@ -1144,7 +1145,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           icon: Icons.public_rounded,
           title: _t('sale_deliver_all_bd', 'সারা বাংলাদেশে ডেলিভারি'),
           subtitle: _t(
-              'sale_deliver_all_bd_sub', 'দেশের যেকোনো জায়গায় পাঠাতে পারবেন'),
+              'sale_deliver_all_bd_sub', tr('দেশের যেকোনো জায়গায় পাঠাতে পারবেন')),
           onTap: () => setState(() => _deliverAllBd = true),
         ),
         const SizedBox(height: 8),

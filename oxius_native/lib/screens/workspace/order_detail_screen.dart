@@ -3,6 +3,7 @@ import '../../services/api_service.dart';
 import '../../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -246,7 +247,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 Expanded(
                   child: Text(
                     _t('workspace_order_details_loading',
-                        'সার্ভার থেকে অর্ডার লোড হলে বিস্তারিত দেখা যাবে।'),
+                        tr('সার্ভার থেকে অর্ডার লোড হলে বিস্তারিত দেখা যাবে।')),
                     style: TextStyle(
                       color: Colors.blue[700],
                       fontSize: 13,

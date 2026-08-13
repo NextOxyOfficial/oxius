@@ -14,6 +14,7 @@ import '../widgets/home/account_balance_section.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class MyGigsScreen extends StatefulWidget {
   const MyGigsScreen({super.key});
@@ -509,7 +510,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
       }
     }
   }
@@ -1001,7 +1002,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'গিগের বিস্তারিত লোড করা যায়নি');
+        AdsyToast.error(context, tr('গিগের বিস্তারিত লোড করা যায়নি'));
       }
     }
   }

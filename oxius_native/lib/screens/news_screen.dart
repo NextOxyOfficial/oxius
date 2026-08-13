@@ -10,6 +10,7 @@ import '../widgets/news/news_search_delegate.dart';
 import 'news_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -241,7 +242,7 @@ class _NewsScreenState extends State<NewsScreen> {
                       ElevatedButton(
                         onPressed: _loadInitialData,
                         child: Text(_t('news_retry',
-                            en: 'Retry', bn: 'আবার চেষ্টা করুন')),
+                            en: 'Retry', bn: tr('আবার চেষ্টা করুন'))),
                       ),
                     ],
                   ),
@@ -284,7 +285,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                     child: Text(
                                       _selectedCategory?.name ??
                                           _t('all_news',
-                                              en: 'All News', bn: 'সব সংবাদ'),
+                                              en: 'All News', bn: tr('সব সংবাদ')),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -406,10 +407,10 @@ class _NewsScreenState extends State<NewsScreen> {
                                       _loadingMore
                                           ? _t('loading_news',
                                               en: 'Loading news...',
-                                              bn: 'সংবাদ লোড হচ্ছে...')
+                                              bn: tr('সংবাদ লোড হচ্ছে...'))
                                           : _t('read_more_news',
                                               en: 'Read More News',
-                                              bn: 'আরও সংবাদ পড়ুন'),
+                                              bn: tr('আরও সংবাদ পড়ুন')),
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13),
@@ -434,7 +435,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                     Text(
                                       _t('tips_and_suggestions',
                                           en: 'Tips and Suggestions',
-                                          bn: 'টিপস ও পরামর্শ'),
+                                          bn: tr('টিপস ও পরামর্শ')),
                                       style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -527,7 +528,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                             child: Text(
                                                 _t('news_load_more',
                                                     en: 'Load More',
-                                                    bn: 'আরও দেখুন'),
+                                                    bn: tr('আরও দেখুন')),
                                                 style: const TextStyle(
                                                     fontSize: 12,
                                                     fontWeight:
@@ -582,7 +583,7 @@ class _NewsScreenState extends State<NewsScreen> {
                   Expanded(
                     child: Text(
                       _t('news_categories',
-                          en: 'News Categories', bn: 'সংবাদ ক্যাটাগরি'),
+                          en: 'News Categories', bn: tr('সংবাদ ক্যাটাগরি')),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
@@ -621,7 +622,7 @@ class _NewsScreenState extends State<NewsScreen> {
         ? _selectedCategory == null
         : _selectedCategory?.slug == category.slug;
     final title =
-        category?.name ?? _t('all_news', en: 'All News', bn: 'সব সংবাদ');
+        category?.name ?? _t('all_news', en: 'All News', bn: tr('সব সংবাদ'));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// A user-facing chat error: `message` is plain text safe to show in a
 /// snackbar (already in Bangla from the backend when available).
@@ -336,7 +337,7 @@ class AdsyConnectService {
       } else {
         // Surface only the backend's plain message (error/detail) — never the
         // raw status code + body, which looked like leaked backend code.
-        String message = 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
+        String message = tr('চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।');
         try {
           final decoded = jsonDecode(response.body);
           if (decoded is Map) {

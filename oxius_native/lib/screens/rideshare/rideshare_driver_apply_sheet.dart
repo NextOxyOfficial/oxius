@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// What the rider filled in, handed back to the caller to submit.
 ///
@@ -64,8 +65,8 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
     final nid = _nid.text.trim();
 
     setState(() {
-      _licenseError = license.isEmpty ? 'ড্রাইভিং লাইসেন্স নম্বর দিন' : null;
-      _nidError = nid.isEmpty ? 'জাতীয় পরিচয়পত্র নম্বর দিন' : null;
+      _licenseError = license.isEmpty ? tr('ড্রাইভিং লাইসেন্স নম্বর দিন') : null;
+      _nidError = nid.isEmpty ? tr('জাতীয় পরিচয়পত্র নম্বর দিন') : null;
     });
     if (_licenseError != null || _nidError != null) return;
 
@@ -109,7 +110,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'ড্রাইভার হোন',
+                  tr('ড্রাইভার হোন'),
                   style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -118,8 +119,8 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'আবেদন জমা দিলে আমাদের টিম যাচাই করবে। এপ্রুভ হলে আপনার '
-                  'অ্যাকাউন্টে ড্রাইভার মোড চালু হয়ে যাবে।',
+                  tr('আবেদন জমা দিলে আমাদের টিম যাচাই করবে। এপ্রুভ হলে আপনার ') +
+                  tr('অ্যাকাউন্টে ড্রাইভার মোড চালু হয়ে যাবে।'),
                   style: AppFonts.roboto(
                     fontSize: 12.5,
                     height: 1.5,
@@ -128,7 +129,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 20),
                 _Field(
-                  label: 'ড্রাইভিং লাইসেন্স নম্বর',
+                  label: tr('ড্রাইভিং লাইসেন্স নম্বর'),
                   hint: 'DK-0123456789',
                   controller: _license,
                   error: _licenseError,
@@ -142,8 +143,8 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 14),
                 _Field(
-                  label: 'জাতীয় পরিচয়পত্র (NID) নম্বর',
-                  hint: '১০ বা ১৭ সংখ্যার এনআইডি',
+                  label: tr('জাতীয় পরিচয়পত্র (NID) নম্বর'),
+                  hint: tr('১০ বা ১৭ সংখ্যার এনআইডি'),
                   controller: _nid,
                   error: _nidError,
                   icon: Icons.credit_card_rounded,
@@ -155,8 +156,8 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                 ),
                 const SizedBox(height: 14),
                 _Field(
-                  label: 'আপনার সম্পর্কে',
-                  hint: 'কত বছর চালাচ্ছেন, কোন এলাকায় চালাতে চান…',
+                  label: tr('আপনার সম্পর্কে'),
+                  hint: tr('কত বছর চালাচ্ছেন, কোন এলাকায় চালাতে চান…'),
                   controller: _details,
                   icon: Icons.notes_rounded,
                   maxLines: 4,
@@ -178,7 +179,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'এপ্রুভ হওয়ার পর গাড়ি যোগ করলে তবেই রাইড রিকোয়েস্ট পাবেন।',
+                          tr('এপ্রুভ হওয়ার পর গাড়ি যোগ করলে তবেই রাইড রিকোয়েস্ট পাবেন।'),
                           style: AppFonts.roboto(
                             fontSize: 11.5,
                             height: 1.45,
@@ -202,7 +203,7 @@ class _RideshareDriverApplySheetState extends State<RideshareDriverApplySheet> {
                           borderRadius: BorderRadius.circular(14)),
                     ),
                     child: Text(
-                      'আবেদন জমা দিন',
+                      tr('আবেদন জমা দিন'),
                       style: AppFonts.roboto(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w700,
@@ -266,7 +267,7 @@ class _Field extends StatelessWidget {
             if (optional) ...[
               const SizedBox(width: 6),
               Text(
-                'ঐচ্ছিক',
+                tr('ঐচ্ছিক'),
                 style: AppFonts.roboto(
                   fontSize: 11,
                   color: const Color(0xFF94A3B8),

@@ -6,6 +6,7 @@ import '../models/business_network_models.dart';
 import '../utils/api_error.dart';
 import '../utils/video_upload_helper.dart';
 import 'business_network_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// What the composer is doing right now.
 enum PostUploadStage { preparing, uploading, success, failed }
@@ -74,7 +75,7 @@ class PostUploadService {
     final hasVideos = videoPaths != null && videoPaths.isNotEmpty;
     state.value = PostUploadState(
       stage: PostUploadStage.preparing,
-      message: hasVideos ? 'ভিডিও প্রস্তুত হচ্ছে…' : 'পোস্ট প্রস্তুত হচ্ছে…',
+      message: hasVideos ? tr('ভিডিও প্রস্তুত হচ্ছে…') : tr('পোস্ট প্রস্তুত হচ্ছে…'),
     );
 
     try {
@@ -86,8 +87,8 @@ class PostUploadService {
           state.value = PostUploadState(
             stage: PostUploadStage.preparing,
             message: videoPaths.length > 1
-                ? 'ভিডিও প্রস্তুত হচ্ছে… (${i + 1}/${videoPaths.length})'
-                : 'ভিডিও প্রস্তুত হচ্ছে…',
+                ? '${tr('ভিডিও প্রস্তুত হচ্ছে')}… (${i + 1}/${videoPaths.length})'
+                : tr('ভিডিও প্রস্তুত হচ্ছে…'),
           );
           final original = videoPaths[i];
           final out = await VideoUploadHelper.compressOnly(original);
@@ -109,9 +110,9 @@ class PostUploadService {
       }
 
       // 2) Upload with real byte progress.
-      state.value = const PostUploadState(
+      state.value = PostUploadState(
         stage: PostUploadStage.uploading,
-        message: 'পোস্ট আপলোড হচ্ছে…',
+        message: tr('পোস্ট আপলোড হচ্ছে…'),
         progress: 0,
       );
 
@@ -126,7 +127,7 @@ class PostUploadService {
           // Keep the last known message; only the bar moves.
           state.value = PostUploadState(
             stage: PostUploadStage.uploading,
-            message: 'পোস্ট আপলোড হচ্ছে…',
+            message: tr('পোস্ট আপলোড হচ্ছে…'),
             progress: p.clamp(0.0, 1.0),
           );
         },
@@ -135,14 +136,14 @@ class PostUploadService {
       if (post != null) {
         state.value = PostUploadState(
           stage: PostUploadStage.success,
-          message: 'পোস্ট প্রকাশিত হয়েছে',
+          message: tr('পোস্ট প্রকাশিত হয়েছে'),
           progress: 1,
           post: post,
         );
       } else {
-        state.value = const PostUploadState(
+        state.value = PostUploadState(
           stage: PostUploadStage.failed,
-          message: 'পোস্ট করা যায়নি',
+          message: tr('পোস্ট করা যায়নি'),
           error: 'unknown',
         );
       }
@@ -155,7 +156,7 @@ class PostUploadService {
         stage: PostUploadStage.failed,
         message: e is ApiError && e.message.trim().isNotEmpty
             ? e.message
-            : 'পোস্ট করা যায়নি — আবার চেষ্টা করুন',
+            : tr('পোস্ট করা যায়নি — আবার চেষ্টা করুন'),
         error: e.toString(),
       );
       return null;

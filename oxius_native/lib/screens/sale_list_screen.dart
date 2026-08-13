@@ -13,6 +13,7 @@ import '../widgets/sale_list_skeleton_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Sale Listing Screen - Browse sale posts with filters and search
 /// One sponsored strip after every N listings.
@@ -1213,7 +1214,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         const SizedBox(height: 8),
                         Text(
                           _t('sale_all_ads_seen',
-                              'সব বিজ্ঞাপন দেখা হয়ে গেছে!'),
+                              tr('সব বিজ্ঞাপন দেখা হয়ে গেছে!')),
                           style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -1294,7 +1295,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 _t('sale_no_photo_uploaded',
-                                    'ছবি দেওয়া\nহয়নি'),
+                                    tr('ছবি দেওয়া\nহয়নি')),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     fontSize: 9,
@@ -1673,9 +1674,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ? '"$_searchQuery" ${_t('sale_no_match_hint', 'দিয়ে কিছু পাওয়া যায়নি। বানানটা দেখে নিন বা অন্য কিছু লিখে খুঁজে দেখুন।')}'
                     : _selectedCategoryId != null
                         ? _t('sale_empty_category_hint',
-                            'এই ক্যাটাগরিতে এখন কোনো বিজ্ঞাপন নেই। অন্য ক্যাটাগরি দেখুন বা ফিল্টার বদলে দেখুন।')
+                            tr('এই ক্যাটাগরিতে এখন কোনো বিজ্ঞাপন নেই। অন্য ক্যাটাগরি দেখুন বা ফিল্টার বদলে দেখুন।'))
                         : _t('sale_empty_hint',
-                            'এই মুহূর্তে কোনো বিজ্ঞাপন নেই। একটু পরে আবার দেখুন।'),
+                            tr('এই মুহূর্তে কোনো বিজ্ঞাপন নেই। একটু পরে আবার দেখুন।')),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 14, color: Colors.grey.shade700, height: 1.5),
@@ -1694,7 +1695,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 icon: const Icon(Icons.clear_all, size: 18),
                 label: Text(
                     _t('sale_clear_search_browse',
-                        'সার্চ মুছে সব বিজ্ঞাপন দেখুন'),
+                        tr('সার্চ মুছে সব বিজ্ঞাপন দেখুন')),
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
@@ -2116,66 +2117,66 @@ class _SaleListScreenState extends State<SaleListScreen> {
   IconData _iconForCategory(String name) {
     final n = name.toLowerCase();
     bool has(List<String> kws) => kws.any((k) => n.contains(k));
-    if (has(['মোবাইল', 'ফোন', 'mobile', 'phone'])) return Icons.smartphone;
-    if (has(['গাড়ি', 'কার', 'car', 'vehicle', 'যান'])) {
+    if (has([tr('মোবাইল'), tr('ফোন'), 'mobile', 'phone'])) return Icons.smartphone;
+    if (has([tr('গাড়ি'), tr('কার'), 'car', 'vehicle', tr('যান')])) {
       return Icons.directions_car_filled_outlined;
     }
-    if (has(['বাইক', 'মোটর', 'bike', 'motor', 'সাইকেল', 'cycle'])) {
+    if (has([tr('বাইক'), tr('মোটর'), 'bike', 'motor', tr('সাইকেল'), 'cycle'])) {
       return Icons.two_wheeler;
     }
-    if (has(['কম্পিউটার', 'ল্যাপটপ', 'computer', 'laptop', 'pc'])) {
+    if (has([tr('কম্পিউটার'), tr('ল্যাপটপ'), 'computer', 'laptop', 'pc'])) {
       return Icons.laptop_mac;
     }
-    if (has(['ইলেকট্রন', 'electronic', 'টিভি', 'tv', 'gadget', 'গ্যাজেট'])) {
+    if (has([tr('ইলেকট্রন'), 'electronic', tr('টিভি'), 'tv', 'gadget', tr('গ্যাজেট')])) {
       return Icons.tv;
     }
-    if (has(['ফার্নিচার', 'আসবাব', 'furniture', 'sofa', 'চেয়ার'])) {
+    if (has([tr('ফার্নিচার'), tr('আসবাব'), 'furniture', 'sofa', tr('চেয়ার')])) {
       return Icons.weekend_outlined;
     }
     if (has([
-      'বাড়ি',
-      'প্রপার্টি',
-      'জমি',
+      tr('বাড়ি'),
+      tr('প্রপার্টি'),
+      tr('জমি'),
       'property',
       'home',
       'flat',
-      'ফ্ল্যাট',
+      tr('ফ্ল্যাট'),
       'rent',
-      'ভাড়া'
+      tr('ভাড়া')
     ])) {
       return Icons.home_work_outlined;
     }
     if (has([
-      'পোশাক',
-      'কাপড়',
+      tr('পোশাক'),
+      tr('কাপড়'),
       'fashion',
       'cloth',
       'dress',
-      'ফ্যাশন',
-      'জুতা',
+      tr('ফ্যাশন'),
+      tr('জুতা'),
       'shoe'
     ])) {
       return Icons.checkroom;
     }
-    if (has(['চাকরি', 'job', 'নিয়োগ', 'career'])) return Icons.work_outline;
-    if (has(['পশু', 'pet', 'animal', 'প্রাণী', 'পাখি', 'bird'])) {
+    if (has([tr('চাকরি'), 'job', tr('নিয়োগ'), 'career'])) return Icons.work_outline;
+    if (has([tr('পশু'), 'pet', 'animal', tr('প্রাণী'), tr('পাখি'), 'bird'])) {
       return Icons.pets;
     }
-    if (has(['বই', 'book', 'শিক্ষা', 'education', 'course', 'কোর্স'])) {
+    if (has([tr('বই'), 'book', tr('শিক্ষা'), 'education', 'course', tr('কোর্স')])) {
       return Icons.menu_book;
     }
-    if (has(['খাবার', 'food', 'grocery', 'মুদি'])) return Icons.restaurant;
-    if (has(['সেবা', 'service'])) return Icons.handyman_outlined;
-    if (has(['ক্যামেরা', 'camera'])) return Icons.camera_alt_outlined;
-    if (has(['খেলা', 'sport', 'game', 'গেম', 'খেলনা', 'toy'])) {
+    if (has([tr('খাবার'), 'food', 'grocery', tr('মুদি')])) return Icons.restaurant;
+    if (has([tr('সেবা'), 'service'])) return Icons.handyman_outlined;
+    if (has([tr('ক্যামেরা'), 'camera'])) return Icons.camera_alt_outlined;
+    if (has([tr('খেলা'), 'sport', 'game', tr('গেম'), tr('খেলনা'), 'toy'])) {
       return Icons.sports_esports_outlined;
     }
-    if (has(['গহনা', 'jewel', 'ঘড়ি', 'watch'])) return Icons.watch_outlined;
-    if (has(['স্বাস্থ্য', 'health', 'beauty', 'সৌন্দর্য'])) {
+    if (has([tr('গহনা'), 'jewel', tr('ঘড়ি'), 'watch'])) return Icons.watch_outlined;
+    if (has([tr('স্বাস্থ্য'), 'health', 'beauty', tr('সৌন্দর্য')])) {
       return Icons.favorite_border;
     }
-    if (has(['কৃষি', 'agri', 'farm'])) return Icons.agriculture_outlined;
-    if (has(['সংগীত', 'music', 'যন্ত্র', 'instrument'])) {
+    if (has([tr('কৃষি'), 'agri', 'farm'])) return Icons.agriculture_outlined;
+    if (has([tr('সংগীত'), 'music', tr('যন্ত্র'), 'instrument'])) {
       return Icons.music_note_outlined;
     }
     return Icons.sell_outlined;
@@ -2187,17 +2188,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
       [
         _t('sale_tip_check_photos', 'ছবি ভালো করে দেখুন'),
         _t('sale_tip_check_photos_sub',
-            'জিনিসটার সব ছবি আর ডিটেইলস মন দিয়ে দেখে নিন')
+            tr('জিনিসটার সব ছবি আর ডিটেইলস মন দিয়ে দেখে নিন'))
       ],
       [
         _t('sale_tip_meet_safe', 'নিরাপদ জায়গায় দেখা করুন'),
         _t('sale_tip_meet_safe_sub',
-            'খোলামেলা ও পরিচিত জায়গায় বিক্রেতার সাথে দেখা করুন')
+            tr('খোলামেলা ও পরিচিত জায়গায় বিক্রেতার সাথে দেখা করুন'))
       ],
       [
         _t('sale_tip_verify_product', 'জিনিস যাচাই করুন'),
         _t('sale_tip_verify_product_sub',
-            'টাকা দেওয়ার আগে জিনিসটা নিজে হাতে দেখে নিন')
+            tr('টাকা দেওয়ার আগে জিনিসটা নিজে হাতে দেখে নিন'))
       ],
       [
         _t('sale_tip_payment_care', 'পেমেন্টে সাবধান থাকুন'),
@@ -2260,7 +2261,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       const SizedBox(height: 2),
                       Text(
                           _t('sale_safe_guide_sub',
-                              'কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন'),
+                              tr('কেনাকাটার আগে এই বিষয়গুলো মাথায় রাখুন')),
                           style: const TextStyle(
                               fontSize: 11, color: Color(0xFF556278))),
                     ],

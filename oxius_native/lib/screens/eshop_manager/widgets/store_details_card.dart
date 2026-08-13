@@ -8,6 +8,7 @@ import 'buy_slots_bottom_sheet.dart';
 import '../../../services/auth_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class StoreDetailsCard extends StatefulWidget {
   final StoreDetails storeDetails;
@@ -74,7 +75,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     if (_nameController.text.trim().length < 2) {
       _showSnackBar(
           _t('eshop_store_name_min_length',
-              'স্টোরের নাম কমপক্ষে ২ অক্ষরের হতে হবে'),
+              tr('স্টোরের নাম কমপক্ষে ২ অক্ষরের হতে হবে')),
           isError: true);
       return;
     }
@@ -146,7 +147,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     } else if (difference.inDays == 1) {
       return _t('eshop_last_order_yesterday', 'গতকাল');
     } else if (difference.inDays < 7) {
-      return _t('eshop_last_order_days_ago', '${difference.inDays} দিন আগে');
+      return _t('eshop_last_order_days_ago', '${difference.inDays} ${tr('দিন আগে')}');
     } else {
       return '${lastOrder.day}/${lastOrder.month}/${lastOrder.year}';
     }
@@ -324,7 +325,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                                 fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_shop_name',
-                                  'স্টোরের নাম লিখুন'),
+                                  tr('স্টোরের নাম লিখুন')),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
@@ -410,7 +411,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                       padding: const EdgeInsets.only(left: 36, top: 2),
                       child: Text(
                         _t('eshop_url_cannot_change',
-                            'URL চেঞ্জ করা যাবে না'),
+                            tr('URL চেঞ্জ করা যাবে না')),
                         style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF858E9C),
@@ -431,7 +432,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             style: const TextStyle(fontSize: 13),
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_shop_address',
-                                  'স্টোরের ঠিকানা লিখুন'),
+                                  tr('স্টোরের ঠিকানা লিখুন')),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 8),
@@ -478,7 +479,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             style: const TextStyle(fontSize: 13),
                             decoration: InputDecoration(
                               hintText: _t('eshop_enter_description',
-                                  'ছোট একটা ডিসক্রিপশন লিখুন...'),
+                                  tr('ছোট একটা ডিসক্রিপশন লিখুন...')),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
@@ -501,7 +502,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                         : Text(
                             widget.storeDetails.storeDescription ??
                                 _t('eshop_no_description',
-                                    'কোনো ডিসক্রিপশন নেই'),
+                                    tr('কোনো ডিসক্রিপশন নেই')),
                             style: TextStyle(
                               fontSize: 13,
                               color:
@@ -579,7 +580,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             builder: (context) => IOSWebRedirectScreen(
                               title: _t('eshop_product_slots', 'প্রোডাক্ট স্লট'),
                               description: _t('eshop_feature_unavailable',
-                                  'এই ফিচারটা অ্যাপের এই ভার্সনে নেই।'),
+                                  tr('এই ফিচারটা অ্যাপের এই ভার্সনে নেই।')),
                               webPath: 'shop-manager',
                               hideWebRedirect: true,
                             ),
@@ -638,7 +639,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                 const SizedBox(width: 12),
                 Text(
                   '${_t('eshop_last_order', 'লাস্ট অর্ডার')}: ${_getLastOrderDate()}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     color: Color(0xFF5A6273),
                   ),
@@ -653,9 +654,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
 
   String _fmtDate(DateTime? d) {
     if (d == null) return '—';
-    const months = [
-      'জানু', 'ফেব', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-      'জুলাই', 'আগস্ট', 'সেপ্ট', 'অক্টো', 'নভে', 'ডিসে'
+    final months = [
+      tr('জানু'), tr('ফেব'), tr('মার্চ'), tr('এপ্রিল'), tr('মে'), tr('জুন'),
+      tr('জুলাই'), tr('আগস্ট'), tr('সেপ্ট'), tr('অক্টো'), tr('নভে'), tr('ডিসে')
     ];
     return '${d.day} ${months[(d.month - 1).clamp(0, 11)]} ${d.year}';
   }
@@ -719,7 +720,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
           divider,
           Row(children: [
             _ovTile(_t('eshop_ov_total_orders', 'টোটাল অর্ডার'),
-                '$orders টি', const Color(0xFF2563EB)),
+                tr('$orders ${tr('টি')}'), const Color(0xFF2563EB)),
             _ovTile(_t('eshop_ov_total_income', 'টোটাল ইনকাম'),
                 '৳${revenue.toStringAsFixed(0)}', const Color(0xFF059669)),
           ]),

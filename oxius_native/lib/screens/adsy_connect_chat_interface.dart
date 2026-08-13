@@ -46,6 +46,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -691,7 +692,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error playing voice message: $e');
       setState(() => _playingVoiceMessageId = null);
       if (mounted) {
-        AdsyToast.error(context, 'ভয়েস মেসেজ চালানো যায়নি');
+        AdsyToast.error(context, tr('ভয়েস মেসেজ চালানো যায়নি'));
       }
     }
   }
@@ -2053,7 +2054,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               _isSendingMessage = false;
               _recordDuration = 0;
             });
-            AdsyToast.error(context, 'ভয়েস মেসেজ পাঠানো যায়নি');
+            AdsyToast.error(context, tr('ভয়েস মেসেজ পাঠানো যায়নি'));
           }
         }
       }
@@ -2218,7 +2219,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         message['id'].toString(),
         contentToStore,
       );
-      if (mounted) AdsyToast.success(context, 'মেসেজ এডিট হয়েছে');
+      if (mounted) AdsyToast.success(context, tr('মেসেজ এডিট হয়েছে'));
     } catch (e) {
       debugPrint('Error editing message: $e');
       if (!mounted) return;
@@ -2235,7 +2236,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _messages = List.from(_addSmartTimestamps(_messages));
         }
       });
-      AdsyToast.error(context, 'এডিট করা যায়নি');
+      AdsyToast.error(context, tr('এডিট করা যায়নি'));
     }
   }
 
@@ -2571,7 +2572,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               accepted.add(image);
             } catch (_) {
               if (mounted) {
-                AdsyToast.error(context, 'একটি ছবি যোগ করা যায়নি');
+                AdsyToast.error(context, tr('একটি ছবি যোগ করা যায়নি'));
               }
             }
           }
@@ -2588,7 +2589,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error picking images: $e');
       if (!mounted) return;
       setState(() => _isCompressingImages = false);
-      AdsyToast.error(context, 'ছবি সিলেক্ট করা যায়নি');
+      AdsyToast.error(context, tr('ছবি সিলেক্ট করা যায়নি'));
     }
   }
 
@@ -2635,7 +2636,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('Error taking photo: $e');
       if (!mounted) return;
       setState(() => _isCompressingImages = false);
-      AdsyToast.error(context, 'ছবি তোলা যায়নি');
+      AdsyToast.error(context, tr('ছবি তোলা যায়নি'));
     }
   }
 
@@ -2706,7 +2707,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
-        AdsyToast.error(context, 'ভিডিও পাঠানো যায়নি');
+        AdsyToast.error(context, tr('ভিডিও পাঠানো যায়নি'));
       }
     }
   }
@@ -2843,7 +2844,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _isSendingMessage = false;
       });
       if (mounted) {
-        AdsyToast.error(context, 'ছবি পাঠানো যায়নি');
+        AdsyToast.error(context, tr('ছবি পাঠানো যায়নি'));
       }
     }
   }
@@ -2871,7 +2872,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       debugPrint('Error picking document: $e');
       if (mounted) {
-        AdsyToast.error(context, 'ফাইল সিলেক্ট করা যায়নি');
+        AdsyToast.error(context, tr('ফাইল সিলেক্ট করা যায়নি'));
       }
     }
   }
@@ -3038,15 +3039,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'মেসেজ ক্লিয়ার করবেন?',
+              Text(
+                tr('মেসেজ ক্লিয়ার করবেন?'),
                 style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে। অন্যজন তাদের '
-                'মেসেজ আগের মতোই দেখতে পাবে — দুজনেই ক্লিয়ার করলে '
-                'মেসেজগুলো একেবারে মুছে যাবে।',
+                tr('আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে। অন্যজন তাদের ') +
+                tr('মেসেজ আগের মতোই দেখতে পাবে — দুজনেই ক্লিয়ার করলে ') +
+                tr('মেসেজগুলো একেবারে মুছে যাবে।'),
                 style: TextStyle(
                     fontSize: 13.5, color: Colors.grey.shade700, height: 1.5),
               ),
@@ -3061,7 +3062,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('বাতিল'),
+                      child: Text(tr('বাতিল')),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -3077,7 +3078,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('ক্লিয়ার করুন'),
+                      child: Text(tr('ক্লিয়ার করুন')),
                     ),
                   ),
                 ],
@@ -3133,8 +3134,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'মেসেজ ক্লিয়ার হচ্ছে...',
+                Text(
+                  tr('মেসেজ ক্লিয়ার হচ্ছে...'),
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ],
@@ -3165,9 +3166,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // The user explicitly removed this content — the warm-open cache must
       // not resurrect it on the next visit (it did, indefinitely if offline).
       ChatHistoryCache.invalidate('room:${widget.chatroomId}');
-      AdsyToast.success(context, 'মেসেজ ক্লিয়ার হয়ে গেছে');
+      AdsyToast.success(context, tr('মেসেজ ক্লিয়ার হয়ে গেছে'));
     } else {
-      AdsyToast.error(context, 'মেসেজ ক্লিয়ার করা যায়নি');
+      AdsyToast.error(context, tr('মেসেজ ক্লিয়ার করা যায়নি'));
     }
   }
 
@@ -3692,7 +3693,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _openUserProfile() {
     // Deleted/suspended accounts have no visitable profile.
     if (_counterpartDisabled) {
-      AdsyToast.info(context, 'একাউন্ট সাসপেন্ডেড');
+      AdsyToast.info(context, tr('একাউন্ট সাসপেন্ডেড'));
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
@@ -3867,7 +3868,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       media.add(ChatMediaItem(
         url: url,
         isVideo: type == 'video',
-        senderName: m['isMe'] == true ? 'আপনি' : widget.userName,
+        senderName: m['isMe'] == true ? tr('আপনি') : widget.userName,
         timeLabel: m['timeDisplay']?.toString(),
         // Carried so a reply typed in the viewer quotes this exact message.
         sourceMessage: m,
@@ -3966,11 +3967,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         ? imageUrl
         : AppConfig.getAbsoluteUrl(imageUrl);
     if (url.isEmpty) {
-      AdsyToast.error(context, 'মিডিয়াটি পাওয়া যায়নি');
+      AdsyToast.error(context, tr('মিডিয়াটি পাওয়া যায়নি'));
       return;
     }
     try {
-      AdsyToast.info(context, isVideo ? 'ভিডিও সেভ হচ্ছে…' : 'ছবি সেভ হচ্ছে…');
+      AdsyToast.info(context, isVideo ? tr('ভিডিও সেভ হচ্ছে…') : tr('ছবি সেভ হচ্ছে…'));
 
       // App-private cache first (no storage permission needed), then hand the
       // file to the platform — same pattern as the BN media downloader.
@@ -4000,8 +4001,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         AdsyToast.success(
             context,
             isVideo
-                ? 'ভিডিও গ্যালারিতে সেভ হয়েছে'
-                : 'ছবি গ্যালারিতে সেভ হয়েছে');
+                ? tr('ভিডিও গ্যালারিতে সেভ হয়েছে')
+                : tr('ছবি গ্যালারিতে সেভ হয়েছে'));
       } else {
         // iOS/others: open with the system handler, which offers Save.
         await DownloadOpenUtils.openFile(context, cachePath);
@@ -4010,7 +4011,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       debugPrint('chat media save failed: $e');
       if (mounted) {
         AdsyToast.error(
-            context, isVideo ? 'ভিডিও সেভ করা যায়নি' : 'ছবি সেভ করা যায়নি');
+            context, isVideo ? tr('ভিডিও সেভ করা যায়নি') : tr('ছবি সেভ করা যায়নি'));
       }
     }
   }
@@ -4163,7 +4164,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   // Say WHO is typing — the other person's name.
                   Flexible(
                     child: Text(
-                      '${widget.userName} টাইপ করছেন…',
+                      '${widget.userName} ${tr('টাইপ করছেন')}…',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -4225,7 +4226,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               children: [
                 Text(
                   attachment.displayName.isEmpty
-                      ? 'বিজ্ঞাপন'
+                      ? tr('বিজ্ঞাপন')
                       : attachment.displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -4237,7 +4238,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  caption.isEmpty ? 'এই বিজ্ঞাপন নিয়ে লিখছেন' : caption,
+                  caption.isEmpty ? tr('এই বিজ্ঞাপন নিয়ে লিখছেন') : caption,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -4249,7 +4250,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             ),
           ),
           IconButton(
-            tooltip: 'সরিয়ে ফেলুন',
+            tooltip: tr('সরিয়ে ফেলুন'),
             icon: const Icon(Icons.close_rounded,
                 size: 18, color: Color(0xFF6B7280)),
             onPressed: () => setState(() => _pendingAttachment = null),

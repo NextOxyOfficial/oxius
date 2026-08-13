@@ -5,6 +5,7 @@ import '../../models/business_network_models.dart';
 import '../../screens/business_network/create_post_screen.dart';
 import '../../services/auth_service.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Facebook-style "What's on your mind?" composer strip: the signed-in user's
 /// avatar next to a rounded prompt, with photo/video shortcuts underneath.
@@ -72,8 +73,8 @@ class FeedComposerCard extends StatelessWidget {
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(22),
                     ),
-                    child: const Text(
-                      'কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন ',
+                    child: Text(
+                      tr('কিছু ভাবছেন? কোনো আইডিয়া থাকলে পোস্ট করে ফেলুন '),
                       style: TextStyle(
                         fontSize: 14,
                         // Was #64748B — on the light #F1F5F9 pill it read as
@@ -97,7 +98,7 @@ class FeedComposerCard extends StatelessWidget {
                   context,
                   icon: Icons.photo_library_outlined,
                   color: const Color(0xFF16A34A),
-                  label: 'ছবি',
+                  label: tr('ছবি'),
                 ),
               ),
               Expanded(
@@ -105,7 +106,7 @@ class FeedComposerCard extends StatelessWidget {
                   context,
                   icon: Icons.videocam_outlined,
                   color: const Color(0xFFDC2626),
-                  label: 'ভিডিও',
+                  label: tr('ভিডিও'),
                 ),
               ),
             ],

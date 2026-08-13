@@ -19,6 +19,7 @@ import '../widgets/social_login_buttons.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/dob_picker.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? referralCode;
@@ -160,7 +161,7 @@ class _RegisterPageState extends State<RegisterPage> {
       } else {
         pickedFile = await AdsyImageUpload.pick(
           context,
-          title: 'প্রোফাইল ছবি ঠিক করুন',
+          title: tr('প্রোফাইল ছবি ঠিক করুন'),
           compress: false,
         );
       }
@@ -460,7 +461,7 @@ class _RegisterPageState extends State<RegisterPage> {
           _errorMessage = NetworkErrorHandler.isNetworkError(e)
               ? NetworkErrorHandler.getErrorMessage(e)
               : _t('reg_social_failed',
-                      '{provider} দিয়ে সাইন আপ করা গেল না। আবার চেষ্টা করুন।')
+                      tr('{provider} দিয়ে সাইন আপ করা গেল না। আবার চেষ্টা করুন।'))
                   .replaceFirst('{provider}', provider);
         });
       }
@@ -581,7 +582,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 1),
                   Text(
                     _t('reg_quick_sub',
-                        'Google বা Facebook দিয়ে সাইন আপ করুন'),
+                        tr('Google বা Facebook দিয়ে সাইন আপ করুন')),
                     style: AppFonts.roboto(
                       fontSize: 11.5,
                       color: _bodyTextColor,
@@ -690,7 +691,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(height: 4),
         Text(
           _t('reg_details_sub',
-              'নিচের ফর্মটা পূরণ করে এক ধাপেই অ্যাকাউন্ট খুলুন।'),
+              tr('নিচের ফর্মটা পূরণ করে এক ধাপেই অ্যাকাউন্ট খুলুন।')),
           style: AppFonts.roboto(
             fontSize: 12.5,
             color: _bodyTextColor,
@@ -707,7 +708,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _buildSectionHeader(
           _t('reg_personal', 'ব্যক্তিগত তথ্য'),
           _t('reg_personal_sub',
-              'অ্যাকাউন্ট খুলতে আর নিরাপদ রাখতে এই তথ্যগুলো লাগবে।'),
+              tr('অ্যাকাউন্ট খুলতে আর নিরাপদ রাখতে এই তথ্যগুলো লাগবে।')),
         ),
         const SizedBox(height: 12),
         _buildTwoColumnRow(
@@ -809,7 +810,7 @@ class _RegisterPageState extends State<RegisterPage> {
         _buildSectionHeader(
           _t('reg_location', 'ঠিকানা ও রেফারেল'),
           _t('reg_location_sub',
-              'এগুলো দেওয়া বাধ্যতামূলক না, তবে দিলে প্রোফাইলটা আরও সুন্দর হবে।'),
+              tr('এগুলো দেওয়া বাধ্যতামূলক না, তবে দিলে প্রোফাইলটা আরও সুন্দর হবে।')),
         ),
         const SizedBox(height: 12),
         _buildDropdownField(
@@ -891,7 +892,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Expanded(
                 child: Text(
                   _t('reg_info_note',
-                      'সাইন আপ করলে আপনি নিশ্চিত করছেন যে আপনার তথ্য সঠিক এবং আপনার অ্যাকাউন্টের তথ্য নিরাপদ রাখা হবে।'),
+                      tr('সাইন আপ করলে আপনি নিশ্চিত করছেন যে আপনার তথ্য সঠিক এবং আপনার অ্যাকাউন্টের তথ্য নিরাপদ রাখা হবে।')),
                   style: AppFonts.roboto(
                     fontSize: 11.8,
                     color: _primaryDarkColor,
@@ -1054,7 +1055,7 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(height: 4),
         Text(
           _t('reg_photo_sub',
-              'ইচ্ছে হলে একটা পরিষ্কার ছবি দিন, প্রোফাইলটা সম্পূর্ণ দেখাবে।'),
+              tr('ইচ্ছে হলে একটা পরিষ্কার ছবি দিন, প্রোফাইলটা সম্পূর্ণ দেখাবে।')),
           style: AppFonts.roboto(
             fontSize: 12,
             color: _bodyTextColor,

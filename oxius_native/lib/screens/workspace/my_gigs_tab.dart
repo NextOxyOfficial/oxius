@@ -7,6 +7,7 @@ import 'gig_detail_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class MyGigsTab extends StatefulWidget {
   const MyGigsTab({super.key});
@@ -85,7 +86,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
         AdsyToast.error(
             context,
             _t('workspace_gig_status_failed',
-                'গিগের স্ট্যাটাস আপডেট করা যায়নি'));
+                tr('গিগের স্ট্যাটাস আপডেট করা যায়নি')));
       }
     }
   }
@@ -96,7 +97,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
       builder: (context) => AlertDialog(
         title: Text(_t('workspace_delete_gig', 'গিগ ডিলিট করবেন?')),
         content: Text(_t('workspace_delete_gig_confirm',
-            'এই গিগটি ডিলিট করতে চান? এটা আর ফেরানো যাবে না।')),
+            tr('এই গিগটি ডিলিট করতে চান? এটা আর ফেরানো যাবে না।'))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -434,7 +435,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
           const SizedBox(height: 8),
           Text(
             _t('workspace_create_first_gig',
-                'আয় শুরু করতে প্রথম গিগটি তৈরি করুন'),
+                tr('আয় শুরু করতে প্রথম গিগটি তৈরি করুন')),
             style: TextStyle(color: Colors.grey[500]),
           ),
           const SizedBox(height: 24),

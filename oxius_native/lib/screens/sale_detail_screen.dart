@@ -15,6 +15,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_chat_icon.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -854,17 +855,17 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           ),
           const SizedBox(height: 10),
           _buildSafetyTip(_t('sale_safety_tip_meet',
-              'পরিচিত আর লোকজন আছে এমন জায়গায় দেখা করুন')),
+              tr('পরিচিত আর লোকজন আছে এমন জায়গায় দেখা করুন'))),
           _buildSafetyTip(_t('sale_safety_tip_verify',
-              'জিনিসটা ভালো করে দেখে ও যাচাই করে কিনুন')),
+              tr('জিনিসটা ভালো করে দেখে ও যাচাই করে কিনুন'))),
           _buildSafetyTip(_t('sale_safety_tip_no_advance',
-              'জিনিস হাতে পাওয়ার আগে টাকা দেবেন না')),
+              tr('জিনিস হাতে পাওয়ার আগে টাকা দেবেন না'))),
           _buildSafetyTip(_t('sale_safety_tip_bkash',
-              'আগেই বিকাশ/নগদে টাকা চাইলে সাবধান হোন')),
+              tr('আগেই বিকাশ/নগদে টাকা চাইলে সাবধান হোন'))),
           _buildSafetyTip(_t('sale_safety_tip_links',
-              'অচেনা লিংকে ক্লিক করবেন না, নিজের তথ্যও শেয়ার করবেন না')),
+              tr('অচেনা লিংকে ক্লিক করবেন না, নিজের তথ্যও শেয়ার করবেন না'))),
           _buildSafetyTip(_t('sale_safety_tip_police',
-              'প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান')),
+              tr('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'))),
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -881,7 +882,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 Expanded(
                   child: Text(
                     _t('sale_emergency_call',
-                        'জরুরি দরকারে ৯৯৯ নম্বরে কল করুন'),
+                        tr('জরুরি দরকারে ৯৯৯ নম্বরে কল করুন')),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1289,7 +1290,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                           AdsyToast.error(
                               context,
                               _t('sale_dialer_failed',
-                                  'ফোনের ডায়ালার খোলা গেল না'));
+                                  tr('ফোনের ডায়ালার খোলা গেল না')));
                         }
                       }
                     } else {
@@ -1297,7 +1298,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         AdsyToast.info(
                             context,
                             _t('sale_phone_not_available',
-                                'ফোন নাম্বার পাওয়া যায়নি'));
+                                tr('ফোন নাম্বার পাওয়া যায়নি')));
                       }
                     }
                   },
@@ -1369,7 +1370,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       prompt: _t('sale_report_prompt', 'কেন রিপোর্ট করছেন সেটা বেছে নিন।'),
       options: AdsyReportSheet.saleOptions,
       successMessage: _t('sale_report_success',
-          'রিপোর্ট করার জন্য ধন্যবাদ। আমরা বিজ্ঞাপনটা দেখে ব্যবস্থা নেব।'),
+          tr('রিপোর্ট করার জন্য ধন্যবাদ। আমরা বিজ্ঞাপনটা দেখে ব্যবস্থা নেব।')),
       onSubmit: (option, details) {
         return _postService.reportPost(
           slug,
@@ -1422,7 +1423,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         AdsyToast.error(
             context,
             _t('sale_chat_open_failed',
-                'চ্যাট খোলা গেল না, আবার চেষ্টা করুন।'));
+                tr('চ্যাট খোলা গেল না, আবার চেষ্টা করুন।')));
       }
     }
   }
@@ -1460,7 +1461,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           children: [
             Text(
               _t('sale_login_required_msg',
-                  'বিক্রেতার সাথে চ্যাট করতে হলে আগে লগইন করতে হবে।'),
+                  tr('বিক্রেতার সাথে চ্যাট করতে হলে আগে লগইন করতে হবে।')),
               style: const TextStyle(
                 fontSize: 14,
                 color: Color(0xFF5A6273),

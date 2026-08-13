@@ -5,6 +5,7 @@ import '../../models/business_network_models.dart';
 import '../../utils/html_content_utils.dart';
 import 'post_media_gallery.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The embedded "original post" card shown inside a reshare/repost — used both
 /// in the feed and on the post-detail screen so the design lives in one place.
@@ -116,10 +117,10 @@ class ResharedPostCard extends StatelessWidget {
                       if (isLongText)
                         GestureDetector(
                           onTap: onOpenPost,
-                          child: const Padding(
+                          child: Padding(
                             padding: EdgeInsets.only(top: 3),
                             child: Text(
-                              'আরও পড়ুন',
+                              tr('আরও পড়ুন'),
                               style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,

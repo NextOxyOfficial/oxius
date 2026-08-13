@@ -4,6 +4,7 @@ import '../models/user_model.dart' as user_model;
 import '../screens/business_network/profile_screen.dart';
 import '../services/user_search_service.dart';
 import '../widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Resolves a tapped @mention to the RIGHT profile.
 ///
@@ -28,7 +29,7 @@ class MentionNavigator {
     if (!context.mounted) return;
 
     if (users.isEmpty) {
-      AdsyToast.info(context, 'ব্যবহারকারী খুঁজে পাওয়া যায়নি');
+      AdsyToast.info(context, tr('ব্যবহারকারী খুঁজে পাওয়া যায়নি'));
       return;
     }
 
@@ -70,9 +71,9 @@ class MentionNavigator {
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'কার প্রোফাইল দেখতে চান?',
+                      tr('কার প্রোফাইল দেখতে চান?'),
                       style: TextStyle(
                         fontSize: 15.5,
                         fontWeight: FontWeight.w700,

@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../utils/shared_post_message.dart';
 import '../widgets/common/adsy_chat_icon.dart';
 import 'api_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// One advertiser ad from the ABN Ads Panel, served by
 /// `GET /api/bn/ads/serve/`.
@@ -170,17 +171,17 @@ class HouseAd {
   String get ctaLabel {
     switch (adType) {
       case 'message_on_adsyconnect':
-        return 'মেসেজ করুন';
+        return tr('মেসেজ করুন');
       case 'call_on_whatsapp':
-        return 'হোয়াটসঅ্যাপ';
+        return tr('হোয়াটসঅ্যাপ');
       case 'call_on_phone':
-        return 'কল করুন';
+        return tr('কল করুন');
       case 'email_us':
-        return 'ইমেইল করুন';
+        return tr('ইমেইল করুন');
       case 'shop_now':
-        return 'এখনই কিনুন';
+        return tr('এখনই কিনুন');
       default:
-        return 'ভিজিট করুন';
+        return tr('ভিজিট করুন');
     }
   }
 

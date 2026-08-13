@@ -34,6 +34,7 @@ import '../screens/inbox_screen.dart';
 import '../screens/workspace/order_detail_screen.dart';
 import '../screens/call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 void _log(String message) {
   if (kDebugMode) {
@@ -424,7 +425,7 @@ Future<void> _showMissedCallNotification(Map<String, dynamic> data) async {
       // Distinct id so it does not replace (or get replaced by) the ringing
       // notification we just cancelled.
       ('missed_$channelName').hashCode & 0x7fffffff,
-      'মিসড কল',
+      tr('মিসড কল'),
       '$callerName — ${callType == 'video' ? 'ভিডিও কল' : 'অডিও কল'}',
       const NotificationDetails(
         android: AndroidNotificationDetails(

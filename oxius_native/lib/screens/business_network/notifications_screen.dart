@@ -16,6 +16,7 @@ import '../business_network/create_post_screen.dart';
 import 'profile_options.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -372,7 +373,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Navigator.pop(context);
 
         // Show error message
-        AdsyToast.error(context, 'পোস্ট লোড করা যায়নি');
+        AdsyToast.error(context, tr('পোস্ট লোড করা যায়নি'));
       }
     }
   }

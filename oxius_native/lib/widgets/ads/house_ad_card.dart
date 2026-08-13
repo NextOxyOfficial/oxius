@@ -17,6 +17,7 @@ import '../common/adsy_toast.dart';
 import '../login_prompt_dialog.dart';
 import '../app_network_image.dart';
 import '../common/inline_follow_button.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Native-style card for an ABN Ads Panel (house) ad — same chrome as the
 /// AdMob feed card ("Sponsored" strip + white card) so both blend into the
@@ -133,7 +134,7 @@ class HouseAdCard extends StatefulWidget {
     final ctx = FCMService.navigatorKey.currentContext;
     if (ctx == null) return;
     if (advertiserId.isEmpty) {
-      AdsyToast.error(ctx, 'এই বিজ্ঞাপনে মেসেজ করার সুযোগ নেই।');
+      AdsyToast.error(ctx, tr('এই বিজ্ঞাপনে মেসেজ করার সুযোগ নেই।'));
       return;
     }
 
@@ -177,7 +178,7 @@ class HouseAdCard extends StatefulWidget {
       final target = FCMService.navigatorKey.currentContext;
       if (target != null && target.mounted) {
         AdsyToast.error(
-            target, 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।');
+            target, tr('চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।'));
       }
     }
   }
@@ -222,14 +223,14 @@ class _HouseAdCardState extends State<HouseAdCard>
           bottom: BorderSide(color: Colors.grey.shade200),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Icon(Icons.sentiment_dissatisfied_rounded,
               size: 20, color: Color(0xFF64748B)),
           SizedBox(width: 8),
           Expanded(
             child: Text(
-              'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+              tr('দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।'),
               style: TextStyle(
                 fontSize: 12.5,
                 color: Color(0xFF3D4759),

@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Social-login buttons shared by the login and register screens.
 /// [onProvider] is called with `'google'`, `'facebook'` or `'apple'`.
@@ -46,12 +47,12 @@ class SocialLoginButtons extends StatelessWidget {
         const SizedBox(height: 6),
         // Caption sits directly under the (disabled) Facebook button.
         Row(
-          children: const [
+          children: [
             Expanded(child: SizedBox()),
             SizedBox(width: 12),
             Expanded(
               child: Text(
-                'এখন পাওয়া যাচ্ছে না',
+                tr('এখন পাওয়া যাচ্ছে না'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,

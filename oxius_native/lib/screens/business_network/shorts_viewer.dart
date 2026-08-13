@@ -25,6 +25,7 @@ import '../../widgets/common/adsy_share_sheet.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ShortsViewer extends StatefulWidget {
   final List<BusinessNetworkPost> posts;
@@ -1965,8 +1966,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                           color: Colors.black.withValues(alpha: 0.45),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Text(
-                          'দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।',
+                        child: Text(
+                          tr('দুঃখিত, বিজ্ঞাপনটি আপনার পছন্দ হয়নি জেনে।'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 11.5,
@@ -2311,7 +2312,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'কম দেখুন',
+                                          tr('কম দেখুন'),
                                           style: TextStyle(
                                             color: Colors.white
                                                 .withValues(alpha: 0.65),
@@ -2354,7 +2355,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
                                       // Sits right after the text/ellipsis.
                                       const SizedBox(width: 4),
                                       Text(
-                                        'আরো পড়ুন',
+                                        tr('আরো পড়ুন'),
                                         style: TextStyle(
                                           color: Colors.white
                                               .withValues(alpha: 0.65),

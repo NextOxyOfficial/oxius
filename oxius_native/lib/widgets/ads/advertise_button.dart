@@ -3,20 +3,21 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/video_playback_manager.dart';
 import '../ios_web_redirect_screen.dart' show buildWebRedirectUrl;
+import 'package:oxius_native/l10n/tr.dart';
 
 /// "AdsyClub-এ বিজ্ঞাপন দিন" — a borderless, soft-tinted button used in the
 /// app drawers and the home footer. Tapping opens the web ads panel in an
 /// in-app browser tab (a plain external launch bounces back into the app via
 /// App Links and lands on the feed instead of the panel).
 class AdvertiseButton extends StatelessWidget {
-  final String label;
+  final String? label;
 
   /// Compact variant trims padding/typography for tighter spots (e.g. footer).
   final bool compact;
 
   const AdvertiseButton({
     super.key,
-    this.label = 'AdsyClub-এ বিজ্ঞাপন দিন',
+    this.label,
     this.compact = false,
   });
 
@@ -100,7 +101,7 @@ class AdvertiseButton extends StatelessWidget {
               SizedBox(width: compact ? 7 : 8),
               Flexible(
                 child: Text(
-                  label,
+                  label ?? tr('AdsyClub-এ বিজ্ঞাপন দিন'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

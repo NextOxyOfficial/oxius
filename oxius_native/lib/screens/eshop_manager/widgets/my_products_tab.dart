@@ -6,6 +6,7 @@ import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../../services/translation_service.dart';
 import '../../product_details_screen.dart';
 import '../../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class MyProductsTab extends StatefulWidget {
   final List<ShopProduct> products;
@@ -155,7 +156,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                             const SizedBox(height: 2),
                             Text(
                               _t('eshop_edit_product_subtitle',
-                                  'প্রোডাক্টের ডিটেইলস আর স্ট্যাটাস আপডেট করুন'),
+                                  tr('প্রোডাক্টের ডিটেইলস আর স্ট্যাটাস আপডেট করুন')),
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF5A6273),
@@ -294,7 +295,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                       if (nameController.text.trim().isEmpty) {
                                         _showSnackBar(
                                             _t('eshop_name_required',
-                                                'প্রোডাক্টের নাম দিতে হবে'),
+                                                tr('প্রোডাক্টের নাম দিতে হবে')),
                                             isError: true);
                                         return;
                                       }
@@ -339,7 +340,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                         Navigator.pop(context);
                                         _showSnackBar(_t(
                                             'eshop_product_updated',
-                                            'প্রোডাক্ট আপডেট হয়ে গেছে'));
+                                            tr('প্রোডাক্ট আপডেট হয়ে গেছে')));
                                         final updatedStock =
                                             selectedStatus == 'out-of-stock'
                                                 ? 0
@@ -392,7 +393,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                         _showSnackBar(
                                             result['message'] ??
                                                 _t('eshop_update_failed',
-                                                    'আপডেট করা যায়নি'),
+                                                    tr('আপডেট করা যায়নি')),
                                             isError: true);
                                       }
                                     },
@@ -543,7 +544,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
         ),
         content: Text(
           _t('eshop_delete_confirm',
-                  'আপনি কি "{name}" ডিলিট করতে চান? এটা আর ফেরত আনা যাবে না।')
+                  tr('আপনি কি "{name}" ডিলিট করতে চান? এটা আর ফেরত আনা যাবে না।'))
               .replaceFirst('{name}', product.name),
           style: const TextStyle(fontSize: 13),
         ),
@@ -640,7 +641,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
       _showSnackBar(makeActive
           ? _t('eshop_product_activated', 'প্রোডাক্ট অ্যাক্টিভ করা হয়েছে')
           : _t(
-              'eshop_product_deactivated', 'প্রোডাক্ট ইনঅ্যাক্টিভ করা হয়েছে'));
+              'eshop_product_deactivated', tr('প্রোডাক্ট ইনঅ্যাক্টিভ করা হয়েছে')));
       widget.onProductUpdated();
     } else {
       // Revert on failure
@@ -770,7 +771,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
                               const SizedBox(width: 8),
                               Text(
                                 _t('eshop_loading_more',
-                                    'আরও প্রোডাক্ট লোড হচ্ছে...'),
+                                    tr('আরও প্রোডাক্ট লোড হচ্ছে...')),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF5A6273),
@@ -850,7 +851,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
             _selectedFilter == 'all'
                 ? _t('eshop_no_products_yet', 'এখনো কোনো প্রোডাক্ট নেই')
                 : _t('eshop_no_products_in_filter',
-                        'এই ফিল্টারে কোনো প্রোডাক্ট নেই')
+                        tr('এই ফিল্টারে কোনো প্রোডাক্ট নেই'))
                     .replaceFirst('{filter}', _selectedFilter),
             style: const TextStyle(
               fontSize: 16,
@@ -861,7 +862,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
           const SizedBox(height: 8),
           Text(
             _t('eshop_add_products_hint',
-                'বিক্রি শুরু করতে প্রোডাক্ট অ্যাড করুন'),
+                tr('বিক্রি শুরু করতে প্রোডাক্ট অ্যাড করুন')),
             style: TextStyle(
               fontSize: 13,
               color: Colors.grey.shade700,

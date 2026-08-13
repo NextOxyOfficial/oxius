@@ -3,6 +3,7 @@ import '../../models/notification_models.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/html_content_utils.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class NotificationItem extends StatelessWidget {
   final NotificationModel notification;
@@ -312,7 +313,7 @@ class NotificationItem extends StatelessWidget {
       case NotificationType.giftDiamonds:
         return 'sent you gift diamonds';
       case NotificationType.share:
-        return 'আপনার পোস্ট শেয়ার করেছেন';
+        return tr('আপনার পোস্ট শেয়ার করেছেন');
       default:
         return 'interacted with your content';
     }

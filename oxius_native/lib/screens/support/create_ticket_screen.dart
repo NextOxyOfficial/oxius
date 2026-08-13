@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/support_ticket_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class CreateTicketScreen extends StatefulWidget {
   const CreateTicketScreen({super.key});
@@ -47,7 +48,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
       }
     }
   }
@@ -143,8 +144,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
           icon: const Icon(Icons.close_rounded, color: _ink),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'সাপোর্ট টিকিট',
+        title: Text(
+          tr('সাপোর্ট টিকিট'),
           style: TextStyle(
             color: _ink,
             fontSize: 16.5,
@@ -176,11 +177,11 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                         size: 23, color: Color(0xFF334155)),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('কী সমস্যায় পড়েছেন?',
+                        Text(tr('কী সমস্যায় পড়েছেন?'),
                             style: TextStyle(
                                 fontSize: 16.5,
                                 fontWeight: FontWeight.w800,
@@ -188,7 +189,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                                 letterSpacing: -0.2)),
                         SizedBox(height: 3),
                         Text(
-                          'সমস্যাটি লিখে জানান — আমাদের সাপোর্ট টিম ২৪ ঘণ্টার মধ্যে উত্তর দেবে। উত্তরটি এই অ্যাপের Support ট্যাবেই পাবেন।',
+                          tr('সমস্যাটি লিখে জানান — আমাদের সাপোর্ট টিম ২৪ ঘণ্টার মধ্যে উত্তর দেবে। উত্তরটি এই অ্যাপের Support ট্যাবেই পাবেন।'),
                           style: TextStyle(
                               fontSize: 12.5, color: _slate, height: 1.5),
                         ),
@@ -210,39 +211,39 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _fieldLabel('বিষয়', 'এক লাইনে সমস্যাটা কী — যেমন "টাকা তোলা যাচ্ছে না"'),
+                  _fieldLabel(tr('বিষয়'), tr('এক লাইনে সমস্যাটা কী — যেমন "টাকা তোলা যাচ্ছে না"')),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _titleController,
                     decoration:
-                        _fieldDecoration('সংক্ষেপে সমস্যার বিষয় লিখুন'),
+                        _fieldDecoration(tr('সংক্ষেপে সমস্যার বিষয় লিখুন')),
                     style: const TextStyle(fontSize: 14, height: 1.35),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'বিষয় লিখুন';
+                        return tr('বিষয় লিখুন');
                       }
                       if (value.trim().length < 5) {
-                        return 'বিষয় কমপক্ষে ৫ অক্ষরের হতে হবে';
+                        return tr('বিষয় কমপক্ষে ৫ অক্ষরের হতে হবে');
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 18),
-                  _fieldLabel('বিস্তারিত',
-                      'কখন, কোন পেজে, কী করতে গিয়ে সমস্যা হয়েছে — যত বিস্তারিত লিখবেন তত দ্রুত সমাধান পাবেন'),
+                  _fieldLabel(tr('বিস্তারিত'),
+                      tr('কখন, কোন পেজে, কী করতে গিয়ে সমস্যা হয়েছে — যত বিস্তারিত লিখবেন তত দ্রুত সমাধান পাবেন')),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _messageController,
                     maxLines: 7,
                     decoration:
-                        _fieldDecoration('সমস্যাটি বিস্তারিত লিখুন...'),
+                        _fieldDecoration(tr('সমস্যাটি বিস্তারিত লিখুন...')),
                     style: const TextStyle(fontSize: 14, height: 1.45),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'বিস্তারিত লিখুন';
+                        return tr('বিস্তারিত লিখুন');
                       }
                       if (value.trim().length < 20) {
-                        return 'কমপক্ষে ২০ অক্ষরে সমস্যাটি বর্ণনা করুন';
+                        return tr('কমপক্ষে ২০ অক্ষরে সমস্যাটি বর্ণনা করুন');
                       }
                       return null;
                     },
@@ -274,8 +275,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                                     Colors.white),
                               ),
                             )
-                          : const Text(
-                              'টিকিট জমা দিন',
+                          : Text(
+                              tr('টিকিট জমা দিন'),
                               style: TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w700,
@@ -299,18 +300,18 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('যেভাবে কাজ করে',
+                  Text(tr('যেভাবে কাজ করে'),
                       style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                           color: _ink)),
                   const SizedBox(height: 10),
-                  _stepRow('১', 'টিকিট জমা দিন',
-                      'বিষয় ও বিস্তারিত লিখে জমা দিলেই টিকিট তৈরি হয়ে যাবে।'),
-                  _stepRow('২', 'টিম রিভিউ করবে',
-                      'আমাদের সাপোর্ট টিম আপনার সমস্যাটি যাচাই করবে।'),
-                  _stepRow('৩', '২৪ ঘণ্টার মধ্যে উত্তর',
-                      'Support ট্যাবে উত্তর আসবে, নোটিফিকেশনও পাবেন।'),
+                  _stepRow('১', tr('টিকিট জমা দিন'),
+                      tr('বিষয় ও বিস্তারিত লিখে জমা দিলেই টিকিট তৈরি হয়ে যাবে।')),
+                  _stepRow('২', tr('টিম রিভিউ করবে'),
+                      tr('আমাদের সাপোর্ট টিম আপনার সমস্যাটি যাচাই করবে।')),
+                  _stepRow('৩', tr('২৪ ঘণ্টার মধ্যে উত্তর'),
+                      tr('Support ট্যাবে উত্তর আসবে, নোটিফিকেশনও পাবেন।')),
                 ],
               ),
             ),

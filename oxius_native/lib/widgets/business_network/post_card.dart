@@ -38,6 +38,7 @@ import '../../screens/business_network/post_media_viewer_screen.dart';
 import '../../screens/business_network/shorts_player_screen.dart';
 import '../../screens/business_network/shorts_viewer.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -388,9 +389,9 @@ class _PostCardState extends State<PostCard> {
         : (_post.postLikes.isNotEmpty ? _post.postLikes.first.userName : '');
     final String likeLabel = firstName.trim().isNotEmpty
         ? (total > 1
-            ? '$firstName ও আরও ${total - 1} জন এই পোস্টটি পছন্দ করেছেন'
-            : '$firstName এই পোস্টটি পছন্দ করেছেন')
-        : '$total জন এই পোস্টটি পছন্দ করেছেন';
+            ? '$firstName ${tr('ও আরও')} ${total - 1} ${tr('জন এই পোস্টটি পছন্দ করেছেন')}'
+            : tr('$firstName ${tr('এই পোস্টটি পছন্দ করেছেন')}'))
+        : tr('$total ${tr('জন এই পোস্টটি পছন্দ করেছেন')}');
 
     if (shown.isEmpty) {
       // Have a count but no avatars loaded — show a plain count.
@@ -621,7 +622,7 @@ class _PostCardState extends State<PostCard> {
           AdsySheetAction(
             icon: Icons.download_rounded,
             title: _downloadMenuTitle(),
-            subtitle: 'ছবি/ভিডিও ডিভাইসে সেভ করুন',
+            subtitle: tr('ছবি/ভিডিও ডিভাইসে সেভ করুন'),
             onTap: _handleDownloadMedia,
           ),
         // Reshares hide Save in the actions row — offer it here instead.
@@ -629,32 +630,32 @@ class _PostCardState extends State<PostCard> {
           AdsySheetAction(
             icon: _post.isSaved ? Icons.bookmark : Icons.bookmark_border,
             title: _post.isSaved ? 'Unsave' : 'Save',
-            subtitle: 'পরে দেখার জন্য সেভ করুন',
+            subtitle: tr('পরে দেখার জন্য সেভ করুন'),
             onTap: _handleSave,
           ),
         if (isSelf) ...[
           AdsySheetAction(
             icon: Icons.rocket_launch_outlined,
-            title: 'পোস্ট বুস্ট করুন',
-            subtitle: 'বিজ্ঞাপন দিয়ে বেশি মানুষের কাছে পৌঁছান',
+            title: tr('পোস্ট বুস্ট করুন'),
+            subtitle: tr('বিজ্ঞাপন দিয়ে বেশি মানুষের কাছে পৌঁছান'),
             onTap: _handleBoostPost,
           ),
           AdsySheetAction(
             icon: Icons.copy_rounded,
-            title: 'Post ID কপি করুন',
-            subtitle: 'পোস্টের আইডি ক্লিপবোর্ডে কপি করুন',
+            title: tr('Post ID কপি করুন'),
+            subtitle: tr('পোস্টের আইডি ক্লিপবোর্ডে কপি করুন'),
             onTap: _handleCopyPostId,
           ),
           AdsySheetAction(
             icon: Icons.edit_outlined,
             title: 'Edit post',
-            subtitle: 'পোস্টটি এডিট করুন',
+            subtitle: tr('পোস্টটি এডিট করুন'),
             onTap: _handleEditPost,
           ),
           AdsySheetAction(
             icon: Icons.delete_outline_rounded,
             title: 'Delete post',
-            subtitle: 'পোস্টটি স্থায়ীভাবে মুছে ফেলুন',
+            subtitle: tr('পোস্টটি স্থায়ীভাবে মুছে ফেলুন'),
             destructive: true,
             onTap: _handleDeletePost,
           ),
@@ -663,25 +664,25 @@ class _PostCardState extends State<PostCard> {
           AdsySheetAction(
             icon: Icons.share_outlined,
             title: 'Share post',
-            subtitle: 'বন্ধুদের সাথে শেয়ার করুন',
+            subtitle: tr('বন্ধুদের সাথে শেয়ার করুন'),
             onTap: _handleShare,
           ),
           AdsySheetAction(
             icon: Icons.flag_outlined,
             title: 'Report',
-            subtitle: 'আপত্তিকর মনে হলে রিপোর্ট করুন',
+            subtitle: tr('আপত্তিকর মনে হলে রিপোর্ট করুন'),
             onTap: _handleReportPost,
           ),
           AdsySheetAction(
             icon: Icons.visibility_off_outlined,
             title: 'Hide this post',
-            subtitle: 'এই পোস্টটি ফিডে আর দেখতে চাই না',
+            subtitle: tr('এই পোস্টটি ফিডে আর দেখতে চাই না'),
             onTap: _handleHidePost,
           ),
           AdsySheetAction(
             icon: Icons.block_rounded,
             title: 'Block user',
-            subtitle: 'এই ইউজারের কিছু আর দেখবেন না',
+            subtitle: tr('এই ইউজারের কিছু আর দেখবেন না'),
             destructive: true,
             onTap: _handleBlockUser,
           ),
@@ -765,7 +766,7 @@ class _PostCardState extends State<PostCard> {
       children: [
         // The copy already happened before this sheet opened, so lead with a
         // clear green confirmation instead of burying it as step one in grey.
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(20, 2, 20, 10),
           child: Row(
             children: [
@@ -774,7 +775,7 @@ class _PostCardState extends State<PostCard> {
               SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  'Post ID কপি হয়ে গেছে',
+                  tr('Post ID কপি হয়ে গেছে'),
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
@@ -785,13 +786,13 @@ class _PostCardState extends State<PostCard> {
             ],
           ),
         ),
-        const Padding(
+        Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
           child: Text(
-            'এরপর যা করবেন:\n'
-            '১. নিচের "Ads Panel খুলুন" বাটনে ট্যাপ করুন\n'
-            '২. 🚀 Boost Post ফরম্যাট বেছে Post ID paste করুন\n'
-            '৩. বাজেট দিয়ে Submit করুন — রিভিউয়ের পর লাইভ হবে',
+            tr('এরপর যা করবেন:\n') +
+            tr('১. নিচের "Ads Panel খুলুন" বাটনে ট্যাপ করুন\n') +
+            tr('২. 🚀 Boost Post ফরম্যাট বেছে Post ID paste করুন\n') +
+            tr('৩. বাজেট দিয়ে Submit করুন — রিভিউয়ের পর লাইভ হবে'),
             style: TextStyle(
               fontSize: 13,
               height: 1.6,
@@ -815,8 +816,8 @@ class _PostCardState extends State<PostCard> {
                 );
               },
               icon: const Icon(Icons.rocket_launch_rounded, size: 18),
-              label: const Text(
-                'Ads Panel খুলুন',
+              label: Text(
+                tr('Ads Panel খুলুন'),
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
@@ -834,11 +835,11 @@ class _PostCardState extends State<PostCard> {
         // Re-copy at any time (e.g. after pasting something else).
         AdsySheetAction(
           icon: Icons.copy_rounded,
-          title: 'Post ID আবার কপি করুন',
+          title: tr('Post ID আবার কপি করুন'),
           subtitle: '${_post.id}',
           onTap: () {
             Clipboard.setData(ClipboardData(text: '${_post.id}'));
-            AdsyToast.success(context, 'Post ID কপি হয়েছে');
+            AdsyToast.success(context, tr('Post ID কপি হয়েছে'));
           },
         ),
       ],
@@ -848,7 +849,7 @@ class _PostCardState extends State<PostCard> {
   Future<void> _handleCopyPostId() async {
     await Clipboard.setData(ClipboardData(text: '${_post.id}'));
     if (!mounted) return;
-    AdsyToast.success(context, 'Post ID কপি হয়েছে');
+    AdsyToast.success(context, tr('Post ID কপি হয়েছে'));
   }
 
   Future<void> _handleEditPost() async {
@@ -971,7 +972,7 @@ class _PostCardState extends State<PostCard> {
     if (success && mounted) {
       setState(() => _isHidden = false);
     } else if (mounted) {
-      AdsyToast.error(context, 'আনডু করা যায়নি, আবার চেষ্টা করুন');
+      AdsyToast.error(context, tr('আনডু করা যায়নি, আবার চেষ্টা করুন'));
     }
   }
 
@@ -990,12 +991,12 @@ class _PostCardState extends State<PostCard> {
           const Icon(Icons.visibility_off_outlined,
               size: 20, color: Color(0xFF64748B)),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'পোস্টটি সরিয়ে নেওয়া হয়েছে',
+                  tr('পোস্টটি সরিয়ে নেওয়া হয়েছে'),
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
@@ -1004,7 +1005,7 @@ class _PostCardState extends State<PostCard> {
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'এই পোস্টটি আপনার ফিডে আর দেখা যাবে না',
+                  tr('এই পোস্টটি আপনার ফিডে আর দেখা যাবে না'),
                   style: TextStyle(fontSize: 12, color: Color(0xFF7B8798)),
                 ),
               ],
@@ -1018,8 +1019,8 @@ class _PostCardState extends State<PostCard> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text(
-              'আনডু',
+            child: Text(
+              tr('আনডু'),
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
           ),
@@ -1137,8 +1138,8 @@ class _PostCardState extends State<PostCard> {
                                     padding: const EdgeInsets.only(top: 2),
                                     child: Text(
                                       _showFullContent
-                                          ? 'কম পড়ুন'
-                                          : 'আরো পড়ুন',
+                                          ? tr('কম পড়ুন')
+                                          : tr('আরো পড়ুন'),
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w500,

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../utils/download_open_utils.dart';
 import '../common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Profile QR code as a clean bottom sheet: black-on-white QR (maximum
 /// scanner compatibility), neutral surfaces, solid actions.
@@ -141,7 +142,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
       }
     }
   }

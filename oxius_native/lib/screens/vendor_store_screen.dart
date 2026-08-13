@@ -15,6 +15,7 @@ import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_back_to_top.dart';
 import '../utils/app_fonts.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 // Clean marketplace palette (screenshot-matched): white surfaces, green
 // accent, near-black text.
@@ -572,7 +573,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'স্ক্যান করলেই এই স্টোরে চলে আসবে',
+                tr('স্ক্যান করলেই এই স্টোরে চলে আসবে'),
                 style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -606,7 +607,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                         const Icon(Icons.share_outlined, size: 16),
                   ),
                   label: Text(
-                    'স্টোর শেয়ার করুন',
+                    tr('স্টোর শেয়ার করুন'),
                     style: AppFonts.roboto(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -658,7 +659,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       hasScrollBody: false,
                       child: _buildStateCard(
                         icon: Icons.lock_outline_rounded,
-                        title: 'স্টোরটি এখন দেখা যাচ্ছে না',
+                        title: tr('স্টোরটি এখন দেখা যাচ্ছে না'),
                         subtitle: _storeSubscriptionExpiredMessage ??
                             EshopService.defaultStoreSubscriptionExpiredMessage,
                         actionLabel: 'Refresh',
@@ -1336,7 +1337,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             const Icon(Icons.storefront_rounded, color: _slate400, size: 22),
             const SizedBox(height: 6),
             Text(
-              '${_storeName()} এ আপনাকে স্বাগতম',
+              '${_storeName()} ${tr('এ আপনাকে স্বাগতম')}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -1348,7 +1349,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             ),
             const SizedBox(height: 3),
             Text(
-              'সেরা মানের পণ্য, বিশ্বস্ত সেবা — নিশ্চিন্তে কেনাকাটা করুন',
+              tr('সেরা মানের পণ্য, বিশ্বস্ত সেবা — নিশ্চিন্তে কেনাকাটা করুন'),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,

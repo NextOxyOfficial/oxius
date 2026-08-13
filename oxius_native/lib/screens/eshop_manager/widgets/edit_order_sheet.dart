@@ -4,6 +4,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../services/translation_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Edit an existing order's items — change quantities, remove items, or add
 /// more of the seller's products. Saves via the `orders/<id>/update/` endpoint
@@ -264,7 +265,7 @@ class _EditOrderSheetState extends State<EditOrderSheet> {
                     ? Center(
                         child: Text(
                           _t('eshop_no_items_left',
-                              'কোনো আইটেম নেই — প্রোডাক্ট অ্যাড করুন'),
+                              tr('কোনো আইটেম নেই — প্রোডাক্ট অ্যাড করুন')),
                           style: const TextStyle(color: Color(0xFF7B8798)),
                         ),
                       )

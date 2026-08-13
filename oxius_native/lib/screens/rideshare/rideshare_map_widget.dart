@@ -8,6 +8,7 @@ import '../../models/rideshare_models.dart';
 import 'rideshare_vehicle_catalog.dart';
 import '../../widgets/app_network_image.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class RideshareMapWidget extends StatefulWidget {
   final RidePoint? pickupPoint;
@@ -458,7 +459,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                 children: [
                   _buildMapActionButton(
                     icon: Icons.fit_screen_rounded,
-                    tooltip: 'রুট দেখুন',
+                    tooltip: tr('রুট দেখুন'),
                     onPressed: _fitBounds,
                   ),
                   const SizedBox(height: 8),
@@ -468,8 +469,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
                         : Icons.center_focus_strong_rounded,
                     tooltip:
                         widget.followDriver && widget.driverLocation != null
-                            ? 'ড্রাইভার ফলো'
-                            : 'ম্যাপ ফোকাস',
+                            ? tr('ড্রাইভার ফলো')
+                            : tr('ম্যাপ ফোকাস'),
                     onPressed: _focusPrimaryLocation,
                     isHighlighted:
                         widget.followDriver && widget.driverLocation != null,
@@ -556,21 +557,21 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
     final hasRoute = routeCoordinates.isNotEmpty;
     final nearbyCount = _visibleNearbyDrivers.length;
     final title = widget.followDriver && widget.driverLocation != null
-        ? 'লাইভ ট্রিপ ট্র্যাকিং'
+        ? tr('লাইভ ট্রিপ ট্র্যাকিং')
         : widget.onMapTap != null
-            ? 'রুট প্ল্যানার'
+            ? tr('রুট প্ল্যানার')
             : hasRoute
-                ? 'রুট প্রিভিউ'
-                : 'সার্ভিস এরিয়া';
+                ? tr('রুট প্রিভিউ')
+                : tr('সার্ভিস এরিয়া');
     final subtitle = widget.onMapTap != null
         ? 'ম্যাপে ট্যাপ করে ${widget.activeSelection == 'drop' ? 'গন্তব্য' : 'পিকআপ'} পয়েন্ট বসান।'
         : widget.followDriver && widget.driverLocation != null
-            ? 'ড্রাইভারের অবস্থান লাইভ আপডেট হচ্ছে।'
+            ? tr('ড্রাইভারের অবস্থান লাইভ আপডেট হচ্ছে।')
             : hasRoute
-                ? 'পিকআপ, গন্তব্য ও রুট একসাথে দেখানো হচ্ছে।'
+                ? tr('পিকআপ, গন্তব্য ও রুট একসাথে দেখানো হচ্ছে।')
                 : nearbyCount > 0
-                    ? 'আশেপাশে $nearbyCount জন ড্রাইভার অনলাইনে আছেন।'
-                    : 'জুম করে সার্ভিস এরিয়া দেখুন।';
+                    ? tr('${tr('আশেপাশে')} $nearbyCount ${tr('জন ড্রাইভার অনলাইনে আছেন')}।')
+                    : tr('জুম করে সার্ভিস এরিয়া দেখুন।');
 
     final chips = <Widget>[
       if (hasRoute)
@@ -582,7 +583,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       if (nearbyCount > 0)
         _buildInfoChip(
           icon: Icons.local_taxi_rounded,
-          label: 'আশেপাশে $nearbyCount জন',
+          label: '${tr('আশেপাশে')} $nearbyCount ${tr('জন')}',
           tint: const Color(0xFF0F766E),
         ),
       if (widget.followDriver && widget.driverLocation != null)
@@ -595,8 +596,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
         _buildInfoChip(
           icon: Icons.edit_location_alt_rounded,
           label: widget.activeSelection == 'drop'
-              ? 'গন্তব্য বাছাই'
-              : 'পিকআপ বাছাই',
+              ? tr('গন্তব্য বাছাই')
+              : tr('পিকআপ বাছাই'),
           tint: const Color(0xFFD97706),
         ),
     ];
@@ -722,7 +723,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       items.add(
         _buildLegendChip(
           icon: Icons.trip_origin_rounded,
-          label: _compactPointLabel(widget.pickupPoint!, 'পিকআপ'),
+          label: _compactPointLabel(widget.pickupPoint!, tr('পিকআপ')),
           tint: const Color(0xFF4F46E5),
         ),
       );
@@ -731,7 +732,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       items.add(
         _buildLegendChip(
           icon: Icons.flag_rounded,
-          label: _compactPointLabel(widget.dropPoint!, 'গন্তব্য'),
+          label: _compactPointLabel(widget.dropPoint!, tr('গন্তব্য')),
           tint: const Color(0xFF059669),
         ),
       );
@@ -742,7 +743,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           icon: Icons.directions_car_rounded,
           label: widget.driverName?.trim().isNotEmpty == true
               ? widget.driverName!.trim()
-              : 'ড্রাইভার লাইভ',
+              : tr('ড্রাইভার লাইভ'),
           tint: const Color(0xFF0EA5E9),
         ),
       );
@@ -753,7 +754,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
           icon: Icons.person_pin_circle_rounded,
           label: widget.passengerName?.trim().isNotEmpty == true
               ? widget.passengerName!.trim()
-              : 'যাত্রী লাইভ',
+              : tr('যাত্রী লাইভ'),
           tint: const Color(0xFFF59E0B),
         ),
       );
@@ -764,7 +765,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       items.add(
         _buildLegendChip(
           icon: Icons.groups_rounded,
-          label: 'আশেপাশে ${_visibleNearbyDrivers.length} জন ড্রাইভার',
+          label: '${tr('আশেপাশে')} ${_visibleNearbyDrivers.length} ${tr('জন ড্রাইভার')}',
           tint: const Color(0xFF334155),
         ),
       );
@@ -1041,7 +1042,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
               : _buildProfileMarker(
                   name: widget.driverName!,
                   avatarUrl: widget.driverAvatar,
-                  subtitle: widget.driverVehicleInfo ?? 'ড্রাইভার',
+                  subtitle: widget.driverVehicleInfo ?? tr('ড্রাইভার'),
                   gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
                   icon: Icons.directions_car_rounded,
                 ),
@@ -1063,7 +1064,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
               ? _buildProfileMarker(
                   name: widget.passengerName!,
                   avatarUrl: widget.passengerAvatar,
-                  subtitle: 'যাত্রী (লাইভ)',
+                  subtitle: tr('যাত্রী (লাইভ)'),
                   gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
                   icon: Icons.person_pin_circle_rounded,
                 )
@@ -1285,7 +1286,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
             ],
           ),
           child: Text(
-            'পিকআপ পয়েন্ট',
+            tr('পিকআপ পয়েন্ট'),
             style: AppFonts.roboto(
               fontSize: 9,
               fontWeight: FontWeight.w700,
@@ -1359,7 +1360,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
             ],
           ),
           child: Text(
-            'গন্তব্য',
+            tr('গন্তব্য'),
             style: AppFonts.roboto(
               fontSize: 9,
               fontWeight: FontWeight.w700,
@@ -1473,7 +1474,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget>
       child: Icon(
         _vehicleIconData(driver.vehicleType),
         size: 16,
-        color: const Color(0xFF334155),
+        color: Color(0xFF334155),
       ),
     );
   }
@@ -1545,7 +1546,7 @@ enum _MapStyle {
   /// labelled with the current state reads like it is already selected.
   String get nextLabel {
     final next = _MapStyle.values[(index + 1) % _MapStyle.values.length];
-    return next.label;
+    return tr(next.label);
   }
 }
 

@@ -27,6 +27,7 @@ import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import '../../utils/adsy_image_upload.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -183,7 +184,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     final file = await AdsyImageUpload.pick(
       context,
       freeCrop: true,
-      title: 'ব্যানার ঠিক করুন',
+      title: tr('ব্যানার ঠিক করুন'),
       targetKb: 260,
     );
     if (file == null || !mounted) return;
@@ -200,10 +201,10 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     if (!mounted) return;
     setState(() => _bannerUploading = false);
     if (ok) {
-      AdsyToast.success(context, 'ব্যানার আপডেট হয়েছে');
+      AdsyToast.success(context, tr('ব্যানার আপডেট হয়েছে'));
       await _loadProfileSummary(refreshAuth: true);
     } else {
-      AdsyToast.error(context, 'আপলোড করা যায়নি, আবার চেষ্টা করুন');
+      AdsyToast.error(context, tr('আপলোড করা যায়নি, আবার চেষ্টা করুন'));
     }
   }
 
@@ -333,7 +334,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       _MenuItem(
                         icon: Icons.campaign_outlined,
                         label: 'AdsyClub - Ads Panel',
-                        subtitle: 'আপনার বিজ্ঞাপন প্রকাশ করুন',
+                        subtitle: tr('আপনার বিজ্ঞাপন প্রকাশ করুন'),
                         gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
                         onTap: AdvertiseButton.openAdsPanel,
                       ),
@@ -549,7 +550,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'আপলোড হচ্ছে ${(_bannerProgress * 100).round()}%',
+                              '${tr('আপলোড হচ্ছে')} ${(_bannerProgress * 100).round()}%',
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -1233,7 +1234,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         Navigator.pop(context);
       }
       if (!context.mounted) return;
-      AdsyToast.error(context, 'শর্টস খোলা যায়নি');
+      AdsyToast.error(context, tr('শর্টস খোলা যায়নি'));
     }
   }
 

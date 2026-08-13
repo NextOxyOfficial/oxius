@@ -7,6 +7,7 @@ import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class UpgradeToProScreen extends StatefulWidget {
   const UpgradeToProScreen({super.key});
@@ -199,8 +200,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'প্রো মেম্বারশিপ',
+          Text(
+            tr('প্রো মেম্বারশিপ'),
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w800,
@@ -209,9 +210,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'নিজের অনলাইন স্টোর চালান, সীমাহীন বিজ্ঞাপন দিন আর টাস্ক থেকে আয় '
-            'করুন — একটি সাবস্ক্রিপশনেই সব।',
+          Text(
+            tr('নিজের অনলাইন স্টোর চালান, সীমাহীন বিজ্ঞাপন দিন আর টাস্ক থেকে আয় ') +
+            tr('করুন — একটি সাবস্ক্রিপশনেই সব।'),
             style: TextStyle(fontSize: 13, height: 1.5, color: _muted),
           ),
         ],
@@ -228,8 +229,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'কীভাবে কাজ করে',
+          Text(
+            tr('কীভাবে কাজ করে'),
             style: TextStyle(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,
@@ -239,25 +240,25 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           const SizedBox(height: 14),
           _buildStep(
             1,
-            'প্ল্যান বেছে নিন',
-            'মাসিক বা বাৎসরিক — যেটা আপনার জন্য সুবিধা।',
+            tr('প্ল্যান বেছে নিন'),
+            tr('মাসিক বা বাৎসরিক — যেটা আপনার জন্য সুবিধা।'),
           ),
           _buildStep(
             2,
-            'ব্যালেন্স থেকে পেমেন্ট',
-            'আপনার Adsy Pay ব্যালেন্স থেকে টাকা কাটা হবে। '
-                'ব্যালেন্স কম থাকলে আগে যোগ করে নিন।',
+            tr('ব্যালেন্স থেকে পেমেন্ট'),
+            tr('আপনার Adsy Pay ব্যালেন্স থেকে টাকা কাটা হবে। ') +
+                tr('ব্যালেন্স কম থাকলে আগে যোগ করে নিন।'),
           ),
           _buildStep(
             3,
-            'সাথে সাথেই চালু',
-            'পেমেন্ট হলেই প্রো-এর সব সুবিধা খুলে যাবে — অপেক্ষা করতে হবে না।',
+            tr('সাথে সাথেই চালু'),
+            tr('পেমেন্ট হলেই প্রো-এর সব সুবিধা খুলে যাবে — অপেক্ষা করতে হবে না।'),
           ),
           _buildStep(
             4,
-            'মেয়াদ শেষে',
-            'অটো-রিনিউ বন্ধ থাকলে অ্যাকাউন্ট নিজে থেকেই সাধারণ প্ল্যানে ফিরে '
-                'যাবে — না জানিয়ে টাকা কাটা হবে না।',
+            tr('মেয়াদ শেষে'),
+            tr('অটো-রিনিউ বন্ধ থাকলে অ্যাকাউন্ট নিজে থেকেই সাধারণ প্ল্যানে ফিরে ') +
+                tr('যাবে — না জানিয়ে টাকা কাটা হবে না।'),
             last: true,
           ),
         ],
@@ -438,18 +439,18 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             child: const Icon(Icons.autorenew_rounded, color: _mint, size: 22),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'অটো-রিনিউ',
+                  tr('অটো-রিনিউ'),
                   style: TextStyle(
                       fontSize: 14.5, fontWeight: FontWeight.w700, color: _ink),
                 ),
                 SizedBox(height: 2),
                 Text(
-                  'মেয়াদ শেষে Adsy Pay ব্যালেন্স থেকে স্বয়ংক্রিয়ভাবে রিনিউ হবে।',
+                  tr('মেয়াদ শেষে Adsy Pay ব্যালেন্স থেকে স্বয়ংক্রিয়ভাবে রিনিউ হবে।'),
                   style: TextStyle(fontSize: 11.5, color: _muted, height: 1.35),
                 ),
               ],
@@ -483,8 +484,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'প্ল্যান বেছে নিন',
+          Text(
+            tr('প্ল্যান বেছে নিন'),
             style: TextStyle(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,
@@ -492,9 +493,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
           ),
           const SizedBox(height: 3),
-          const Text(
-            'দুটোতেই একই সুবিধা — শুধু বিলিং-এর সময়কাল আলাদা। '
-            'বাৎসরিকে মাসপ্রতি খরচ কম পড়ে।',
+          Text(
+            tr('দুটোতেই একই সুবিধা — শুধু বিলিং-এর সময়কাল আলাদা। ') +
+            tr('বাৎসরিকে মাসপ্রতি খরচ কম পড়ে।'),
             style: TextStyle(fontSize: 12.5, height: 1.45, color: _muted),
           ),
           const SizedBox(height: 12),
@@ -665,8 +666,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'প্রো-তে যা যা পাবেন',
+          Text(
+            tr('প্রো-তে যা যা পাবেন'),
             style: TextStyle(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,

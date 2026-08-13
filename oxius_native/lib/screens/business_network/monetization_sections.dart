@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../config/app_config.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Shared kit + detail pages for the Content Monetization screen.
 ///
@@ -77,9 +78,9 @@ String monTaka(dynamic v) {
   return '৳$sign$grouped.${bnDigits(paisa.toString().padLeft(2, '0'))}';
 }
 
-const monMonthsBn = [
-  'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-  'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+List<String> get monMonthsBn => [
+  tr('জানুয়ারি'), tr('ফেব্রুয়ারি'), tr('মার্চ'), tr('এপ্রিল'), tr('মে'), tr('জুন'),
+  tr('জুলাই'), tr('আগস্ট'), tr('সেপ্টেম্বর'), tr('অক্টোবর'), tr('নভেম্বর'), tr('ডিসেম্বর'),
 ];
 
 /// '2026-08' → 'আগস্ট ২০২৬'. Returns the input unchanged if it is not a period.
@@ -127,31 +128,31 @@ class MonStatus {
 MonStatus monStatusOf(String status) {
   switch (status) {
     case 'held':
-      return const MonStatus(
-        'রিভিউয়ে',
+      return MonStatus(
+        tr('রিভিউয়ে'),
         Color(0xFFD97706),
         Icons.pause_circle_outline_rounded,
-        'অস্বাভাবিক ভিউ অ্যাক্টিভিটি চেক করা হচ্ছে, তাই এই মাসের আয় '
-            'সাময়িকভাবে আটকে আছে। চেক শেষ হলে নিজে থেকেই চালু হবে।',
+        tr('অস্বাভাবিক ভিউ অ্যাক্টিভিটি চেক করা হচ্ছে, তাই এই মাসের আয় ') +
+            tr('সাময়িকভাবে আটকে আছে। চেক শেষ হলে নিজে থেকেই চালু হবে।'),
       );
     case 'forfeited':
-      return const MonStatus(
-        'বাতিল',
+      return MonStatus(
+        tr('বাতিল'),
         Color(0xFFDC2626),
         Icons.cancel_outlined,
-        'নিয়ম লঙ্ঘনের কারণে এই মাসের আয় বাতিল হয়েছে। বারবার হলে '
-            'মনিটাইজেশন স্থায়ীভাবে বন্ধ হয়ে যেতে পারে।',
+        tr('নিয়ম লঙ্ঘনের কারণে এই মাসের আয় বাতিল হয়েছে। বারবার হলে ') +
+            tr('মনিটাইজেশন স্থায়ীভাবে বন্ধ হয়ে যেতে পারে।'),
       );
     case 'cleared':
-      return const MonStatus(
-        'পেমেন্টের অপেক্ষায়',
+      return MonStatus(
+        tr('পেমেন্টের অপেক্ষায়'),
         monMoney,
         Icons.task_alt_rounded,
       );
     case 'paid':
-      return const MonStatus('পেমেন্টিত', monMoney, Icons.verified_rounded);
+      return MonStatus(tr('পেমেন্টিত'), monMoney, Icons.verified_rounded);
     default:
-      return const MonStatus('চলমান', monAccent, Icons.trending_up_rounded);
+      return MonStatus(tr('চলমান'), monAccent, Icons.trending_up_rounded);
   }
 }
 
@@ -350,7 +351,7 @@ class MonContentRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  excerpt.isNotEmpty ? excerpt : 'কনটেন্ট',
+                  excerpt.isNotEmpty ? excerpt : tr('কনটেন্ট'),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -418,7 +419,7 @@ Widget monRemainderRow(int count, dynamic amount) {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'বাকি ${monCount(count)}টি কনটেন্ট',
+            '${tr('বাকি')} ${monCount(count)}${tr('টি কনটেন্ট')}',
             style: const TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w600,
@@ -455,21 +456,21 @@ class MonetizationContentScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: monAppBar(context, 'কনটেন্ট অনুযায়ী আয়'),
+      appBar: monAppBar(context, tr('কনটেন্ট অনুযায়ী আয়')),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.only(top: 16, bottom: 28),
         children: [
           monHeader(
             monPeriodLabel(earnings['period']),
-            'এই মাসে কোন কনটেন্টে কত সাড়া এসেছে আর তা থেকে কত আয় হয়েছে — '
-                'সবচেয়ে বেশি আয় করা কনটেন্ট উপরে।',
+            tr('এই মাসে কোন কনটেন্টে কত সাড়া এসেছে আর তা থেকে কত আয় হয়েছে — ') +
+                tr('সবচেয়ে বেশি আয় করা কনটেন্ট উপরে।'),
           ),
           if (items.isEmpty)
             monEmpty(
               Icons.article_outlined,
-              'এই মাসে এখনো কোনো কনটেন্টে সাড়া আসেনি। পোস্ট করতে থাকুন — '
-                  'ভিউ আসা শুরু হলেই এখানে কনটেন্ট অনুযায়ী হিসাব দেখা যাবে।',
+              tr('এই মাসে এখনো কোনো কনটেন্টে সাড়া আসেনি। পোস্ট করতে থাকুন — ') +
+                  tr('ভিউ আসা শুরু হলেই এখানে কনটেন্ট অনুযায়ী হিসাব দেখা যাবে।'),
             )
           else ...[
             for (var i = 0; i < items.length; i++)
@@ -501,39 +502,39 @@ class MonetizationPayoutScreen extends StatelessWidget {
     final rows = [
       (
         Icons.account_balance_wallet_outlined,
-        'কোথায় পাবেন',
-        'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে যোগ করা হয়, সেখান থেকে '
-            'স্বাভাবিক নিয়মেই তুলতে পারবেন।',
+        tr('কোথায় পাবেন'),
+        tr('এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে যোগ করা হয়, সেখান থেকে ') +
+            tr('স্বাভাবিক নিয়মেই তুলতে পারবেন।'),
       ),
       (
         Icons.event_available_outlined,
-        'সম্ভাব্য পেমেন্ট তারিখ',
+        tr('সম্ভাব্য পেমেন্ট তারিখ'),
         monDateLabel(earnings['expected_payout_date']),
       ),
       (
         Icons.schedule_outlined,
-        'চেকয়ের সময়',
-        'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন চেক চলে, '
-            'তারপর পেমেন্ট ছাড়া হয়।',
+        tr('চেকয়ের সময়'),
+        '${tr('মাস শেষ হওয়ার পর')} ${bnDigits(holdback.toString())} ${tr('দিন চেক চলে,')} ' +
+            tr('তারপর পেমেন্ট ছাড়া হয়।'),
       ),
       (
         Icons.account_balance_wallet_outlined,
-        'কমপক্ষে পেআউট',
-        '${monTaka(earnings['min_payout'])} — এর কম হলে টাকা হারায় না, '
-            'পরের মাসের সাথে যোগ হয়ে জমা থাকে।',
+        tr('কমপক্ষে পেআউট'),
+        '${monTaka(earnings['min_payout'])} — এর কম হলে টাকা হারায় না, ' +
+            tr('পরের মাসের সাথে যোগ হয়ে জমা থাকে।'),
       ),
     ];
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: monAppBar(context, 'পেআউট'),
+      appBar: monAppBar(context, tr('পেআউট')),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.only(top: 16, bottom: 28),
         children: [
           _lifetime(),
           monBand(),
-          monHeader('কীভাবে ও কখন টাকা পাবেন'),
+          monHeader(tr('কীভাবে ও কখন টাকা পাবেন')),
           for (final r in rows)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 15),
@@ -570,12 +571,12 @@ class MonetizationPayoutScreen extends StatelessWidget {
               ),
             ),
           monBand(),
-          monHeader('মাসভিত্তিক হিসাব', 'আগের মাসগুলোর চূড়ান্ত আয় ও অবস্থা।'),
+          monHeader(tr('মাসভিত্তিক হিসাব'), tr('আগের মাসগুলোর চূড়ান্ত আয় ও অবস্থা।')),
           if (history.isEmpty)
             monEmpty(
               Icons.receipt_long_outlined,
-              'এখনো কোনো মাস শেষ হয়নি। প্রথম মাস পূর্ণ হলে এখানে '
-                  'মাসভিত্তিক হিসাব জমা হতে থাকবে।',
+              tr('এখনো কোনো মাস শেষ হয়নি। প্রথম মাস পূর্ণ হলে এখানে ') +
+                  tr('মাসভিত্তিক হিসাব জমা হতে থাকবে।'),
             )
           else
             for (var i = 0; i < history.length; i++)
@@ -598,12 +599,12 @@ class MonetizationPayoutScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(child: _tile('মোট আয়', monTaka(lifetime), monInk)),
+            Expanded(child: _tile(tr('মোট আয়'), monTaka(lifetime), monInk)),
             Container(width: 1, height: 34, color: const Color(0xFFE2E8F0)),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(left: 16),
-                child: _tile('পেমেন্টিত', monTaka(paid), monMoney),
+                child: _tile(tr('পেমেন্টিত'), monTaka(paid), monMoney),
               ),
             ),
           ],

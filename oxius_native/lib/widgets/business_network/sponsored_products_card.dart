@@ -5,6 +5,7 @@ import '../../config/app_config.dart';
 import '../../screens/product_details_screen.dart';
 import '../../widgets/common/adsy_toast.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Sponsored products as a horizontal carousel — same visual language as the
 /// other feed discovery rows (workspace gigs / micro gigs) so the feed reads
@@ -51,9 +52,9 @@ class SponsoredProductsCard extends StatelessWidget {
                       size: 15, color: _accent),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'স্পনসর্ড প্রোডাক্ট',
+                    tr('স্পনসর্ড প্রোডাক্ট'),
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
@@ -64,11 +65,11 @@ class SponsoredProductsCard extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/eshop'),
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     child: Row(
                       children: [
-                        Text('সব দেখুন',
+                        Text(tr('সব দেখুন'),
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -147,7 +148,7 @@ class SponsoredProductsCard extends StatelessWidget {
         },
       );
     } catch (e) {
-      AdsyToast.error(context, 'চেকআউটে যাওয়া যায়নি');
+      AdsyToast.error(context, tr('চেকআউটে যাওয়া যায়নি'));
     }
   }
 
@@ -307,8 +308,8 @@ class _ProductTile extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(color: const Color(0xFFFED7AA)),
                     ),
-                    child: const Text(
-                      'কিনুন',
+                    child: Text(
+                      tr('কিনুন'),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,

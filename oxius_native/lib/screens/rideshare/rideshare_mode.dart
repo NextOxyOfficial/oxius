@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Which side of rideshare this user is currently in, remembered across app
 /// launches.
@@ -42,6 +43,6 @@ class RideshareMode {
 
   /// What the rider is told when the dashboard flips under them.
   static String switchMessage(String mode) => mode == driver
-      ? 'ড্যাশবোর্ড এখন ড্রাইভার মোডে — পরেরবার খুললেও এটাই দেখবেন'
-      : 'ড্যাশবোর্ড এখন প্যাসেঞ্জার মোডে — পরেরবার খুললেও এটাই দেখবেন';
+      ? tr('ড্যাশবোর্ড এখন ড্রাইভার মোডে — পরেরবার খুললেও এটাই দেখবেন')
+      : tr('ড্যাশবোর্ড এখন প্যাসেঞ্জার মোডে — পরেরবার খুললেও এটাই দেখবেন');
 }

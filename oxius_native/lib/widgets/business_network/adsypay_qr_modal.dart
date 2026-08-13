@@ -8,6 +8,7 @@ import '../../services/deep_link_service.dart';
 import '../../services/wallet_service.dart';
 import '../common/adsy_loading.dart';
 import '../common/adsy_toast.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// AdsyPay QR — a professional bottom sheet with two jobs:
 ///
@@ -80,14 +81,14 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
         setState(() => _resolving = false);
         if (userData == null) {
           AdsyToast.error(
-              context, 'ইউজার খুঁজে পাওয়া যায়নি। আবার চেষ্টা করুন।');
+              context, tr('ইউজার খুঁজে পাওয়া যায়নি। আবার চেষ্টা করুন।'));
           return;
         }
         // Name is still public, so the payer can be shown who they are
         // paying — a nicety, not something to fail the scan over.
         final name = (userData['name'] ??
                 userData['first_name'] ??
-                'AdsyClub ইউজার')
+                tr('AdsyClub ইউজার'))
             .toString();
         final navigator = Navigator.of(context, rootNavigator: true);
         navigator.pop(); // close the sheet
@@ -98,11 +99,11 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
           ),
         ));
         // Small heads-up so the user knows who they're paying.
-        AdsyToast.success(navigator.context, '$name-কে টাকা পাঠান');
+        AdsyToast.success(navigator.context, tr('$name-${tr('কে টাকা পাঠান')}'));
       } catch (_) {
         if (!mounted) return;
         setState(() => _resolving = false);
-        AdsyToast.error(context, 'ইউজার খুঁজে পাওয়া যায়নি। আবার চেষ্টা করুন।');
+        AdsyToast.error(context, tr('ইউজার খুঁজে পাওয়া যায়নি। আবার চেষ্টা করুন।'));
       }
       return;
     }
@@ -137,13 +138,13 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
       builder: (ctx) => AlertDialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.qr_code_scanner_rounded,
                 color: Color(0xFFDC2626), size: 22),
             SizedBox(width: 8),
             Expanded(
-              child: Text('এটি AdsyClub-এর QR নয়',
+              child: Text(tr('এটি AdsyClub-এর QR নয়'),
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -155,8 +156,8 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'নিরাপত্তার জন্য AdsyPay শুধুমাত্র AdsyClub-এর QR কোড পড়ে — পেমেন্ট, প্রোফাইল বা adsyclub.com লিংক।',
+            Text(
+              tr('নিরাপত্তার জন্য AdsyPay শুধুমাত্র AdsyClub-এর QR কোড পড়ে — পেমেন্ট, প্রোফাইল বা adsyclub.com লিংক।'),
               style: TextStyle(fontSize: 13, height: 1.5, color: _slate),
             ),
             const SizedBox(height: 10),
@@ -180,7 +181,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('বুঝেছি',
+            child: Text(tr('বুঝেছি'),
                 style: TextStyle(
                     fontWeight: FontWeight.w700, color: _green)),
           ),
@@ -220,7 +221,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
                 const Icon(Icons.account_balance_wallet_rounded,
                     color: Color(0xFF10B981), size: 30),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -231,7 +232,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
                               color: _dark,
                               letterSpacing: -0.3)),
                       SizedBox(height: 1),
-                      Text('ডিজিটাল পেমেন্ট — স্ক্যান, পাঠান, রিসিভ করুন',
+                      Text(tr('ডিজিটাল পেমেন্ট — স্ক্যান, পাঠান, রিসিভ করুন'),
                           style: TextStyle(fontSize: 11.5, color: _slate)),
                     ],
                   ),
@@ -256,8 +257,8 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
               ),
               child: Row(
                 children: [
-                  _segButton(0, Icons.qr_code_2_rounded, 'রিসিভ'),
-                  _segButton(1, Icons.qr_code_scanner_rounded, 'স্ক্যান ও পাঠান'),
+                  _segButton(0, Icons.qr_code_2_rounded, tr('রিসিভ')),
+                  _segButton(1, Icons.qr_code_scanner_rounded, tr('স্ক্যান ও পাঠান')),
                 ],
               ),
             ),
@@ -340,8 +341,8 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
                 style: const TextStyle(
                     fontSize: 14, fontWeight: FontWeight.w700, color: _dark)),
           const SizedBox(height: 4),
-          const Text(
-            'এই QR কোডটি দেখালে যে-কেউ AdsyPay দিয়ে আপনাকে সরাসরি টাকা পাঠাতে পারবে।',
+          Text(
+            tr('এই QR কোডটি দেখালে যে-কেউ AdsyPay দিয়ে আপনাকে সরাসরি টাকা পাঠাতে পারবে।'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12, height: 1.5, color: _slate),
           ),
@@ -353,12 +354,12 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: const Color(0xFFA7F3D0)),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.verified_user_rounded, size: 14, color: _green),
                 SizedBox(width: 6),
-                Text('সিকিউর পেমেন্ট',
+                Text(tr('সিকিউর পেমেন্ট'),
                     style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
@@ -389,17 +390,17 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('QR স্ক্যান করলে যা হবে',
+                Text(tr('QR স্ক্যান করলে যা হবে'),
                     style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
                         color: _dark)),
                 const SizedBox(height: 10),
                 _scanInfoRow(Icons.payments_rounded, const Color(0xFF059669),
-                    'পেমেন্ট QR', 'ট্রান্সফার স্ক্রিনে রিসিভার অটো-ফিল হবে — শুধু টাকার পরিমাণ ও পাসওয়ার্ড দিন'),
+                    tr('পেমেন্ট QR'), tr('ট্রান্সফার স্ক্রিনে রিসিভার অটো-ফিল হবে — শুধু টাকার পরিমাণ ও পাসওয়ার্ড দিন')),
                 const SizedBox(height: 8),
                 _scanInfoRow(Icons.person_rounded, const Color(0xFF2563EB),
-                    'প্রোফাইল / লিংক QR', 'AdsyClub-এর যেকোনো প্রোফাইল, পোস্ট বা পেজে সরাসরি নিয়ে যাবে'),
+                    tr('প্রোফাইল / লিংক QR'), tr('AdsyClub-এর যেকোনো প্রোফাইল, পোস্ট বা পেজে সরাসরি নিয়ে যাবে')),
               ],
             ),
           ),
@@ -422,7 +423,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
                       child: AdsyLoadingIndicator(
                           strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.qr_code_scanner_rounded, size: 20),
-              label: Text(_resolving ? 'যাচাই হচ্ছে…' : 'QR স্ক্যান করুন',
+              label: Text(_resolving ? tr('যাচাই হচ্ছে…') : tr('QR স্ক্যান করুন'),
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w700)),
             ),
@@ -444,7 +445,7 @@ class _AdsyPayQrSheetState extends State<AdsyPayQrSheet> {
                     borderRadius: BorderRadius.circular(13)),
               ),
               icon: const Icon(Icons.send_rounded, size: 17, color: _slate),
-              label: const Text('ম্যানুয়ালি টাকা পাঠান',
+              label: Text(tr('ম্যানুয়ালি টাকা পাঠান'),
                   style:
                       TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
             ),
@@ -514,7 +515,7 @@ class _AdsyQrScannerScreenState extends State<_AdsyQrScannerScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('QR স্ক্যান করুন'),
+        title: Text(tr('QR স্ক্যান করুন')),
         backgroundColor: const Color(0xFF059669),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -567,8 +568,8 @@ class _AdsyQrScannerScreenState extends State<_AdsyQrScannerScreen> {
                 color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
-                'AdsyClub-এর পেমেন্ট, প্রোফাইল বা লিংক QR ফ্রেমের ভেতরে ধরুন',
+              child: Text(
+                tr('AdsyClub-এর পেমেন্ট, প্রোফাইল বা লিংক QR ফ্রেমের ভেতরে ধরুন'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Colors.white, fontSize: 12.5, height: 1.4),

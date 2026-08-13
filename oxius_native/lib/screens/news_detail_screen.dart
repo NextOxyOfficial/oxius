@@ -12,6 +12,7 @@ import 'business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_share_sheet.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final String slug;
@@ -216,7 +217,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
       ),
       actions: [
         IconButton(
-          tooltip: _t('news_share', en: 'Share', bn: 'শেয়ার করুন'),
+          tooltip: _t('news_share', en: 'Share', bn: tr('শেয়ার করুন')),
           icon: const Icon(Icons.share_outlined, color: _ink, size: 20),
           onPressed: _post == null ? null : _sharePost,
         ),
@@ -255,7 +256,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
             Text(
               _t('news_load_failed',
                   en: 'Could not load this article',
-                  bn: 'খবরটা লোড করা গেল না'),
+                  bn: tr('খবরটা লোড করা গেল না')),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 15,
@@ -269,10 +270,10 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                   ? _t('news_check_connection',
                       en:
                           'Please check your internet connection and try again.',
-                      bn: 'ইন্টারনেট সংযোগটা একটু দেখে আবার চেষ্টা করুন।')
+                      bn: tr('ইন্টারনেট সংযোগটা একটু দেখে আবার চেষ্টা করুন।'))
                   : _t('news_try_again_later',
                       en: 'Something went wrong. Please try again.',
-                      bn: 'কোথাও একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।'),
+                      bn: tr('কোথাও একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।')),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 13, color: _muted, height: 1.5),
             ),
@@ -281,7 +282,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
               onPressed: _loadPost,
               icon: const Icon(Icons.refresh_rounded, size: 18),
               label:
-                  Text(_t('news_retry', en: 'Retry', bn: 'আবার চেষ্টা করুন')),
+                  Text(_t('news_retry', en: 'Retry', bn: tr('আবার চেষ্টা করুন'))),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _accent,
                 side: const BorderSide(color: _border),
@@ -479,7 +480,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     return Row(
       children: [
         Text(
-          _isBn ? '${post.readTime} মিনিটের পড়া' : '${post.readTime} min read',
+          _isBn ? '${post.readTime} ${tr('মিনিটের পড়া')}' : '${post.readTime} min read',
           style: const TextStyle(fontSize: 12, color: _muted),
         ),
         const Spacer(),
@@ -499,17 +500,17 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
   String _relativeTime(DateTime dt) {
     final diff = DateTime.now().difference(dt.toLocal());
-    if (diff.inMinutes < 1) return _isBn ? 'এইমাত্র' : 'Just now';
+    if (diff.inMinutes < 1) return _isBn ? tr('এইমাত্র') : 'Just now';
     if (diff.inMinutes < 60) {
       return _isBn
-          ? '${diff.inMinutes} মিনিট আগে'
+          ? '${diff.inMinutes} ${tr('মিনিট আগে')}'
           : '${diff.inMinutes} minutes ago';
     }
     if (diff.inHours < 24) {
-      return _isBn ? '${diff.inHours} ঘণ্টা আগে' : '${diff.inHours} hours ago';
+      return _isBn ? '${diff.inHours} ${tr('ঘণ্টা আগে')}' : '${diff.inHours} hours ago';
     }
     if (diff.inDays < 7) {
-      return _isBn ? '${diff.inDays} দিন আগে' : '${diff.inDays} days ago';
+      return _isBn ? '${diff.inDays} ${tr('দিন আগে')}' : '${diff.inDays} days ago';
     }
     return _post?.formattedDate ?? '';
   }
@@ -608,7 +609,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         Row(
           children: [
             Text(
-              _t('news_comments', en: 'Comments', bn: 'মন্তব্য'),
+              _t('news_comments', en: 'Comments', bn: tr('মন্তব্য')),
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
@@ -666,7 +667,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     final name =
         (comment.userName != null && comment.userName!.trim().isNotEmpty)
             ? comment.userName!.trim()
-            : _t('news_anonymous', en: 'Anonymous', bn: 'নাম প্রকাশে অনিচ্ছুক');
+            : _t('news_anonymous', en: 'Anonymous', bn: tr('নাম প্রকাশে অনিচ্ছুক'));
     final initial = name.characters.first.toUpperCase();
     // Comment avatars arrive as relative media paths — resolve to absolute.
     final avatarUrl = AppConfig.getAbsoluteUrl(comment.userImage);
@@ -760,7 +761,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _t('news_more_news', en: 'More News', bn: 'আরও খবর'),
+            _t('news_more_news', en: 'More News', bn: tr('আরও খবর')),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
@@ -912,18 +913,18 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
       return '${date.day}/${date.month}/${date.year}';
     } else if (difference.inDays > 0) {
       return _isBn
-          ? '${difference.inDays} দিন আগে'
+          ? '${difference.inDays} ${tr('দিন আগে')}'
           : '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {
       return _isBn
-          ? '${difference.inHours} ঘণ্টা আগে'
+          ? '${difference.inHours} ${tr('ঘণ্টা আগে')}'
           : '${difference.inHours}h ago';
     } else if (difference.inMinutes > 0) {
       return _isBn
-          ? '${difference.inMinutes} মিনিট আগে'
+          ? '${difference.inMinutes} ${tr('মিনিট আগে')}'
           : '${difference.inMinutes}m ago';
     } else {
-      return _isBn ? 'এইমাত্র' : 'Just now';
+      return _isBn ? tr('এইমাত্র') : 'Just now';
     }
   }
 }

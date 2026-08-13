@@ -4,6 +4,7 @@ import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class HotArrivalsSection extends StatefulWidget {
   final Function(String)? onCategorySelected;
@@ -144,7 +145,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                 const SizedBox(width: 8),
                 Text(
                   _translationService.t('popular_category',
-                      fallback: 'জনপ্রিয় ক্যাটাগরি'),
+                      fallback: tr('জনপ্রিয় ক্যাটাগরি')),
                   style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -182,7 +183,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           else ...[
                             Text(
                               _translationService.t('view_all',
-                                  fallback: 'সব দেখুন'),
+                                  fallback: tr('সব দেখুন')),
                               style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,

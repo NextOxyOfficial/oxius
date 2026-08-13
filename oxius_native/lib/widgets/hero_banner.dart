@@ -18,6 +18,7 @@ import 'ios_web_redirect_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -45,6 +46,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.group,
           'image': 'assets/images/globalconnection.png',
+          'id': 'business_network',
           'label': _translationService.t('business_network',
               fallback: 'Business Network'),
           'color': const Color(0xFF3B82F6), // Blue
@@ -53,6 +55,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.newspaper,
           'image': 'assets/images/news.png',
+          'id': 'news',
           'label': _translationService.t('adsy_news', fallback: 'News'),
           'color': const Color(0xFFF59E0B), // Amber
           'bgColor': const Color(0xFFFFF7ED),
@@ -60,6 +63,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.monetization_on,
           'image': 'assets/images/money.png',
+          'id': 'earn_money',
           'label': _translationService.t('earn_money', fallback: 'Earn Money'),
           'color': const Color(0xFF10B981), // Emerald
           'bgColor': const Color(0xFFECFDF5),
@@ -67,6 +71,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.shopping_cart,
           'image': 'assets/images/onlineshopping.png',
+          'id': 'eshop',
           'label': _translationService.t('eshop', fallback: 'eShop'),
           'color': const Color(0xFF8B5CF6), // Purple
           'bgColor': const Color(0xFFF5F3FF),
@@ -74,14 +79,16 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.sell,
           'image': 'assets/images/sign.png',
+          'id': 'sale',
           'label':
-              'পুরোনো কেনাবেচা',
+              tr('পুরোনো কেনাবেচা'),
           'color': const Color(0xFF4F46E5), // Indigo
           'bgColor': const Color(0xFFF0F9FF),
         },
         {
           'icon': Icons.directions_car_rounded,
           'image': 'assets/images/rideshare.png',
+          'id': 'rideshare',
           'label': _translationService.t('ride_share', fallback: 'Ride Share'),
           'color': const Color(0xFF10B981), // Green
           'bgColor': const Color(0xFFECFDF5),
@@ -89,6 +96,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.psychology,
           'image': 'assets/images/question.png',
+          'id': 'mindforce',
           'label': _translationService.t('mindforce', fallback: 'MindForce'),
           'color': const Color(0xFF06B6D4), // Cyan
           'bgColor': const Color(0xFFE0F7FA),
@@ -96,6 +104,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.school,
           'image': 'assets/images/onlinelearning.png',
+          'id': 'elearning',
           'label': _translationService.t('elearning', fallback: 'eLearning'),
           'color': const Color(0xFFE11D48), // Rose
           'bgColor': const Color(0xFFFFF1F2),
@@ -103,14 +112,16 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.medical_services,
           'image': 'assets/images/medicalreport.png',
+          'id': 'classified',
           'label': _translationService.t('classified_service',
-              fallback: 'আমার সেবা'),
+              fallback: tr('আমার সেবা')),
           'color': const Color(0xFF0FA36B),
           'bgColor': const Color(0xFFECFDF5),
         },
         {
           'icon': Icons.phone_android,
           'image': 'assets/images/mobileapp.png',
+          'id': 'mobile_recharge',
           'label': _translationService.t('mobile_recharge',
               fallback: 'Mobile Recharge'),
           'color': const Color(0xFFEA580C), // Orange
@@ -119,6 +130,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.account_balance_wallet,
           'image': 'assets/images/transaction.png',
+          'id': 'adsy_pay',
           'label': _translationService.t('adsy_pay', fallback: 'AdsyPay'),
           'color': const Color(0xFF84CC16), // Lime
           'bgColor': const Color(0xFFF7FEE7),
@@ -126,6 +138,7 @@ class _HeroBannerState extends State<HeroBanner> {
         {
           'icon': Icons.star,
           'image': 'assets/images/premium.png',
+          'id': 'membership',
           'label': _translationService.t('packeges', fallback: 'Membership'),
           'color': const Color(0xFFDB2777), // Pink
           'bgColor': const Color(0xFFFDF2F8),
@@ -447,11 +460,11 @@ class _HeroBannerState extends State<HeroBanner> {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFF14B8A6)),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'বিস্তারিত',
+            tr('বিস্তারিত'),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -794,10 +807,7 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildMobileServiceButton(Map<String, dynamic> service) {
     final bool isComingSoon = service['isComingSoon'] ?? false;
     // Check if this is the Business Network service to add notification count
-    final isBusinessNetwork = service['label'] ==
-            _translationService.t('business_network',
-                fallback: 'Business Network') ||
-        service['label'] == 'Business Network';
+    final isBusinessNetwork = service['id'] == 'business_network';
 
     return _ServiceTile(
       icon: service['icon'] as IconData?,
@@ -812,70 +822,62 @@ class _HeroBannerState extends State<HeroBanner> {
       onTap: isComingSoon
           ? null
           : () {
-              debugPrint('Tapped on ${service['label']}');
-              if (service['label'] == _translationService.t('eshop', fallback: 'eShop') ||
-                  service['label'] == 'eShop' ||
-                  service['label'] == 'E-Shop') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EshopScreen()),
-                );
-              } else if (service['label'] ==
-                      _translationService.t('business_network',
-                          fallback: 'Business Network') ||
-                  service['label'] == 'Business Network') {
-                Navigator.pushNamed(context, '/business-network');
-              } else if (service['label'] == _translationService.t('adsy_news', fallback: 'News') ||
-                  service['label'] == 'News' ||
-                  service['label'] == 'Adsy News') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const NewsScreen()),
-                );
-              } else if (service['label'] == _translationService.t('elearning', fallback: 'eLearning') ||
-                  service['label'] == 'eLearning' ||
-                  service['label'] == 'E-Learning') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ElearningScreen()),
-                );
-              } else if (service['label'] == 'পুরোনো কেনাবেচা' ||
-                  service['label'] == 'Buy & Sell') {
-                Navigator.pushNamed(context, '/sale');
-              } else if (service['label'] == _translationService.t('ride_share', fallback: 'Ride Share') ||
-                  service['label'] == 'Ride Share') {
-                Navigator.pushNamed(context, '/rideshare');
-              } else if (service['label'] == _translationService.t('earn_money', fallback: 'Earn Money') ||
-                  service['label'] == 'Earn Money') {
-                Navigator.pushNamed(context, '/micro-gigs');
-              } else if (service['label'] == _translationService.t('classified_service', fallback: 'আমার সেবা') ||
-                  service['label'] == 'আমার সেবা' ||
-                  service['label'] == 'My Services') {
-                Navigator.pushNamed(context, '/classified');
-              } else if (service['label'] == _translationService.t('mindforce', fallback: 'MindForce') ||
-                  service['label'] == 'MindForce') {
-                Navigator.pushNamed(context, '/mindforce');
-              } else if (service['label'] == _translationService.t('mobile_recharge', fallback: 'Mobile Recharge') ||
-                  service['label'] == 'Mobile Recharge') {
-                Navigator.pushNamed(context, '/mobile-recharge');
-              } else if (service['label'] ==
-                      _translationService.t('adsy_pay', fallback: 'AdsyPay') ||
-                  service['label'] == 'AdsyPay' ||
-                  service['label'] == 'Adsy Pay') {
-                Navigator.pushNamed(context, '/deposit-withdraw');
-              } else if (service['label'] ==
-                      _translationService.t('packeges', fallback: 'Membership') ||
-                  service['label'] == 'Membership' ||
-                  service['label'] == 'Packages') {
-                if (isIOSPlatform) {
-                  _showIOSMembershipDialog(context);
-                } else {
-                  Navigator.pushNamed(context, '/upgrade-to-pro');
-                }
-              } else {
-                // For any unhandled services, show a debug message
-                debugPrint('No navigation configured for: ${service['label']}');
+              // Dispatch on the id, never on the label. The label is
+              // translated text; comparing against it meant a tile silently
+              // stopped working whenever its translation changed.
+              switch (service['id'] as String?) {
+                case 'eshop':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const EshopScreen()),
+                  );
+                  break;
+                case 'business_network':
+                  Navigator.pushNamed(context, '/business-network');
+                  break;
+                case 'news':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NewsScreen()),
+                  );
+                  break;
+                case 'elearning':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ElearningScreen()),
+                  );
+                  break;
+                case 'sale':
+                  Navigator.pushNamed(context, '/sale');
+                  break;
+                case 'rideshare':
+                  Navigator.pushNamed(context, '/rideshare');
+                  break;
+                case 'earn_money':
+                  Navigator.pushNamed(context, '/micro-gigs');
+                  break;
+                case 'classified':
+                  Navigator.pushNamed(context, '/classified');
+                  break;
+                case 'mindforce':
+                  Navigator.pushNamed(context, '/mindforce');
+                  break;
+                case 'mobile_recharge':
+                  Navigator.pushNamed(context, '/mobile-recharge');
+                  break;
+                case 'adsy_pay':
+                  Navigator.pushNamed(context, '/deposit-withdraw');
+                  break;
+                case 'membership':
+                  if (isIOSPlatform) {
+                    _showIOSMembershipDialog(context);
+                  } else {
+                    Navigator.pushNamed(context, '/upgrade-to-pro');
+                  }
+                  break;
+                default:
+                  debugPrint('No navigation configured for: ${service['id']}');
               }
             },
     );

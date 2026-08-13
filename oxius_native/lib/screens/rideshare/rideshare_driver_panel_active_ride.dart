@@ -374,7 +374,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
             t('rideshare_early_complete_confirm_title',
-                fallback: 'আগেই শেষ করবেন?'),
+                fallback: tr('আগেই শেষ করবেন?')),
             style:
                 AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
@@ -438,7 +438,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
       _rebuild(() => _activeRide = result.data);
       _syncRealtimeConnections();
       _showSuccess(t('rideshare_early_complete_requested',
-          fallback: 'আগেই শেষ করতে যাত্রীর সম্মতি চাওয়া হয়েছে।'));
+          fallback: tr('আগেই শেষ করতে যাত্রীর সম্মতি চাওয়া হয়েছে।')));
     } else {
       _showError(result.message);
     }
@@ -566,7 +566,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           ride.pickupAddress.isNotEmpty
                               ? ride.pickupAddress
                               : t('rideshare_pickup_location',
-                                  fallback: 'পিকআপ লোকেশন'),
+                                  fallback: tr('পিকআপ লোকেশন')),
                           style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
@@ -589,7 +589,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                           ride.dropAddress.isNotEmpty
                               ? ride.dropAddress
                               : t('rideshare_drop_location',
-                                  fallback: 'গন্তব্য লোকেশন'),
+                                  fallback: tr('গন্তব্য লোকেশন')),
                           style: AppFonts.roboto(
                               fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
@@ -643,7 +643,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF334155))),
-                        Text('সময়কাল',
+                        Text(tr('সময়কাল'),
                             style: AppFonts.roboto(
                                 fontSize: 10, color: _slate400)),
                       ],
@@ -709,9 +709,9 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                         Text(
                           isCash
                               ? t('rideshare_cash_payment',
-                                  fallback: 'ক্যাশ পেমেন্ট')
+                                  fallback: tr('ক্যাশ পেমেন্ট'))
                               : t('rideshare_wallet_payment',
-                                  fallback: 'ওয়ালেট পেমেন্ট'),
+                                  fallback: tr('ওয়ালেট পেমেন্ট')),
                           style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -785,7 +785,7 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     children: [
                       Text(
                           t('rideshare_your_earnings',
-                              fallback: 'আপনার আয়'),
+                              fallback: tr('আপনার আয়')),
                           style: AppFonts.roboto(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -863,9 +863,9 @@ extension _RsDriverActiveRideSection on _RideshareDriverPanelState {
                     label: Text(
                       isCash
                           ? t('rideshare_confirm_cash_received',
-                              fallback: 'ক্যাশ পেয়েছি, নিশ্চিত করুন')
+                              fallback: tr('ক্যাশ পেয়েছি, নিশ্চিত করুন'))
                           : t('rideshare_confirm_completion',
-                              fallback: 'সম্পন্ন নিশ্চিত করুন'),
+                              fallback: tr('সম্পন্ন নিশ্চিত করুন')),
                       style: AppFonts.roboto(
                           fontWeight: FontWeight.w700, fontSize: 13),
                     ),

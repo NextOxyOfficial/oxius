@@ -14,6 +14,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -99,8 +100,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Problem'),
-        content: const Text(
-            'আপনি কি নিশ্চিত এই পোস্টটি মুছে ফেলতে চান? এটি আর ফিরে পাওয়া যাবে না।'),
+        content: Text(
+            tr('আপনি কি নিশ্চিত এই পোস্টটি মুছে ফেলতে চান? এটি আর ফিরে পাওয়া যাবে না।')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -121,9 +122,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     if (ok) {
       // Pop the sheet with a result so the list screen can refresh.
       Navigator.pop(context, 'deleted');
-      AdsyToast.success(context, 'পোস্ট মুছে ফেলা হয়েছে');
+      AdsyToast.success(context, tr('পোস্ট মুছে ফেলা হয়েছে'));
     } else {
-      AdsyToast.error(context, 'পোস্ট মুছে ফেলা যায়নি');
+      AdsyToast.error(context, tr('পোস্ট মুছে ফেলা যায়নি'));
     }
   }
 
@@ -329,7 +330,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     } catch (e) {
       setState(() => _isCompressing = false);
       if (mounted) {
-        AdsyToast.error(context, 'ছবি সিলেক্ট  করা যায়নি');
+        AdsyToast.error(context, tr('ছবি সিলেক্ট  করা যায়নি'));
       }
     }
   }
@@ -371,7 +372,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmittingComment = false);
-        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
       }
     }
   }
@@ -388,7 +389,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'কিছু একটা সমস্যা হয়েছে');
+        AdsyToast.error(context, tr('কিছু একটা সমস্যা হয়েছে'));
       }
     }
   }

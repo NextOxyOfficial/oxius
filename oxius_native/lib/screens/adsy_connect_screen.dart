@@ -26,6 +26,7 @@ import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import 'package:oxius_native/widgets/common/adsy_dialog.dart';
 import '../utils/adsy_ios_scale.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Chat-list buckets. Spam is hidden from every tab except its own so junk
 /// never clutters real conversations.
@@ -244,7 +245,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       return;
     }
     if (message['is_deleted'] == true) {
-      preview = 'মেসেজ মুছে ফেলা হয়েছে';
+      preview = tr('মেসেজ মুছে ফেলা হয়েছে');
     }
 
     setState(() {
@@ -323,7 +324,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           'userName': _getFullName(sender),
           'userAvatar': sender['avatar'],
           'profession': sender['profession'] ?? '',
-          'lastMessage': preview.isNotEmpty ? preview : 'নতুন মেসেজ',
+          'lastMessage': preview.isNotEmpty ? preview : tr('নতুন মেসেজ'),
           'timestamp': createdAt,
           'unreadCount': 1,
           // Presence comes from the payload when it carries it — a hardcoded
@@ -461,7 +462,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       if (!mounted) return;
       final message = e is AdsyChatException
           ? e.message
-          : 'চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।';
+          : tr('চ্যাট খোলা যায়নি, একটু পরে আবার চেষ্টা করুন।');
       AdsyToast.error(context, message);
     }
   }
@@ -1314,8 +1315,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                           color: Color(0xFF334155), size: 24),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'নতুন গ্রুপ',
+                    Text(
+                      tr('নতুন গ্রুপ'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1612,7 +1613,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ),
                   ),
                 const PopupMenuDivider(),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'archived',
                   height: 42,
                   child: Row(
@@ -1620,12 +1621,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       Icon(Icons.archive_outlined,
                           size: 17, color: Color(0xFF64748B)),
                       SizedBox(width: 10),
-                      Text('আর্কাইভড চ্যাট',
+                      Text(tr('আর্কাইভড চ্যাট'),
                           style: TextStyle(fontSize: 13.5)),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'group',
                   height: 42,
                   child: Row(
@@ -1633,7 +1634,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       Icon(Icons.group_add_outlined,
                           size: 17, color: Color(0xFF64748B)),
                       SizedBox(width: 10),
-                      Text('নতুন গ্রুপ তৈরি করুন',
+                      Text(tr('নতুন গ্রুপ তৈরি করুন'),
                           style: TextStyle(fontSize: 13.5)),
                     ],
                   ),
@@ -1666,20 +1667,20 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       children: [
         AdsySheetAction(
           icon: Icons.person_search_rounded,
-          title: 'নতুন চ্যাট',
-          subtitle: 'নাম দিয়ে খুঁজে যে কারো সাথে মেসেজ শুরু করুন',
+          title: tr('নতুন চ্যাট'),
+          subtitle: tr('নাম দিয়ে খুঁজে যে কারো সাথে মেসেজ শুরু করুন'),
           onTap: _openUserSearchModal,
         ),
         AdsySheetAction(
           icon: Icons.group_add_outlined,
-          title: 'নতুন গ্রুপ',
-          subtitle: 'বন্ধুদের নিয়ে একটি গ্রুপ চ্যাট তৈরি করুন',
+          title: tr('নতুন গ্রুপ'),
+          subtitle: tr('বন্ধুদের নিয়ে একটি গ্রুপ চ্যাট তৈরি করুন'),
           onTap: _openCreateGroup,
         ),
         AdsySheetAction(
           icon: Icons.archive_outlined,
-          title: 'আর্কাইভড চ্যাট',
-          subtitle: 'আর্কাইভ করা চ্যাটগুলো দেখুন ও ফিরিয়ে আনুন',
+          title: tr('আর্কাইভড চ্যাট'),
+          subtitle: tr('আর্কাইভ করা চ্যাটগুলো দেখুন ও ফিরিয়ে আনুন'),
           onTap: _openArchivedChats,
         ),
       ],
@@ -1697,24 +1698,24 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       children: [
         AdsySheetAction(
           icon: Icons.archive_outlined,
-          title: 'আর্কাইভ করুন',
-          subtitle: 'চ্যাটটি তালিকা থেকে সরিয়ে রাখুন',
+          title: tr('আর্কাইভ করুন'),
+          subtitle: tr('চ্যাটটি তালিকা থেকে সরিয়ে রাখুন'),
           onTap: () => _archiveChat(chat),
         ),
         AdsySheetAction(
           icon: muted
               ? Icons.notifications_active_outlined
               : Icons.notifications_off_outlined,
-          title: muted ? 'আনমিউট করুন' : 'মিউট করুন',
+          title: muted ? tr('আনমিউট করুন') : tr('মিউট করুন'),
           subtitle: muted
-              ? 'নোটিফিকেশন আবার চালু হবে'
-              : 'এই চ্যাটের নোটিফিকেশন বন্ধ থাকবে',
+              ? tr('নোটিফিকেশন আবার চালু হবে')
+              : tr('এই চ্যাটের নোটিফিকেশন বন্ধ থাকবে'),
           onTap: () => _muteChat(chat, !muted),
         ),
         AdsySheetAction(
           icon: Icons.delete_outline_rounded,
-          title: 'চ্যাট মুছুন',
-          subtitle: 'আপনার দিক থেকে চ্যাটটি মুছে যাবে',
+          title: tr('চ্যাট মুছুন'),
+          subtitle: tr('আপনার দিক থেকে চ্যাটটি মুছে যাবে'),
           destructive: true,
           onTap: () => _deleteChat(chat),
         ),
@@ -1738,9 +1739,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (!mounted) return;
     if (ok) {
       setState(() => _chatConversations.removeWhere((c) => c['id'] == chat['id']));
-      AdsyToast.info(context, 'চ্যাট আর্কাইভ হয়েছে');
+      AdsyToast.info(context, tr('চ্যাট আর্কাইভ হয়েছে'));
     } else {
-      AdsyToast.error(context, 'আর্কাইভ করা যায়নি');
+      AdsyToast.error(context, tr('আর্কাইভ করা যায়নি'));
     }
   }
 
@@ -1750,9 +1751,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (!mounted) return;
     if (ok) {
       setState(() => chat['isMuted'] = muted);
-      AdsyToast.info(context, muted ? 'মিউট হয়েছে' : 'আনমিউট হয়েছে');
+      AdsyToast.info(context, muted ? tr('মিউট হয়েছে') : tr('আনমিউট হয়েছে'));
     } else {
-      AdsyToast.error(context, 'করা যায়নি');
+      AdsyToast.error(context, tr('করা যায়নি'));
     }
   }
 
@@ -1760,10 +1761,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final id = chat['id']?.toString() ?? '';
     final confirm = await AdsyDialog.confirm(
       context,
-      title: 'চ্যাট মুছবেন?',
-      message: 'আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে।',
-      confirmLabel: 'মুছুন',
-      cancelLabel: 'বাতিল',
+      title: tr('চ্যাট মুছবেন?'),
+      message: tr('আপনার দিক থেকে এই চ্যাটের সব মেসেজ মুছে যাবে।'),
+      confirmLabel: tr('মুছুন'),
+      cancelLabel: tr('বাতিল'),
       destructive: true,
       icon: Icons.delete_outline_rounded,
     );
@@ -1774,9 +1775,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       setState(() => _chatConversations.removeWhere((c) => c['id'] == chat['id']));
       // The warm-open cache must not resurrect a chat the user deleted.
       ChatHistoryCache.invalidate('room:$id');
-      AdsyToast.success(context, 'চ্যাট মুছে গেছে');
+      AdsyToast.success(context, tr('চ্যাট মুছে গেছে'));
     } else {
-      AdsyToast.error(context, 'মুছতে ব্যর্থ');
+      AdsyToast.error(context, tr('মুছতে ব্যর্থ'));
     }
   }
 
@@ -1819,15 +1820,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   String get _chatTabEmptyMessage {
     switch (_activeChatTab) {
       case _ChatTab.groups:
-        return 'এখনো কোনো গ্রুপ চ্যাট নেই';
+        return tr('এখনো কোনো গ্রুপ চ্যাট নেই');
       case _ChatTab.spam:
-        return 'কোনো স্প্যাম মেসেজ নেই';
+        return tr('কোনো স্প্যাম মেসেজ নেই');
       case _ChatTab.mutual:
-        return 'কোনো মিউচুয়াল চ্যাট নেই';
+        return tr('কোনো মিউচুয়াল চ্যাট নেই');
       case _ChatTab.nonFollowers:
-        return 'নন-ফলোয়ারদের কোনো চ্যাট নেই';
+        return tr('নন-ফলোয়ারদের কোনো চ্যাট নেই');
       case _ChatTab.all:
-        return 'এখনো কোনো চ্যাট নেই';
+        return tr('এখনো কোনো চ্যাট নেই');
     }
   }
 
@@ -1855,7 +1856,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 Icon(Icons.groups_outlined,
                     size: 46, color: Colors.grey.shade300),
                 const SizedBox(height: 10),
-                Text('এখনো কোনো গ্রুপ চ্যাট নেই',
+                Text(tr('এখনো কোনো গ্রুপ চ্যাট নেই'),
                     style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey.shade700,
@@ -1866,7 +1867,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF111827)),
                   icon: const Icon(Icons.group_add_outlined, size: 18),
-                  label: const Text('গ্রুপ তৈরি করুন'),
+                  label: Text(tr('গ্রুপ তৈরি করুন')),
                 ),
               ],
             ),
@@ -1892,8 +1893,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     if (preview.contains('ADSYPOST')) {
       final who = preview.split(':').first.trim();
       preview = who.isNotEmpty && !who.contains('ADSYPOST')
-          ? '$who: 📎 একটি পোস্ট'
-          : '📎 একটি পোস্ট শেয়ার করা হয়েছে';
+          ? tr('$who: 📎 ${tr('একটি পোস্ট')}')
+          : tr('📎 একটি পোস্ট শেয়ার করা হয়েছে');
     }
     final memberCount =
         group['member_count'] ?? (group['members'] as List? ?? []).length;
@@ -1953,7 +1954,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    preview.isNotEmpty ? preview : '$memberCount জন মেম্বার',
+                    preview.isNotEmpty ? preview : tr('$memberCount ${tr('জন মেম্বার')}'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -2034,7 +2035,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         chatsToShow.isEmpty && _peopleResults.isEmpty && !_peopleSearching;
     return [
       if (chatsToShow.isNotEmpty) ...[
-        SliverToBoxAdapter(child: _searchSectionLabel('চ্যাট')),
+        SliverToBoxAdapter(child: _searchSectionLabel(tr('চ্যাট'))),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(4, 2, 4, 0),
           sliver: SliverList.builder(
@@ -2052,15 +2053,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           ),
         )
       else if (_peopleResults.isNotEmpty) ...[
-        SliverToBoxAdapter(child: _searchSectionLabel('নতুন মানুষ')),
+        SliverToBoxAdapter(child: _searchSectionLabel(tr('নতুন মানুষ'))),
         SliverToBoxAdapter(child: _buildPeopleFilterTabs()),
         if (_filteredPeople().isEmpty)
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 26),
               child: Center(
                 child: Text(
-                  'এই ফিল্টারে কেউ নেই',
+                  tr('এই ফিল্টারে কেউ নেই'),
                   style: TextStyle(fontSize: 12.5, color: Color(0xFF7B8798)),
                 ),
               ),
@@ -2108,7 +2109,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         alignment: Alignment.centerLeft,
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.w700,
             color: Color(0xFF7B8798),
@@ -2136,10 +2137,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   Widget _buildPeopleFilterTabs() {
-    const tabs = [
-      ('all', 'সব'),
-      ('following', 'ফলোয়িং'),
-      ('new', 'নতুন'),
+    final tabs = [
+      ('all', tr('সব')),
+      ('following', tr('ফলোয়িং')),
+      ('new', tr('নতুন')),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 4, 14, 6),
@@ -2262,7 +2263,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   Text(
                     profession.isNotEmpty
                         ? profession
-                        : 'নতুন চ্যাট শুরু করুন',
+                        : tr('নতুন চ্যাট শুরু করুন'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -2327,7 +2328,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         return false;
       }
     }
-    if (m.contains('একটি পোস্ট')) return false;
+    // Match the 📎 marker, not the Bengali words. This preview is built by
+    // this app (see the shared-post preview above), so once it is translated
+    // the Bengali no longer appears and a text check on it would misclassify
+    // every shared post as ordinary text.
+    if (m.contains('📎')) return false;
     return true;
   }
 
@@ -2342,7 +2347,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         : await UserSuggestionsService.followUser(id);
     if (!ok && mounted) {
       setState(() => user['is_following'] = wasFollowing);
-      AdsyToast.error(context, 'করা যায়নি, আবার চেষ্টা করুন');
+      AdsyToast.error(context, tr('করা যায়নি, আবার চেষ্টা করুন'));
     }
   }
 
@@ -2383,15 +2388,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   String _chatTabLabel(_ChatTab tab) {
     switch (tab) {
       case _ChatTab.all:
-        return 'সব';
+        return tr('সব');
       case _ChatTab.mutual:
-        return 'মিউচুয়াল';
+        return tr('মিউচুয়াল');
       case _ChatTab.groups:
-        return 'গ্রুপ';
+        return tr('গ্রুপ');
       case _ChatTab.nonFollowers:
-        return 'নন-ফলোয়ার';
+        return tr('নন-ফলোয়ার');
       case _ChatTab.spam:
-        return 'স্প্যাম';
+        return tr('স্প্যাম');
     }
   }
 
@@ -2751,9 +2756,9 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
         _rooms.removeWhere((r) => r['id'] == room['id']);
         _changed = true;
       });
-      AdsyToast.info(context, 'চ্যাট আনআর্কাইভ হয়েছে');
+      AdsyToast.info(context, tr('চ্যাট আনআর্কাইভ হয়েছে'));
     } else {
-      AdsyToast.error(context, 'আনআর্কাইভ করা যায়নি');
+      AdsyToast.error(context, tr('আনআর্কাইভ করা যায়নি'));
     }
   }
 
@@ -2785,7 +2790,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
             icon: const Icon(Icons.arrow_back, color: Color(0xFF334155)),
             onPressed: () => Navigator.of(context).pop(_changed),
           ),
-          title: const Text('আর্কাইভ করা চ্যাট',
+          title: Text(tr('আর্কাইভ করা চ্যাট'),
               style: TextStyle(
                   color: Color(0xFF1E293B),
                   fontSize: 17,
@@ -2813,7 +2818,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
         children: [
           Icon(Icons.archive_outlined, size: 56, color: Colors.grey.shade300),
           const SizedBox(height: 12),
-          Text('কোনো আর্কাইভ করা চ্যাট নেই',
+          Text(tr('কোনো আর্কাইভ করা চ্যাট নেই'),
               style: TextStyle(
                   color: Colors.grey.shade700,
                   fontSize: 14,
@@ -2896,7 +2901,7 @@ class _ArchivedChatsScreenState extends State<ArchivedChatsScreen> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               icon: const Icon(Icons.unarchive_outlined, size: 18),
-              label: const Text('আনআর্কাইভ',
+              label: Text(tr('আনআর্কাইভ'),
                   style:
                       TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
             ),

@@ -6,6 +6,7 @@ import '../../../services/review_service.dart';
 import '../../../services/translation_service.dart';
 import '../../product_details_screen.dart';
 import '../../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Reviews left on the store owner's products, with the ability to reply.
 class StoreReviewsTab extends StatefulWidget {
@@ -141,7 +142,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                 style: const TextStyle(fontSize: 13.5),
                 decoration: InputDecoration(
                   hintText: _t(
-                      'eshop_reply_hint', 'কাস্টমারকে সুন্দরভাবে উত্তর দিন...'),
+                      'eshop_reply_hint', tr('কাস্টমারকে সুন্দরভাবে উত্তর দিন...')),
                   isDense: true,
                   contentPadding: const EdgeInsets.all(12),
                   border: OutlineInputBorder(
@@ -184,7 +185,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                               AdsyToast.success(
                                   context,
                                   _t('eshop_reply_saved',
-                                      'রিপ্লাই সেভ হয়েছে'));
+                                      tr('রিপ্লাই সেভ হয়েছে')));
                             } else {
                               final msg =
                                   (result['message'] as String?)?.trim();
@@ -193,7 +194,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
                                   (msg != null && msg.isNotEmpty)
                                       ? msg
                                       : _t('eshop_reply_failed',
-                                          'রিপ্লাই সেভ করা গেল না'));
+                                          tr('রিপ্লাই সেভ করা গেল না')));
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -339,7 +340,7 @@ class _StoreReviewsTabState extends State<StoreReviewsTab> {
           const SizedBox(height: 6),
           Text(
             _t('eshop_reviews_appear_hint',
-                'কাস্টমার রিভিউ দিলে এখানে দেখা যাবে'),
+                tr('কাস্টমার রিভিউ দিলে এখানে দেখা যাবে')),
             style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
             textAlign: TextAlign.center,
           ),

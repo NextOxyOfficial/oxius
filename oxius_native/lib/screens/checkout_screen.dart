@@ -7,6 +7,7 @@ import '../models/order_model.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -208,7 +209,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       }
     } catch (e) {
       if (mounted) {
-        AdsyToast.error(context, 'অর্ডার প্রসেস করা যায়নি');
+        AdsyToast.error(context, tr('অর্ডার প্রসেস করা যায়নি'));
       }
     } finally {
       if (mounted) {
@@ -1081,7 +1082,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'মূল্যের হিসাব',
+            tr('মূল্যের হিসাব'),
             style: AppFonts.roboto(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,
@@ -1089,7 +1090,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             ),
           ),
           const SizedBox(height: 14),
-          _buildSummaryRow('পণ্যের দাম ($_totalItems টি)',
+          _buildSummaryRow(tr('${tr('পণ্যের দাম (')}$_totalItems ${tr('টি)')}'),
               '৳${_subtotal.toStringAsFixed(0)}'),
           const SizedBox(height: 8),
           _buildSummaryRow(
@@ -1104,7 +1105,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'সর্বমোট',
+                tr('সর্বমোট'),
                 style: AppFonts.roboto(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,
@@ -1137,7 +1138,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'অর্ডারের পর কী হবে',
+            tr('অর্ডারের পর কী হবে'),
             style: AppFonts.roboto(
               fontSize: 15.5,
               fontWeight: FontWeight.w700,
@@ -1147,18 +1148,18 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           const SizedBox(height: 14),
           _buildOrderStep(
             1,
-            'অর্ডার নিশ্চিত হবে',
-            'অর্ডার দেওয়ার সাথে সাথেই বিক্রেতা জানতে পারবেন এবং প্রস্তুতি শুরু করবেন।',
+            tr('অর্ডার নিশ্চিত হবে'),
+            tr('অর্ডার দেওয়ার সাথে সাথেই বিক্রেতা জানতে পারবেন এবং প্রস্তুতি শুরু করবেন।'),
           ),
           _buildOrderStep(
             2,
-            'পণ্য পাঠানো হবে',
-            'পণ্য হাতে পাওয়ার আগে ডেলিভারি অবস্থা "আমার অর্ডার" পেজে দেখতে পাবেন।',
+            tr('পণ্য পাঠানো হবে'),
+            tr('পণ্য হাতে পাওয়ার আগে ডেলিভারি অবস্থা "আমার অর্ডার" পেজে দেখতে পাবেন।'),
           ),
           _buildOrderStep(
             3,
-            'হাতে পেয়ে বুঝে নিন',
-            'পণ্য পেয়ে যাচাই করে নিন। কোনো সমস্যা হলে সাপোর্টে জানাতে পারবেন।',
+            tr('হাতে পেয়ে বুঝে নিন'),
+            tr('পণ্য পেয়ে যাচাই করে নিন। কোনো সমস্যা হলে সাপোর্টে জানাতে পারবেন।'),
             last: true,
           ),
         ],

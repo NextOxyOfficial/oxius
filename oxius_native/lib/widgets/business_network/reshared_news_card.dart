@@ -5,6 +5,7 @@ import '../../models/business_network_models.dart';
 import '../../utils/html_content_utils.dart';
 import 'news_comments_sheet.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// The embedded Adsy News story shown inside a news reshare — used by both the
 /// feed and the post-detail screen so the design lives in one place.
@@ -69,7 +70,7 @@ class ResharedNewsCard extends StatelessWidget {
                             size: 13, color: Color(0xFF2563EB)),
                         const SizedBox(width: 4),
                         Text(
-                          'এডজি নিউজ',
+                          tr('এডজি নিউজ'),
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
@@ -107,8 +108,8 @@ class ResharedNewsCard extends StatelessWidget {
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Text(
-                          'আরও পড়ুন',
+                        Text(
+                          tr('আরও পড়ুন'),
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,

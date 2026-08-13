@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 
 import '../widgets/common/adsy_toast.dart';
 import 'url_launcher_utils.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// One place for the app's video-upload rules:
 ///
@@ -88,7 +89,7 @@ class VideoUploadHelper {
       if (driveHint) {
         await _showDriveSheet(context, duration);
       } else {
-        AdsyToast.error(context, 'ভিডিও সর্বোচ্চ ১০ মিনিটের হতে হবে');
+        AdsyToast.error(context, tr('ভিডিও সর্বোচ্চ ১০ মিনিটের হতে হবে'));
       }
       return null;
     }
@@ -186,7 +187,7 @@ class VideoUploadHelper {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('ভিডিওটি অনেক বড়',
+                        Text(tr('ভিডিওটি অনেক বড়'),
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
@@ -196,10 +197,10 @@ class VideoUploadHelper {
                             // Derived from the one cap, so raising it can never
                             // leave this sheet quoting an old number.
                             (duration == null
-                                ? 'ফাইলটি বড় — চ্যাটে সর্বোচ্চ '
-                                    '${maxUploadBytes ~/ (1024 * 1024)}MB পাঠানো যায়'
-                                : 'দৈর্ঘ্য ${mmss(duration)} — চ্যাটে সর্বোচ্চ '
-                                    '${mmss(const Duration(seconds: maxSeconds))} মিনিট পাঠানো যায়'),
+                                ? tr('ফাইলটি বড় — চ্যাটে সর্বোচ্চ ') +
+                                    '${maxUploadBytes ~/ (1024 * 1024)}MB ${tr('পাঠানো যায়')}'
+                                : '${tr('দৈর্ঘ্য')} ${mmss(duration)} — ${tr('চ্যাটে সর্বোচ্চ')} '
+                                    '${mmss(const Duration(seconds: maxSeconds))} ${tr('মিনিট পাঠানো যায়')}'),
                             style: const TextStyle(
                                 fontSize: 12.5, color: Color(0xFF556278))),
                       ],
@@ -215,8 +216,8 @@ class VideoUploadHelper {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: const Text(
-                  'বড় ভিডিও Google Drive-এ আপলোড করে লিংকটি চ্যাটে পাঠান — রিসিভার এক ট্যাপে দেখতে পারবেন।',
+                child: Text(
+                  tr('বড় ভিডিও Google Drive-এ আপলোড করে লিংকটি চ্যাটে পাঠান — রিসিভার এক ট্যাপে দেখতে পারবেন।'),
                   style: TextStyle(
                       fontSize: 12.5, height: 1.5, color: Color(0xFF3D4759)),
                 ),
@@ -238,7 +239,7 @@ class VideoUploadHelper {
                         borderRadius: BorderRadius.circular(12)),
                   ),
                   icon: const Icon(Icons.add_to_drive_rounded, size: 19),
-                  label: const Text('Google Drive খুলুন',
+                  label: Text(tr('Google Drive খুলুন'),
                       style: TextStyle(
                           fontSize: 14, fontWeight: FontWeight.w700)),
                 ),
@@ -254,7 +255,7 @@ class VideoUploadHelper {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('বাতিল',
+                  child: Text(tr('বাতিল'),
                       style: TextStyle(
                           fontSize: 13.5, fontWeight: FontWeight.w700)),
                 ),

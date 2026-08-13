@@ -8,6 +8,7 @@ import 'rideshare_page_header.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import '../../utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 part 'rideshare_vehicles_form.dart';
 part 'rideshare_vehicles_list.dart';
@@ -306,7 +307,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               title: t('rideshare_my_vehicles', fallback: 'আমার গাড়ি'),
               subtitle: _vehicles.isEmpty
                   ? null
-                  : '${_vehicles.length}টি রেজিস্টার্ড',
+                  : '${_vehicles.length}${tr('টি রেজিস্টার্ড')}',
               action: IconButton(
                 onPressed: _loadVehicles,
                 icon: const Icon(Icons.refresh_rounded,

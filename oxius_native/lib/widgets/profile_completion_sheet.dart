@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Bottom sheet that nudges the user to finish their profile.
 ///
@@ -106,9 +107,9 @@ class ProfileCompletionSheet {
                               color: _primaryColor, size: 23),
                         ),
                         const SizedBox(width: 12),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'প্রোফাইল সম্পূর্ণ করুন',
+                            tr('প্রোফাইল সম্পূর্ণ করুন'),
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -150,7 +151,7 @@ class ProfileCompletionSheet {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'আপনার প্রোফাইল $percent% সম্পূর্ণ',
+                      tr('${tr('আপনার প্রোফাইল')} $percent% ${tr('সম্পূর্ণ')}'),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -159,8 +160,8 @@ class ProfileCompletionSheet {
                     ),
                     const SizedBox(height: 16),
                     if (steps.isNotEmpty) ...[
-                      const Text(
-                        'যা এখনো বাকি আছে:',
+                      Text(
+                        tr('যা এখনো বাকি আছে:'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -217,8 +218,8 @@ class ProfileCompletionSheet {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'প্রোফাইল সম্পূর্ণ করুন',
+                        child: Text(
+                          tr('প্রোফাইল সম্পূর্ণ করুন'),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -232,8 +233,8 @@ class ProfileCompletionSheet {
                       width: double.infinity,
                       child: TextButton(
                         onPressed: () => Navigator.pop(sheetContext),
-                        child: const Text(
-                          'পরে করব',
+                        child: Text(
+                          tr('পরে করব'),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

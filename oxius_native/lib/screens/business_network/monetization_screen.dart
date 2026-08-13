@@ -5,6 +5,7 @@ import '../../widgets/business_network/monetization_card.dart'
     show MonetizationApplySheet;
 import '../../widgets/common/adsy_loading.dart';
 import 'monetization_sections.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Content Monetization.
 ///
@@ -62,7 +63,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: monAppBar(context, 'কনটেন্ট মনিটাইজেশন'),
+      appBar: monAppBar(context, tr('কনটেন্ট মনিটাইজেশন')),
       body: _loading
           ? const Center(child: AdsyLoadingIndicator())
           : RefreshIndicator(
@@ -85,8 +86,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             const Icon(Icons.wifi_off_rounded,
                 size: 38, color: Color(0xFF94A3B8)),
             const SizedBox(height: 10),
-            const Text(
-              'মনিটাইজেশন তথ্য লোড করা যায়নি',
+            Text(
+              tr('মনিটাইজেশন তথ্য লোড করা যায়নি'),
               style: TextStyle(fontSize: 13.5, color: monInkSoft),
             ),
             const SizedBox(height: 10),
@@ -95,7 +96,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                 setState(() => _loading = true);
                 _load();
               },
-              child: const Text('আবার চেষ্টা করুন',
+              child: Text(tr('আবার চেষ্টা করুন'),
                   style: TextStyle(color: monAccent)),
             ),
           ],
@@ -133,23 +134,23 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       _earningsHero(e, s),
       if (s.note != null) ...[const SizedBox(height: 14), monNotice(s)],
       monBand(),
-      monHeader('এই মাসের সাড়া',
+      monHeader(tr('এই মাসের সাড়া'),
           '${monPeriodLabel(e['period'])} মাসে আপনার কনটেন্টে যা যা হয়েছে।'),
       _activityStrip(e),
       monBand(),
-      monHeader('দৈনিক ভিউ', 'কোন দিন কত মানুষ আপনার কনটেন্ট দেখেছে।'),
+      monHeader(tr('দৈনিক ভিউ'), tr('কোন দিন কত মানুষ আপনার কনটেন্ট দেখেছে।')),
       _dailyViews(e),
       monBand(),
       monHeader(
-        'কনটেন্ট অনুযায়ী আয়',
-        'কোন কনটেন্ট কত সাড়া পেয়েছে আর তা থেকে কত আয় হয়েছে।',
+        tr('কনটেন্ট অনুযায়ী আয়'),
+        tr('কোন কনটেন্ট কত সাড়া পেয়েছে আর তা থেকে কত আয় হয়েছে।'),
         totalContent > shown.length ? _seeAllButton() : null,
       ),
       if (shown.isEmpty)
         monEmpty(
           Icons.article_outlined,
-          'এই মাসে এখনো কোনো কনটেন্টে সাড়া আসেনি। পোস্ট করতে থাকুন — ভিউ আসা '
-              'শুরু হলেই এখানে কনটেন্ট অনুযায়ী হিসাব দেখা যাবে।',
+          tr('এই মাসে এখনো কোনো কনটেন্টে সাড়া আসেনি। পোস্ট করতে থাকুন — ভিউ আসা ') +
+              tr('শুরু হলেই এখানে কনটেন্ট অনুযায়ী হিসাব দেখা যাবে।'),
         )
       else ...[
         for (var i = 0; i < shown.length; i++)
@@ -161,10 +162,10 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           _moreContentRow(totalContent - shown.length),
       ],
       monBand(),
-      monHeader('পেমেন্ট'),
+      monHeader(tr('পেমেন্ট')),
       _paymentSummary(e),
       monBand(),
-      monHeader('আয় কীভাবে বাড়বে'),
+      monHeader(tr('আয় কীভাবে বাড়বে')),
       _earningRules(),
     ];
   }
@@ -190,9 +191,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           children: [
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'এই মাসের আয়',
+                    tr('এই মাসের আয়'),
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
@@ -239,8 +240,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             const SizedBox(height: 4),
             Text(
               pending
-                  ? '${monPeriodLabel(e['period'])} — হিসাব চলছে, সাড়া এলেই '
-                      'অঙ্ক বাড়তে শুরু করবে'
+                  ? '${monPeriodLabel(e['period'])} — হিসাব চলছে, সাড়া এলেই ' +
+                      tr('অঙ্ক বাড়তে শুরু করবে')
                   : '${monPeriodLabel(e['period'])} — মাস শেষে চূড়ান্ত হবে',
               style: const TextStyle(
                 fontSize: 11.5,
@@ -256,7 +257,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                 Expanded(
                   child: _heroFoot(
                     Icons.event_available_outlined,
-                    'সম্ভাব্য পেমেন্ট',
+                    tr('সম্ভাব্য পেমেন্ট'),
                     monDateLabel(e['expected_payout_date']),
                   ),
                 ),
@@ -270,7 +271,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                     padding: const EdgeInsets.only(left: 14),
                     child: _heroFoot(
                       Icons.account_balance_wallet_outlined,
-                      'মোট আয়',
+                      tr('মোট আয়'),
                       monTaka(e['lifetime_earned']),
                     ),
                   ),
@@ -320,10 +321,10 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   Widget _activityStrip(Map<String, dynamic> e) {
     final p = (e['points'] as Map?) ?? {};
     final cells = [
-      (Icons.visibility_outlined, 'ভিউ', p['valid_views']),
-      (Icons.favorite_outline_rounded, 'লাইক', p['likes']),
-      (Icons.mode_comment_outlined, 'কমেন্ট', p['comments']),
-      (Icons.person_add_alt_outlined, 'ফলোয়ার', p['followers_gained']),
+      (Icons.visibility_outlined, tr('ভিউ'), p['valid_views']),
+      (Icons.favorite_outline_rounded, tr('লাইক'), p['likes']),
+      (Icons.mode_comment_outlined, tr('কমেন্ট'), p['comments']),
+      (Icons.person_add_alt_outlined, tr('ফলোয়ার'), p['followers_gained']),
     ];
 
     return Padding(
@@ -435,7 +436,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               Text('${bnDigits('1')} তারিখ',
                   style:
                       const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8))),
-              Text('আজ ${bnDigits(today.toString())} তারিখ',
+              Text('${tr('আজ')} ${bnDigits(today.toString())} ${tr('তারিখ')}',
                   style:
                       const TextStyle(fontSize: 10.5, color: Color(0xFF94A3B8))),
             ],
@@ -443,11 +444,11 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(child: _miniStat('মোট ভিউ', monCount(total))),
+              Expanded(child: _miniStat(tr('মোট ভিউ'), monCount(total))),
               const SizedBox(width: 10),
               Expanded(
                 child: _miniStat(
-                  'দৈনিক গড়',
+                  tr('দৈনিক গড়'),
                   bnDigits(avg >= 10
                       ? avg.round().toString()
                       : avg.toStringAsFixed(1)),
@@ -456,9 +457,9 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: _miniStat(
-                  'সেরা দিন',
+                  tr('সেরা দিন'),
                   bestViews > 0
-                      ? '${bnDigits(bestDay.toString())} তারিখ'
+                      ? '${bnDigits(bestDay.toString())} ${tr('তারিখ')}'
                       : '—',
                 ),
               ),
@@ -511,8 +512,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: const Text(
-        'সব দেখুন',
+      child: Text(
+        tr('সব দেখুন'),
         style: TextStyle(
           fontSize: 12.5,
           fontWeight: FontWeight.w700,
@@ -544,7 +545,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             children: [
               Expanded(
                 child: Text(
-                  'বাকি ${monCount(remaining)}টি কনটেন্ট',
+                  '${tr('বাকি')} ${monCount(remaining)}${tr('টি কনটেন্ট')}',
                   style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -585,20 +586,20 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       children: [
         _infoLine(
           Icons.account_balance_wallet_outlined,
-          'AdsyPay ব্যালেন্সে যোগ হয়',
-          'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, সেখান থেকে স্বাভাবিক '
-              'নিয়মেই তুলতে পারবেন।',
+          tr('AdsyPay ব্যালেন্সে যোগ হয়'),
+          tr('এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, সেখান থেকে স্বাভাবিক ') +
+              tr('নিয়মেই তুলতে পারবেন।'),
         ),
         _infoLine(
           Icons.schedule_outlined,
-          'মাস শেষে চেক',
-          'মাস শেষ হওয়ার পর ${bnDigits(holdback.toString())} দিন চেক চলে, '
-              'তারপর টাকা ছাড়া হয়।',
+          tr('মাস শেষে চেক'),
+          '${tr('মাস শেষ হওয়ার পর')} ${bnDigits(holdback.toString())} ${tr('দিন চেক চলে,')} ' +
+              tr('তারপর টাকা ছাড়া হয়।'),
         ),
         _infoLine(
           Icons.account_balance_wallet_outlined,
           'কমপক্ষে ${monTaka(e['min_payout'])}',
-          'এর কম হলে টাকা হারায় না — পরের মাসের সাথে যোগ হয়ে জমা থাকে।',
+          tr('এর কম হলে টাকা হারায় না — পরের মাসের সাথে যোগ হয়ে জমা থাকে।'),
         ),
         Material(
           color: Colors.transparent,
@@ -614,14 +615,14 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
               decoration: const BoxDecoration(
                 border: Border(top: BorderSide(color: monLine)),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.receipt_long_outlined,
                       size: 19, color: Color(0xFF475569)),
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'পেআউট ও মাসভিত্তিক হিসাব',
+                      tr('পেআউট ও মাসভিত্তিক হিসাব'),
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
@@ -680,22 +681,22 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   /// Everything here is true of the actual calculation, and none of it is a
   /// number the admin might retune tomorrow.
   Widget _earningRules() {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'আপনার কনটেন্টে যত বেশি আসল সাড়া আসবে — ভিউ, লাইক, কমেন্ট — আয় তত '
-            'বাড়বে। প্রতি মাসের অঙ্ক আলাদা হয়, কারণ তা নির্ভর করে ওই মাসে আপনার '
-            'কনটেন্ট কতটা সাড়া পেয়েছে তার উপর। তাই আগে থেকে নির্দিষ্ট কোনো অঙ্ক '
-            'বলা সম্ভব নয়।',
+            tr('আপনার কনটেন্টে যত বেশি আসল সাড়া আসবে — ভিউ, লাইক, কমেন্ট — আয় তত ') +
+            tr('বাড়বে। প্রতি মাসের অঙ্ক আলাদা হয়, কারণ তা নির্ভর করে ওই মাসে আপনার ') +
+            tr('কনটেন্ট কতটা সাড়া পেয়েছে তার উপর। তাই আগে থেকে নির্দিষ্ট কোনো অঙ্ক ') +
+            tr('বলা সম্ভব নয়।'),
             style: TextStyle(
                 fontSize: 12.5, color: Color(0xFF334155), height: 1.65),
           ),
           SizedBox(height: 14),
           Text(
-            'শুধু আসল ভিউ হিসাব হয়',
+            tr('শুধু আসল ভিউ হিসাব হয়'),
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -704,10 +705,10 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           ),
           SizedBox(height: 4),
           Text(
-            'নিজের ভিউ, একদম নতুন খোলা অ্যাকাউন্টের ভিউ আর একই ব্যক্তির বারবার '
-            'দেখা হিসাবে ধরা হয় না। ফেক বা এক্সচেঞ্জ ভিউ ধরা পড়লে ওই মাসের আয় '
-            'আটকে যায়, আর বারবার হলে মনিটাইজেশন স্থায়ীভাবে বাতিল হতে পারে। '
-            'মানসম্মত কনটেন্টই আয়ের সবচেয়ে নিরাপদ পথ।',
+            tr('নিজের ভিউ, একদম নতুন খোলা অ্যাকাউন্টের ভিউ আর একই ব্যক্তির বারবার ') +
+            tr('দেখা হিসাবে ধরা হয় না। ফেক বা এক্সচেঞ্জ ভিউ ধরা পড়লে ওই মাসের আয় ') +
+            tr('আটকে যায়, আর বারবার হলে মনিটাইজেশন স্থায়ীভাবে বাতিল হতে পারে। ') +
+            tr('মানসম্মত কনটেন্টই আয়ের সবচেয়ে নিরাপদ পথ।'),
             style: TextStyle(
                 fontSize: 12.5, color: Color(0xFF334155), height: 1.65),
           ),
@@ -723,13 +724,13 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
       const SizedBox(height: 18),
       _journeyHero(applied),
       monBand(),
-      monHeader('শর্তসমূহ', 'আবেদন করতে নিচের ৪টি শর্তই পূরণ করতে হবে।'),
+      monHeader(tr('শর্তসমূহ'), tr('আবেদন করতে নিচের ৪টি শর্তই পূরণ করতে হবে।')),
       _requirements(),
       monBand(),
-      monHeader('মনিটাইজড হলে যা পাবেন'),
+      monHeader(tr('মনিটাইজড হলে যা পাবেন')),
       _benefits(),
       monBand(),
-      monHeader('যেভাবে কাজ করে'),
+      monHeader(tr('যেভাবে কাজ করে')),
       _howItWorks(),
       if (!applied) ...[
         const SizedBox(height: 6),
@@ -771,29 +772,29 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         case 'rejected':
           icon = Icons.info_outline_rounded;
           color = const Color(0xFFDC2626);
-          title = 'আবেদন অনুমোদন হয়নি';
-          subtitle = 'এবারের আবেদনটি অনুমোদন করা যায়নি। কারণ জানতে ও পরবর্তী '
-              'করণীয় বুঝতে সাপোর্টে যোগাযোগ করুন।';
+          title = tr('আবেদন অনুমোদন হয়নি');
+          subtitle = tr('এবারের আবেদনটি অনুমোদন করা যায়নি। কারণ জানতে ও পরবর্তী ') +
+              tr('করণীয় বুঝতে সাপোর্টে যোগাযোগ করুন।');
           break;
         default:
           icon = Icons.hourglass_top_rounded;
           color = const Color(0xFFD97706);
-          title = 'আবেদন চেক চলছে';
-          subtitle = 'আমাদের টিম আপনার প্রোফাইল ও কনটেন্ট দেখছে। সিদ্ধান্ত হলে '
-              'নোটিফিকেশনে জানিয়ে দেওয়া হবে।';
+          title = tr('আবেদন চেক চলছে');
+          subtitle = tr('আমাদের টিম আপনার প্রোফাইল ও কনটেন্ট দেখছে। সিদ্ধান্ত হলে ') +
+              tr('নোটিফিকেশনে জানিয়ে দেওয়া হবে।');
       }
     } else if (eligible) {
       icon = Icons.check_circle_outline_rounded;
       color = monMoney;
-      title = 'আপনি আবেদনের যোগ্য';
-      subtitle = 'সবগুলো শর্ত পূরণ হয়েছে। নিচের বাটনে ট্যাপ করে আবেদন জমা দিন '
-          '— অনুমোদন পেলেই কনটেন্ট থেকে আয় শুরু হবে।';
+      title = tr('আপনি আবেদনের যোগ্য');
+      subtitle = tr('সবগুলো শর্ত পূরণ হয়েছে। নিচের বাটনে ট্যাপ করে আবেদন জমা দিন ') +
+          tr('— অনুমোদন পেলেই কনটেন্ট থেকে আয় শুরু হবে।');
     } else {
       icon = Icons.trending_up_rounded;
       color = monAccent;
-      title = 'কনটেন্ট থেকে আয় শুরু করুন';
-      subtitle = 'নিচের শর্তগুলো পূরণ হলেই আবেদন করতে পারবেন, আর অনুমোদনের পর '
-          'আপনার কনটেন্টে আসা সাড়া থেকে প্রতি মাসে আয় হবে।';
+      title = tr('কনটেন্ট থেকে আয় শুরু করুন');
+      subtitle = tr('নিচের শর্তগুলো পূরণ হলেই আবেদন করতে পারবেন, আর অনুমোদনের পর ') +
+          tr('আপনার কনটেন্টে আসা সাড়া থেকে প্রতি মাসে আয় হবে।');
     }
 
     final met = _metCount();
@@ -849,8 +850,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'অগ্রগতি',
+                Text(
+                  tr('অগ্রগতি'),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -858,7 +859,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                   ),
                 ),
                 Text(
-                  '৪টির মধ্যে ${bnDigits(met.toString())}টি পূরণ',
+                  '${tr('৪টির মধ্যে')} ${bnDigits(met.toString())}${tr('টি পূরণ')}',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -888,25 +889,25 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
     final tiles = [
       (
         Icons.group_outlined,
-        'ফলোয়ার',
+        tr('ফলোয়ার'),
         monInt(_status!['followers']),
         monInt(_status!['required_followers']),
       ),
       (
         Icons.visibility_outlined,
-        'কনটেন্ট ভিউ',
+        tr('কনটেন্ট ভিউ'),
         monInt(_status!['views']),
         monInt(_status!['required_views']),
       ),
       (
         Icons.videocam_outlined,
-        'ভিডিও পোস্ট',
+        tr('ভিডিও পোস্ট'),
         monInt(_status!['video_posts']),
         monInt(_status!['required_video_posts']),
       ),
       (
         Icons.photo_outlined,
-        'ছবি পোস্ট',
+        tr('ছবি পোস্ট'),
         monInt(_status!['image_posts']),
         monInt(_status!['required_image_posts']),
       ),
@@ -989,7 +990,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
           Icon(
             met ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
             size: 20,
-            color: met ? monMoney : const Color(0xFFCBD5E1),
+            color: met ? monMoney : Color(0xFFCBD5E1),
           ),
         ],
       ),
@@ -997,21 +998,21 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   }
 
   Widget _benefits() {
-    const items = [
+    final items = [
       (
         Icons.payments_outlined,
-        'কনটেন্ট থেকে মাসিক আয়',
-        'আপনার পোস্ট ও শর্টসে আসা আসল ভিউ, লাইক ও কমেন্ট থেকে প্রতি মাসে আয় হবে।'
+        tr('কনটেন্ট থেকে মাসিক আয়'),
+        tr('আপনার পোস্ট ও শর্টসে আসা আসল ভিউ, লাইক ও কমেন্ট থেকে প্রতি মাসে আয় হবে।')
       ),
       (
         Icons.insights_outlined,
-        'কোন কনটেন্টে কত আয়',
-        'কোন পোস্ট কত সাড়া পেয়েছে আর তা থেকে কত এসেছে — সব আলাদা করে দেখতে পারবেন।'
+        tr('কোন কনটেন্টে কত আয়'),
+        tr('কোন পোস্ট কত সাড়া পেয়েছে আর তা থেকে কত এসেছে — সব আলাদা করে দেখতে পারবেন।')
       ),
       (
         Icons.account_balance_wallet_outlined,
-        'AdsyPay-তে সরাসরি',
-        'এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, আলাদা কোনো ঝামেলা নেই।'
+        tr('AdsyPay-তে সরাসরি'),
+        tr('এপ্রুভড আয় আপনার AdsyPay ব্যালেন্সে জমা হয়, আলাদা কোনো ঝামেলা নেই।')
       ),
     ];
     return Padding(
@@ -1050,7 +1051,7 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
                         const SizedBox(height: 2),
                         Text(
                           b.$3,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             color: monInkSoft,
                             height: 1.5,
@@ -1068,19 +1069,19 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
   }
 
   Widget _howItWorks() {
-    const steps = [
+    final steps = [
       (
-        'শর্তগুলো পূরণ করুন',
-        'ফলোয়ার ও ভিউ বাড়ান, আর পর্যাপ্ত ভিডিও ও ছবি পোস্ট করুন।'
+        tr('শর্তগুলো পূরণ করুন'),
+        tr('ফলোয়ার ও ভিউ বাড়ান, আর পর্যাপ্ত ভিডিও ও ছবি পোস্ট করুন।')
       ),
       (
-        'আবেদন জমা দিন',
-        'শর্তাবলি ও কমিউনিটি গাইডলাইন মেনে এক ট্যাপে আবেদন করুন।'
+        tr('আবেদন জমা দিন'),
+        tr('শর্তাবলি ও কমিউনিটি গাইডলাইন মেনে এক ট্যাপে আবেদন করুন।')
       ),
       (
-        'অনুমোদনের পর আয় শুরু',
-        'এরপর আপনার কনটেন্টে আসা সাড়া থেকে আয় জমতে থাকবে। প্রতি মাসের হিসাব '
-            'মাস শেষে চূড়ান্ত হয় এবং চেকয়ের পর টাকা AdsyPay-তে যোগ হয়।'
+        tr('অনুমোদনের পর আয় শুরু'),
+        tr('এরপর আপনার কনটেন্টে আসা সাড়া থেকে আয় জমতে থাকবে। প্রতি মাসের হিসাব ') +
+            tr('মাস শেষে চূড়ান্ত হয় এবং চেকয়ের পর টাকা AdsyPay-তে যোগ হয়।')
       ),
     ];
 
@@ -1162,8 +1163,8 @@ class _MonetizationScreenState extends State<MonetizationScreen> {
         ),
         child: Text(
           eligible
-              ? 'মনিটাইজেশনের জন্য আবেদন করুন'
-              : 'শর্ত পূরণ হলে খুলে যাবে',
+              ? tr('মনিটাইজেশনের জন্য আবেদন করুন')
+              : tr('শর্ত পূরণ হলে খুলে যাবে'),
           style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
         ),
       ),

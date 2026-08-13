@@ -5,6 +5,7 @@ import '../../screens/business_network/profile_screen.dart';
 import '../../services/adsyconnect_service.dart';
 import '../common/adsy_loading.dart';
 import '../common/adsy_pro_badge.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Who reacted to a message — opened by tapping the reaction chips under a
 /// bubble (1:1 and group both).
@@ -112,10 +113,10 @@ class _MessageReactorsSheetState extends State<MessageReactorsSheet> {
               child: AdsyLoadingIndicator(),
             )
           else if (_rows.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Text(
-                'এখনো কেউ রিঅ্যাক্ট করেননি',
+                tr('এখনো কেউ রিঅ্যাক্ট করেননি'),
                 style: TextStyle(fontSize: 13, color: Color(0xFF7B8798)),
               ),
             )
@@ -145,7 +146,7 @@ class _MessageReactorsSheetState extends State<MessageReactorsSheet> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
-          _tab(label: 'সব ${_rows.length}', selected: _emojiFilter == null,
+          _tab(label: '${tr('সব')} ${_rows.length}', selected: _emojiFilter == null,
               onTap: () => setState(() => _emojiFilter = null)),
           for (final t in tabs)
             _tab(

@@ -4,6 +4,7 @@ import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// "People you may know" as a horizontal discovery row — same visual system
 /// as the workspace-gigs / micro-gigs cards so the feed feels consistent.
@@ -170,9 +171,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                       size: 15, color: _accent),
                 ),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'পরিচিত হতে পারেন',
+                    tr('পরিচিত হতে পারেন'),
                     style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
@@ -383,7 +384,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                       ),
                     )
                   : Text(
-                      isFollowing ? 'ফলো করছেন' : 'ফলো করুন',
+                      isFollowing ? tr('ফলো করছেন') : tr('ফলো করুন'),
                       style: const TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,

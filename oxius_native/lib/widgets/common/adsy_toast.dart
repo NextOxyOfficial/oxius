@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Toast type → drives the accent colour and leading icon.
 enum AdsyToastType { success, error, info, warning }
@@ -67,7 +68,7 @@ class AdsyToast {
     );
     _entry = entry;
     overlay.insert(entry);
-    _timer = Timer(const Duration(seconds: 3), dismiss);
+    _timer = Timer(Duration(seconds: 3), dismiss);
   }
 
   /// Remove the current toast, if any.
@@ -86,7 +87,7 @@ class AdsyToast {
   /// dumps (Dart exceptions, JSON, HTML, stack traces, URLs) are replaced with a
   /// generic message.
   static String sanitize(Object? raw) {
-    const generic = 'কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন';
+    final generic = tr('কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন');
     if (raw == null) return generic;
     var s = raw.toString().trim();
     if (s.isEmpty) return generic;

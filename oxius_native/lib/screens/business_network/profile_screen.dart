@@ -38,6 +38,7 @@ import '../../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_toast.dart';
 import 'package:oxius_native/widgets/common/adsy_pro_badge.dart';
 import '../../widgets/app_network_image.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -627,8 +628,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                   ),
                 ),
-                const Text(
-                  'প্রোফাইল শেয়ার করুন',
+                Text(
+                  tr('প্রোফাইল শেয়ার করুন'),
                   style: TextStyle(
                       fontSize: 15.5,
                       fontWeight: FontWeight.w800,
@@ -667,7 +668,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             await Clipboard.setData(
                                 ClipboardData(text: profileUrl));
                             if (!context.mounted) return;
-                            AdsyToast.success(context, 'লিংক কপি হয়েছে');
+                            AdsyToast.success(context, tr('লিংক কপি হয়েছে'));
                             Navigator.pop(context);
                           },
                           child: const Padding(
@@ -696,7 +697,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _profileOptionTile(
                   icon: Icons.share_outlined,
                   color: const Color(0xFF3B82F6),
-                  title: 'আরও শেয়ার করুন',
+                  title: tr('আরও শেয়ার করুন'),
                   subtitle: 'WhatsApp, Facebook, X, Messenger…',
                   onTap: _shareProfile,
                 ),
@@ -855,7 +856,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       // Universal flow: source sheet → crop (confirm) → compress.
       final XFile? uploadFile = await AdsyImageUpload.pick(
         context,
-        title: 'ছবি ঠিক করুন',
+        title: tr('ছবি ঠিক করুন'),
         targetKb: 80,
       );
       if (uploadFile == null) return;
@@ -2370,7 +2371,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     if (media.isEmpty) {
       return _buildEmptyState(
-        showVideos ? 'কোনো ভিডিও নেই' : 'কোনো ছবি নেই',
+        showVideos ? tr('কোনো ভিডিও নেই') : tr('কোনো ছবি নেই'),
         showVideos ? Icons.videocam_outlined : Icons.photo_library_outlined,
       );
     }
@@ -3255,8 +3256,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                 // the visitor something untrue about the user.
                                 _restrictedMessage ??
                                     (widget.type == 'followers'
-                                        ? 'এখনো কোনো ফলোয়ার নেই'
-                                        : 'কাউকে ফলো করছেন না'),
+                                        ? tr('এখনো কোনো ফলোয়ার নেই')
+                                        : tr('কাউকে ফলো করছেন না')),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,

@@ -3,6 +3,7 @@ import '../../models/business_network_models.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
 import '../../screens/business_network/profile_screen.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 class PostActions extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -43,8 +44,8 @@ class PostActions extends StatelessWidget {
               // The word always shows beside the icon — a bare number said
               // nothing about what the button does.
               label: post.likesCount > 0
-                  ? '${_formatCount(post.likesCount)} লাইক'
-                  : 'লাইক',
+                  ? '${_formatCount(post.likesCount)} ${tr('লাইক')}'
+                  : tr('লাইক'),
               active: post.isLiked,
               onTap: onLike,
             ),
@@ -53,8 +54,8 @@ class PostActions extends StatelessWidget {
             child: _ActionButton(
               iconPath: 'assets/icons/comments.png',
               label: post.commentsCount > 0
-                  ? '${_formatCount(post.commentsCount)} কমেন্ট'
-                  : 'কমেন্ট',
+                  ? '${_formatCount(post.commentsCount)} ${tr('কমেন্ট')}'
+                  : tr('কমেন্ট'),
               onTap: onComment,
             ),
           ),
@@ -62,8 +63,8 @@ class PostActions extends StatelessWidget {
             child: _ActionButton(
               iconPath: 'assets/icons/share.png',
               label: post.shareCount > 0
-                  ? '${_formatCount(post.shareCount)} শেয়ার'
-                  : 'শেয়ার',
+                  ? '${_formatCount(post.shareCount)} ${tr('শেয়ার')}'
+                  : tr('শেয়ার'),
               onTap: onShare,
             ),
           ),
@@ -431,7 +432,7 @@ class _LikersBottomSheetState extends State<_LikersBottomSheet> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'আপনি',
+                tr('আপনি'),
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,

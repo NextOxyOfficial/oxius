@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 import 'common/dob_picker.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// Blocking, non-dismissible sheet shown right after registration / first login
 /// until the four mandatory identity fields (first name, last name, phone, date
@@ -115,7 +116,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
     if (message.isNotEmpty && message != 'Failed to update profile') {
       return message;
     }
-    return 'সেভ করা যায়নি। তথ্যগুলো দেখে আবার চেষ্টা করুন।';
+    return tr('সেভ করা যায়নি। তথ্যগুলো দেখে আবার চেষ্টা করুন।');
   }
 
   Future<void> _submit() async {
@@ -151,7 +152,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
         // — keep the sheet open instead of silently dropping the user.
         if (mounted) {
           setState(() =>
-              _error = 'তথ্য সেভ হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।');
+              _error = tr('তথ্য সেভ হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।'));
         }
         return;
       }
@@ -159,7 +160,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
     } catch (e) {
       if (mounted) {
         setState(
-            () => _error = 'সেভ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।');
+            () => _error = tr('সেভ করা যায়নি। ইন্টারনেট দেখে আবার চেষ্টা করুন।'));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -200,12 +201,12 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                             color: _primary, size: 23),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'প্রোফাইল সম্পূর্ণ করুন',
+                              tr('প্রোফাইল সম্পূর্ণ করুন'),
                               style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
@@ -213,7 +214,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                             ),
                             SizedBox(height: 3),
                             Text(
-                              'অ্যাপ ব্যবহার করতে নিচের তথ্যগুলো দিন',
+                              tr('অ্যাপ ব্যবহার করতে নিচের তথ্যগুলো দিন'),
                               style: TextStyle(
                                   fontSize: 12.5, color: Color(0xFF556278)),
                             ),
@@ -223,11 +224,11 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                     ],
                   ),
                   const SizedBox(height: 22),
-                  _textField('প্রথম নাম', _firstName, hint: 'আপনার প্রথম নাম'),
+                  _textField(tr('প্রথম নাম'), _firstName, hint: tr('আপনার প্রথম নাম')),
                   const SizedBox(height: 14),
-                  _textField('শেষ নাম', _lastName, hint: 'আপনার শেষ নাম'),
+                  _textField(tr('শেষ নাম'), _lastName, hint: tr('আপনার শেষ নাম')),
                   const SizedBox(height: 14),
-                  _textField('ফোন নম্বর', _phone,
+                  _textField(tr('ফোন নম্বর'), _phone,
                       hint: '01XXXXXXXXX', keyboard: TextInputType.phone),
                   const SizedBox(height: 14),
                   _dobField(),
@@ -256,7 +257,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                               height: 22,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2.5, color: Colors.white))
-                          : const Text('সেভ করুন ',
+                          : Text(tr('সেভ করুন '),
                               style: TextStyle(
                                   fontSize: 15.5,
                                   fontWeight: FontWeight.w700,
@@ -297,7 +298,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('জন্ম তারিখ *',
+        Text(tr('জন্ম তারিখ *'),
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -321,7 +322,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                 const SizedBox(width: 10),
                 Text(
                   _dob == null
-                      ? 'তারিখ সিলেক্ট করুন'
+                      ? tr('তারিখ সিলেক্ট করুন')
                       : '${_dob!.day}/${_dob!.month}/${_dob!.year}',
                   style: TextStyle(
                       fontSize: 14,
@@ -332,7 +333,7 @@ class _MandatoryProfileFormState extends State<_MandatoryProfileForm> {
                 if (_dob != null) ...[
                   const Spacer(),
                   Text(
-                    '${_calcAge(_dob!)} বছর',
+                    '${_calcAge(_dob!)} ${tr('বছর')}',
                     style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,

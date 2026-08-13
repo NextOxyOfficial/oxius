@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../widgets/common/adsy_sheet.dart';
 import 'image_compressor.dart';
+import 'package:oxius_native/l10n/tr.dart';
 
 /// THE one profile-picture / banner picking flow for the whole app:
 /// AdsySheet source picker (ক্যামেরা / গ্যালারি) → crop with a confirm step
@@ -21,7 +22,7 @@ class AdsyImageUpload {
     BuildContext context, {
     double ratioX = 1,
     double ratioY = 1,
-    String title = 'ছবি ঠিক করুন',
+    String? title,
     int targetKb = 80,
     /// false → return the cropped FILE (real path, uncompressed) for callers
     /// that need `.path` (e.g. previews via Image.file) and compress later.
@@ -36,14 +37,14 @@ class AdsyImageUpload {
       children: [
         AdsySheetAction(
           icon: Icons.camera_alt_outlined,
-          title: 'ছবি তুলুন',
-          subtitle: 'ক্যামেরা দিয়ে নতুন ছবি তুলুন',
+          title: tr('ছবি তুলুন'),
+          subtitle: tr('ক্যামেরা দিয়ে নতুন ছবি তুলুন'),
           onTap: () => source = ImageSource.camera,
         ),
         AdsySheetAction(
           icon: Icons.photo_library_outlined,
-          title: 'গ্যালারি থেকে সিলেক্ট করুন',
-          subtitle: 'ডিভাইসে থাকা ছবি থেকে সিলেক্ট করুন',
+          title: tr('গ্যালারি থেকে সিলেক্ট করুন'),
+          subtitle: tr('ডিভাইসে থাকা ছবি থেকে সিলেক্ট করুন'),
           onTap: () => source = ImageSource.gallery,
         ),
       ],
