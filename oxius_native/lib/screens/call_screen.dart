@@ -1877,6 +1877,20 @@ class _CallScreenState extends State<CallScreen>
     // With three or more people the single full-bleed remote stage stops
     // being the right shape and everyone goes into a grid instead.
     final isGroup = _isGroupCall;
+
+    // ...but not before there is a grid worth showing. `_isGroupCall` is true
+    // the moment widget.groupId is set, so an OUTGOING group call used to swap
+    // straight to the grid — which replaces the waiting view entirely. With no
+    // peers yet that is a single empty self tile on a near-black Scaffold: the
+    // caller saw a black screen with no callee, no name and no "calling…",
+    // and only after backing out to the bubble and tapping it again — by which
+    // time somebody had joined — did the call look like a call.
+    //
+    // Until a peer is actually there, show the same waiting view a one-to-one
+    // call shows. The self tile alone tells the caller nothing they do not
+    // already know.
+    final showGrid = isGroup && _peers.isNotEmpty;
+
     final hasRemoteVideo =
         !isGroup && _remoteUid != null && _callType == 'video';
 
@@ -1895,7 +1909,7 @@ class _CallScreenState extends State<CallScreen>
             SafeArea(
               child: Stack(
                 children: [
-                  if (isGroup)
+                  if (showGrid)
                     _buildParticipantGrid()
                   else if (!hasRemoteVideo)
                     _buildWaitingView(),
@@ -1930,8 +1944,10 @@ class _CallScreenState extends State<CallScreen>
                       _callType == 'video' &&
                       !_isCameraOff &&
                       // In a grid the self-view would float over the tiles it
-                      // is already sitting beside.
-                      !isGroup)
+                      // is already sitting beside — but while a group call is
+                      // still ringing there is no grid, and the caller should
+                      // see their own camera exactly as they do one-to-one.
+                      !showGrid)
                     _buildLocalPreview(),
                   if (widget.isIncoming && !_callAccepted)
                     _buildIncomingCallUI(),
